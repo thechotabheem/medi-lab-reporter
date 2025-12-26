@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { profile, userRole, signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -113,7 +115,10 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+          <Card 
+            className="hover:border-primary/50 transition-colors cursor-pointer"
+            onClick={() => navigate('/reports/new')}
+          >
             <CardHeader>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
                 <Plus className="h-6 w-6 text-primary" />
