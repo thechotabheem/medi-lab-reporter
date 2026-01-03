@@ -52,7 +52,14 @@ export const ClinicRegistrationForm = ({ userData, onSuccess }: ClinicRegistrati
     );
 
     if (error) {
-      setError(error.message);
+      // Provide user-friendly error messages
+      if (error.message.includes('row-level security') || error.message.includes('RLS')) {
+        setError('Session not ready. Please wait a moment and try again.');
+      } else if (error.message.includes('No active session')) {
+        setError('Your session expired. Please sign up again.');
+      } else {
+        setError(error.message);
+      }
       setIsLoading(false);
       return;
     }
