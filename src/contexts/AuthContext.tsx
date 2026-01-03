@@ -144,62 +144,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clinicData: { name: string; address?: string; phone?: string; email?: string },
     userData: { fullName: string; phone?: string }
   ) => {
-    // Force refresh the session to ensure auth token is current
-    const { error: refreshError } = await supabase.auth.refreshSession();
-    if (refreshError) {
-      console.error('Session refresh error:', refreshError);
-    }
-
-    // Re-verify session after refresh
+    // Get current session
     const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !currentSession) {
-      return { error: new Error('No active session. Please try again.') };
+      return { error: new Error('No active session. Please sign in again.') };
     }
 
     const currentUser = currentSession.user;
 
-    // Helper function to insert clinic with retry logic
-    const insertClinicWithRetry = async (maxRetries = 3) => {
-      for (let i = 0; i < maxRetries; i++) {
-        const { data, error } = await supabase
+    try {
+      // Check if user already has a profile (prevents duplicate setup)
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id, clinic_id')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if (existingProfile) {
+        // User already completed setup, refresh and return success
+        await fetchUserData(currentUser.id);
+        return { error: null };
+      }
+
+      // Check if user already created a clinic (from previous failed attempt)
+      const { data: existingClinic } = await supabase
+        .from('clinics')
+        .select('id')
+        .eq('created_by', currentUser.id)
+        .maybeSingle();
+
+      let clinicId: string;
+
+      if (existingClinic) {
+        // Use existing clinic from previous attempt
+        clinicId = existingClinic.id;
+      } else {
+        // Create new clinic with created_by for RLS
+        const { data: clinic, error: clinicError } = await supabase
           .from('clinics')
           .insert({
             name: clinicData.name,
             address: clinicData.address || null,
             phone: clinicData.phone || null,
             email: clinicData.email || null,
+            created_by: currentUser.id,
           })
           .select()
           .single();
-        
-        if (!error) return { data, error: null };
-        
-        if (error.message.includes('row-level security')) {
-          // Wait and retry - session might need time to propagate
-          await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
-          // Refresh session before retry
-          await supabase.auth.refreshSession();
-          continue;
-        }
-        
-        return { data: null, error };
+
+        if (clinicError) throw clinicError;
+        clinicId = clinic.id;
       }
-      return { data: null, error: new Error('Failed after retries. Please try again.') };
-    };
-
-    try {
-      // Create clinic with retry logic
-      const { data: clinic, error: clinicError } = await insertClinicWithRetry();
-
-      if (clinicError) throw clinicError;
 
       // Create profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           user_id: currentUser.id,
-          clinic_id: clinic.id,
+          clinic_id: clinicId,
           full_name: userData.fullName,
           email: currentUser.email!,
           phone: userData.phone || null,
