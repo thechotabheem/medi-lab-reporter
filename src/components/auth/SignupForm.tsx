@@ -49,10 +49,13 @@ export const SignupForm = ({ onSwitchToLogin, onSignupSuccess }: SignupFormProps
 
   // Listen for auth state change to ensure session is fully established before proceeding
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session && pendingUserDataRef.current) {
-          // Session is now fully established, proceed to clinic registration
+        // Handle both SIGNED_IN and INITIAL_SESSION events
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && pendingUserDataRef.current) {
+          if (timeoutId) clearTimeout(timeoutId);
           const userData = pendingUserDataRef.current;
           pendingUserDataRef.current = null;
           onSignupSuccess(userData);
@@ -60,8 +63,31 @@ export const SignupForm = ({ onSwitchToLogin, onSignupSuccess }: SignupFormProps
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [onSignupSuccess]);
+
+  // Timeout fallback: if auth state change doesn't fire, manually check session
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    if (success && pendingUserDataRef.current) {
+      timeoutId = setTimeout(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && pendingUserDataRef.current) {
+          const userData = pendingUserDataRef.current;
+          pendingUserDataRef.current = null;
+          onSignupSuccess(userData);
+        }
+      }, 3000);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [success, onSignupSuccess]);
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
