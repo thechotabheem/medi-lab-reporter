@@ -144,9 +144,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clinicData: { name: string; address?: string; phone?: string; email?: string },
     userData: { fullName: string; phone?: string }
   ) => {
-    if (!user) {
-      return { error: new Error('No authenticated user') };
+    // Explicitly verify session is active before making authenticated requests
+    const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !currentSession) {
+      return { error: new Error('No active session. Please try again.') };
     }
+
+    const currentUser = currentSession.user;
 
     try {
       // Create clinic
@@ -167,10 +172,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          user_id: user.id,
+          user_id: currentUser.id,
           clinic_id: clinic.id,
           full_name: userData.fullName,
-          email: user.email!,
+          email: currentUser.email!,
           phone: userData.phone || null,
         });
 
@@ -180,14 +185,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
-          user_id: user.id,
+          user_id: currentUser.id,
           role: 'admin',
         });
 
       if (roleError) throw roleError;
 
       // Refresh user data
-      await fetchUserData(user.id);
+      await fetchUserData(currentUser.id);
 
       return { error: null };
     } catch (error) {

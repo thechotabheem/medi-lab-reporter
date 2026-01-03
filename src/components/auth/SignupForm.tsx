@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,7 @@ export const SignupForm = ({ onSwitchToLogin, onSignupSuccess }: SignupFormProps
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const pendingUserDataRef = useRef<{ fullName: string; phone?: string } | null>(null);
 
   const {
     register,
@@ -44,6 +46,22 @@ export const SignupForm = ({ onSwitchToLogin, onSignupSuccess }: SignupFormProps
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
+
+  // Listen for auth state change to ensure session is fully established before proceeding
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session && pendingUserDataRef.current) {
+          // Session is now fully established, proceed to clinic registration
+          const userData = pendingUserDataRef.current;
+          pendingUserDataRef.current = null;
+          onSignupSuccess(userData);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [onSignupSuccess]);
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
@@ -63,13 +81,12 @@ export const SignupForm = ({ onSwitchToLogin, onSignupSuccess }: SignupFormProps
 
     if (user) {
       setSuccess(true);
-      // Move to clinic registration step
-      setTimeout(() => {
-        onSignupSuccess({
-          fullName: data.fullName,
-          phone: data.phone,
-        });
-      }, 1500);
+      // Store user data and wait for auth state change to confirm session is established
+      pendingUserDataRef.current = {
+        fullName: data.fullName,
+        phone: data.phone,
+      };
+      // The onAuthStateChange listener will trigger onSignupSuccess when session is ready
     }
 
     setIsLoading(false);
