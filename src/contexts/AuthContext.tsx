@@ -144,7 +144,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clinicData: { name: string; address?: string; phone?: string; email?: string },
     userData: { fullName: string; phone?: string }
   ) => {
-    // Explicitly verify session is active before making authenticated requests
+    // Force refresh the session to ensure auth token is current
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.error('Session refresh error:', refreshError);
+    }
+
+    // Re-verify session after refresh
     const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !currentSession) {
@@ -153,18 +159,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const currentUser = currentSession.user;
 
+    // Helper function to insert clinic with retry logic
+    const insertClinicWithRetry = async (maxRetries = 3) => {
+      for (let i = 0; i < maxRetries; i++) {
+        const { data, error } = await supabase
+          .from('clinics')
+          .insert({
+            name: clinicData.name,
+            address: clinicData.address || null,
+            phone: clinicData.phone || null,
+            email: clinicData.email || null,
+          })
+          .select()
+          .single();
+        
+        if (!error) return { data, error: null };
+        
+        if (error.message.includes('row-level security')) {
+          // Wait and retry - session might need time to propagate
+          await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
+          // Refresh session before retry
+          await supabase.auth.refreshSession();
+          continue;
+        }
+        
+        return { data: null, error };
+      }
+      return { data: null, error: new Error('Failed after retries. Please try again.') };
+    };
+
     try {
-      // Create clinic
-      const { data: clinic, error: clinicError } = await supabase
-        .from('clinics')
-        .insert({
-          name: clinicData.name,
-          address: clinicData.address || null,
-          phone: clinicData.phone || null,
-          email: clinicData.email || null,
-        })
-        .select()
-        .single();
+      // Create clinic with retry logic
+      const { data: clinic, error: clinicError } = await insertClinicWithRetry();
 
       if (clinicError) throw clinicError;
 

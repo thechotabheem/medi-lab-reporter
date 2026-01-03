@@ -56,9 +56,17 @@ export const SignupForm = ({ onSwitchToLogin, onSignupSuccess }: SignupFormProps
         // Handle both SIGNED_IN and INITIAL_SESSION events
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && pendingUserDataRef.current) {
           if (timeoutId) clearTimeout(timeoutId);
-          const userData = pendingUserDataRef.current;
-          pendingUserDataRef.current = null;
-          onSignupSuccess(userData);
+          
+          // Small delay to ensure auth token is fully propagated to Supabase client
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Verify session is still valid after delay
+          const { data: { session: verifiedSession } } = await supabase.auth.getSession();
+          if (verifiedSession && pendingUserDataRef.current) {
+            const userData = pendingUserDataRef.current;
+            pendingUserDataRef.current = null;
+            onSignupSuccess(userData);
+          }
         }
       }
     );
