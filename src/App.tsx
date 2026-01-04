@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
 import Patients from "./pages/Patients";
+import AddPatient from "./pages/AddPatient";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Patients />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/new"
+              element={
+                <ProtectedRoute>
+                  <AddPatient />
                 </ProtectedRoute>
               }
             />
