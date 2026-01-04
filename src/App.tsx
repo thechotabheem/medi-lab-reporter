@@ -11,6 +11,7 @@ import CreateReport from "./pages/CreateReport";
 import Patients from "./pages/Patients";
 import AddPatient from "./pages/AddPatient";
 import Settings from "./pages/Settings";
+import ClinicSettings from "./pages/ClinicSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/clinic"
+              element={
+                <ProtectedRoute>
+                  <ClinicSettings />
                 </ProtectedRoute>
               }
             />
