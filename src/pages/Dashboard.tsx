@@ -130,7 +130,10 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+          <Card 
+            className="hover:border-primary/50 transition-colors cursor-pointer"
+            onClick={() => navigate('/patients')}
+          >
             <CardHeader>
               <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center mb-2">
                 <Users className="h-6 w-6 text-secondary-foreground" />
@@ -142,7 +145,10 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+          <Card 
+            className="hover:border-primary/50 transition-colors cursor-pointer"
+            onClick={() => navigate('/settings')}
+          >
             <CardHeader>
               <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-2">
                 <Settings className="h-6 w-6 text-muted-foreground" />
