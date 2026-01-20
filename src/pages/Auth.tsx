@@ -6,6 +6,7 @@ import { SignupForm } from '@/components/auth/SignupForm';
 import { ClinicRegistrationForm } from '@/components/auth/ClinicRegistrationForm';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { FlaskConical } from 'lucide-react';
 
 type AuthStep = 'auth' | 'clinic';
@@ -55,44 +56,54 @@ export default function Auth() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-primary">Loading...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center gradient-radial p-4">
+      <div className="w-full max-w-md animate-fade-in">
         {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <FlaskConical className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold">MedLab Reporter</h1>
-          <p className="text-muted-foreground mt-1">
+        <div className="text-center mb-6 sm:mb-8">
+          <IconWrapper 
+            size="xl" 
+            variant="default" 
+            glow 
+            className="mb-4 mx-auto animate-float"
+          >
+            <FlaskConical className="h-8 w-8" />
+          </IconWrapper>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            MedLab Reporter
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Professional Medical Lab Reports
           </p>
         </div>
 
-        <Card className="border-border/50 shadow-xl">
+        <Card className="glass-strong shadow-xl border-border/40">
           {step === 'auth' ? (
             <>
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-xl">Welcome</CardTitle>
-                <CardDescription>
+              <CardHeader className="text-center pb-2 px-4 sm:px-6">
+                <CardTitle className="text-lg sm:text-xl">Welcome</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Sign in to your account or create a new one
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 px-4 sm:px-6">
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
                   <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="login">Sign In</TabsTrigger>
-                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                    <TabsTrigger value="login" className="text-sm">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="login">
+                  <TabsContent value="login" className="animate-fade-in">
                     <LoginForm onSwitchToSignup={() => setActiveTab('signup')} />
                   </TabsContent>
-                  <TabsContent value="signup">
+                  <TabsContent value="signup" className="animate-fade-in">
                     <SignupForm 
                       onSwitchToLogin={() => setActiveTab('login')}
                       onSignupSuccess={handleSignupSuccess}
@@ -102,7 +113,7 @@ export default function Auth() {
               </CardContent>
             </>
           ) : (
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 px-4 sm:px-6">
               <ClinicRegistrationForm 
                 userData={userData || { fullName: user?.user_metadata?.full_name || 'User' }}
                 onSuccess={handleClinicSuccess}
@@ -111,7 +122,7 @@ export default function Auth() {
           )}
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-2xs sm:text-xs text-muted-foreground mt-6 px-4">
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

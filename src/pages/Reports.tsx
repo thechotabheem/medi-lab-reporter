@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReports } from '@/hooks/useReports';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { IconWrapper } from '@/components/ui/icon-wrapper';
 import {
   Select,
   SelectContent,
@@ -13,8 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  FlaskConical,
-  ArrowLeft,
+  ClipboardList,
   Search,
   Plus,
   FileText,
@@ -23,7 +25,6 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getReportTypeName } from '@/lib/report-templates';
-import type { ReportType } from '@/types/database';
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -47,63 +48,57 @@ export default function Reports() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <FlaskConical className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="font-semibold">Reports</h1>
-              <p className="text-xs text-muted-foreground">View and manage lab reports</p>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="page-container">
+      <PageHeader
+        title="Reports"
+        subtitle="View and manage lab reports"
+        icon={<ClipboardList className="h-5 w-5" />}
+        showBack
+        backPath="/dashboard"
+      />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 sm:py-8">
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search reports..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        <div className="flex flex-col gap-3 sm:gap-4 mb-6 animate-fade-in">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search reports..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2 sm:gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[130px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="verified">Verified</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full sm:w-[160px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="blood_test">Blood Test</SelectItem>
+                  <SelectItem value="urine_analysis">Urine Analysis</SelectItem>
+                  <SelectItem value="hormone_immunology">Hormone</SelectItem>
+                  <SelectItem value="microbiology">Microbiology</SelectItem>
+                  <SelectItem value="ultrasound">Ultrasound</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="verified">Verified</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Report Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="blood_test">Blood Test</SelectItem>
-              <SelectItem value="urine_analysis">Urine Analysis</SelectItem>
-              <SelectItem value="hormone_immunology">Hormone & Immunology</SelectItem>
-              <SelectItem value="microbiology">Microbiology</SelectItem>
-              <SelectItem value="ultrasound">Ultrasound</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={() => navigate('/reports/new')}>
+          <Button onClick={() => navigate('/reports/new')} className="w-full sm:w-auto sm:self-end">
             <Plus className="h-4 w-4 mr-2" />
             New Report
           </Button>
@@ -113,46 +108,42 @@ export default function Reports() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+              <div key={i} className="h-20 sm:h-24 skeleton rounded-lg" />
             ))}
           </div>
         ) : filteredReports?.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                <FileText className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-semibold text-lg mb-1">No reports found</h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Create your first report to get started'}
-              </p>
-              {!searchTerm && statusFilter === 'all' && typeFilter === 'all' && (
-                <Button onClick={() => navigate('/reports/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Report
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={FileText}
+            title="No reports found"
+            description={
+              searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'Create your first report to get started'
+            }
+            actionLabel={!searchTerm && statusFilter === 'all' && typeFilter === 'all' ? 'Create Report' : undefined}
+            onAction={!searchTerm && statusFilter === 'all' && typeFilter === 'all' ? () => navigate('/reports/new') : undefined}
+          />
         ) : (
-          <div className="space-y-3">
-            {filteredReports?.map((report) => (
+          <div className="space-y-2 sm:space-y-3">
+            {filteredReports?.map((report, index) => (
               <Card
                 key={report.id}
-                className="hover:border-primary/50 transition-colors cursor-pointer"
+                className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 animate-fade-in-up"
+                style={{ animationDelay: `${index * 30}ms` }}
                 onClick={() => navigate(`/reports/${report.id}`)}
               >
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <IconWrapper size="lg" className="shrink-0 hidden sm:flex group-hover:scale-105 transition-transform">
+                        <FileText className="h-5 w-5" />
+                      </IconWrapper>
+                      <IconWrapper size="default" className="shrink-0 flex sm:hidden">
+                        <FileText className="h-4 w-4" />
+                      </IconWrapper>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 sm:mb-1 flex-wrap">
+                          <h3 className="font-semibold text-sm sm:text-base truncate group-hover:text-primary transition-colors">
                             {getReportTypeName(report.report_type)}
                           </h3>
                           <Badge
@@ -163,14 +154,17 @@ export default function Reports() {
                                 ? 'secondary'
                                 : 'outline'
                             }
+                            className="text-2xs sm:text-xs"
                           >
                             {report.status}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-3 sm:gap-4 text-2xs sm:text-sm text-muted-foreground flex-wrap">
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
-                            {report.patient?.first_name} {report.patient?.last_name}
+                            <span className="truncate max-w-[120px] sm:max-w-none">
+                              {report.patient?.first_name} {report.patient?.last_name}
+                            </span>
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
@@ -179,9 +173,9 @@ export default function Reports() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right hidden sm:block">
-                      <p className="text-sm font-medium">{report.report_number}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="text-right hidden md:block shrink-0">
+                      <p className="text-xs sm:text-sm font-medium">{report.report_number}</p>
+                      <p className="text-2xs sm:text-xs text-muted-foreground truncate max-w-[150px]">
                         {report.referring_doctor || 'No referring doctor'}
                       </p>
                     </div>
