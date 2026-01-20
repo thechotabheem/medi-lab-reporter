@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -9,12 +10,14 @@ import {
   Settings, 
   LogOut,
   Plus,
-  Activity
+  Activity,
+  ClipboardList
 } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { profile, userRole, signOut } = useAuth();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,7 +63,7 @@ export default function Dashboard() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/reports')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Reports
@@ -68,12 +71,14 @@ export default function Dashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {statsLoading ? '-' : stats?.totalReports || 0}
+              </div>
               <p className="text-xs text-muted-foreground">All time</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/patients')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Patients
@@ -81,7 +86,9 @@ export default function Dashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {statsLoading ? '-' : stats?.totalPatients || 0}
+              </div>
               <p className="text-xs text-muted-foreground">Registered</p>
             </CardContent>
           </Card>
@@ -94,7 +101,9 @@ export default function Dashboard() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {statsLoading ? '-' : stats?.monthlyReports || 0}
+              </div>
               <p className="text-xs text-muted-foreground">Reports created</p>
             </CardContent>
           </Card>
@@ -107,14 +116,16 @@ export default function Dashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {statsLoading ? '-' : stats?.draftReports || 0}
+              </div>
               <p className="text-xs text-muted-foreground">Draft reports</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card 
             className="hover:border-primary/50 transition-colors cursor-pointer"
             onClick={() => navigate('/reports/new')}
@@ -126,6 +137,21 @@ export default function Dashboard() {
               <CardTitle>New Report</CardTitle>
               <CardDescription>
                 Create a new lab report for a patient
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card 
+            className="hover:border-primary/50 transition-colors cursor-pointer"
+            onClick={() => navigate('/reports')}
+          >
+            <CardHeader>
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <ClipboardList className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>View Reports</CardTitle>
+              <CardDescription>
+                Browse and manage all lab reports
               </CardDescription>
             </CardHeader>
           </Card>
