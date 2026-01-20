@@ -6,8 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateReport, useDeleteReport } from '@/hooks/useReportMutations';
 import { generateReportPDF, downloadPDF, sharePDFViaWhatsApp } from '@/lib/pdf-generator';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
+import { IconWrapper } from '@/components/ui/icon-wrapper';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageTransition, FadeIn } from '@/components/ui/page-transition';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +25,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  ArrowLeft,
   FileText,
   Download,
   Share2,
@@ -30,6 +34,7 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
@@ -78,11 +83,7 @@ export default function ReportView() {
     if (!report?.patient) return;
     setIsGeneratingPDF(true);
     try {
-      const doc = await generateReportPDF({
-        report,
-        patient: report.patient,
-        clinic,
-      });
+      const doc = await generateReportPDF({ report, patient: report.patient, clinic });
       downloadPDF(doc, `${report.report_number}.pdf`);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
@@ -95,11 +96,7 @@ export default function ReportView() {
     if (!report?.patient) return;
     setIsGeneratingPDF(true);
     try {
-      const doc = await generateReportPDF({
-        report,
-        patient: report.patient,
-        clinic,
-      });
+      const doc = await generateReportPDF({ report, patient: report.patient, clinic });
       await sharePDFViaWhatsApp(doc, report.patient.phone || undefined);
     } catch (error) {
       console.error('Failed to share PDF:', error);
@@ -116,10 +113,7 @@ export default function ReportView() {
 
   const handleMarkComplete = async () => {
     if (!report?.id) return;
-    await updateReport.mutateAsync({
-      id: report.id,
-      status: 'completed',
-    });
+    await updateReport.mutateAsync({ id: report.id, status: 'completed' });
   };
 
   const getValueStatus = (
@@ -130,10 +124,7 @@ export default function ReportView() {
     if (value === null || value === undefined || value === '') return 'unknown';
     if (typeof value !== 'number') return 'unknown';
     if (!field.normalRange) return 'unknown';
-
-    let min: number | undefined;
-    let max: number | undefined;
-
+    let min: number | undefined, max: number | undefined;
     if (field.normalRange.male && field.normalRange.female) {
       const genderRange = gender === 'male' ? field.normalRange.male : field.normalRange.female;
       min = genderRange.min;
@@ -142,7 +133,6 @@ export default function ReportView() {
       min = field.normalRange.min;
       max = field.normalRange.max;
     }
-
     if (min !== undefined && value < min) return 'abnormal';
     if (max !== undefined && value > max) return 'abnormal';
     return 'normal';
@@ -150,23 +140,53 @@ export default function ReportView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="page-container">
+        <PageHeader title="Loading..." showBack />
+        <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          <div className="space-y-4 sm:space-y-6">
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-5 w-24" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            {[1, 2].map((i) => (
+              <Card key={i}>
+                <CardHeader className="p-4 sm:p-6"><Skeleton className="h-5 w-28" /></CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3, 4, 5, 6].map((j) => (
+                      <Skeleton key={j} className="h-20 rounded-lg" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Report not found</p>
-            <Button onClick={() => navigate('/reports')} className="mt-4">
-              Back to Reports
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="page-container flex items-center justify-center">
+        <EmptyState
+          icon={FileText}
+          title="Report not found"
+          description="The report you're looking for doesn't exist or has been deleted."
+          actionLabel="Back to Reports"
+          onAction={() => navigate('/reports')}
+        />
       </div>
     );
   }
@@ -175,53 +195,32 @@ export default function ReportView() {
   const reportData = report.report_data as Record<string, unknown>;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-5 w-5" />
+    <div className="page-container">
+      <PageHeader
+        title={getReportTypeName(report.report_type)}
+        subtitle={report.report_number}
+        icon={<FileText className="h-5 w-5" />}
+        showBack
+        actions={
+          <div className="flex gap-1 sm:gap-2">
+            <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={isGeneratingPDF} className="text-xs sm:text-sm">
+              {isGeneratingPDF ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 sm:mr-2" />}
+              <span className="hidden sm:inline">PDF</span>
             </Button>
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="font-semibold">{getReportTypeName(report.report_type)}</h1>
-              <p className="text-xs text-muted-foreground">{report.report_number}</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShareWhatsApp}
-              disabled={isGeneratingPDF}
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
+            <Button variant="outline" size="sm" onClick={handleShareWhatsApp} disabled={isGeneratingPDF} className="text-xs sm:text-sm">
+              <Share2 className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Share</span>
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="mx-4 max-w-md">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Report?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete this report. This action cannot be undone.
-                  </AlertDialogDescription>
+                  <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -230,148 +229,135 @@ export default function ReportView() {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-        </div>
-      </header>
+        }
+      />
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-6">
-          {/* Report Status */}
-          {report.status === 'draft' && (
-            <Card className="border-yellow-500/50 bg-yellow-500/10">
-              <CardContent className="py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                  <span className="text-sm font-medium">This report is still a draft</span>
-                </div>
-                <Button size="sm" onClick={handleMarkComplete}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Mark as Complete
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Patient & Report Info */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Report Details</CardTitle>
-                <Badge
-                  variant={
-                    report.status === 'completed'
-                      ? 'default'
-                      : report.status === 'verified'
-                      ? 'secondary'
-                      : 'outline'
-                  }
-                >
-                  {report.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="flex items-center gap-3">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Patient</p>
-                    <p
-                      className="text-sm font-medium cursor-pointer hover:text-primary"
-                      onClick={() => navigate(`/patients/${report.patient_id}`)}
-                    >
-                      {report.patient?.first_name} {report.patient?.last_name}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Test Date</p>
-                    <p className="text-sm font-medium">
-                      {format(new Date(report.test_date), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Created</p>
-                    <p className="text-sm font-medium">
-                      {format(new Date(report.created_at), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                </div>
-                {report.referring_doctor && (
-                  <div className="flex items-center gap-3">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Referring Doctor</p>
-                      <p className="text-sm font-medium">{report.referring_doctor}</p>
+      <PageTransition>
+        <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          <div className="space-y-4 sm:space-y-6">
+            {/* Draft Warning */}
+            {report.status === 'draft' && (
+              <FadeIn>
+                <Card className="border-warning/50 bg-warning/5">
+                  <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <IconWrapper variant="warning" size="sm">
+                        <AlertTriangle className="h-4 w-4" />
+                      </IconWrapper>
+                      <span className="text-sm font-medium">This report is still a draft</span>
                     </div>
+                    <Button size="sm" onClick={handleMarkComplete} className="w-full sm:w-auto">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Mark Complete
+                    </Button>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
+
+            {/* Report Details */}
+            <FadeIn delay={100}>
+              <Card>
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <CardTitle className="text-base sm:text-lg">Report Details</CardTitle>
+                    <Badge variant={report.status === 'completed' ? 'default' : report.status === 'verified' ? 'secondary' : 'outline'}>
+                      {report.status}
+                    </Badge>
                   </div>
-                )}
-              </div>
-              {report.clinical_notes && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-1">Clinical Notes</p>
-                  <p className="text-sm">{report.clinical_notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Test Results */}
-          {template.categories.map((category) => {
-            const categoryHasData = category.fields.some(
-              (field) => reportData[field.name] !== undefined && reportData[field.name] !== null && reportData[field.name] !== ''
-            );
-            if (!categoryHasData) return null;
-
-            return (
-              <Card key={category.name}>
-                <CardHeader>
-                  <CardTitle className="text-lg text-primary">{category.name}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {category.fields.map((field) => {
-                      const value = reportData[field.name];
-                      if (value === undefined || value === null || value === '') return null;
-
-                      const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
-                      const isAbnormal = status === 'abnormal';
-
-                      return (
-                        <div
-                          key={field.name}
-                          className={`p-3 rounded-lg border ${
-                            isAbnormal ? 'border-destructive/50 bg-destructive/10' : 'border-border'
-                          }`}
-                        >
-                          <p className="text-xs text-muted-foreground mb-1">{field.label}</p>
-                          <p
-                            className={`text-lg font-semibold ${
-                              isAbnormal ? 'text-destructive' : ''
-                            }`}
-                          >
-                            {String(value)}
-                            {field.unit && (
-                              <span className="text-sm font-normal text-muted-foreground ml-1">
-                                {field.unit}
-                              </span>
-                            )}
-                          </p>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="flex items-center gap-3">
+                      <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground">Patient</p>
+                        <p className="text-sm font-medium cursor-pointer hover:text-primary transition-colors truncate" onClick={() => navigate(`/patients/${report.patient_id}`)}>
+                          {report.patient?.first_name} {report.patient?.last_name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Test Date</p>
+                        <p className="text-sm font-medium">{format(new Date(report.test_date), 'MMM d, yyyy')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Created</p>
+                        <p className="text-sm font-medium">{format(new Date(report.created_at), 'MMM d, yyyy')}</p>
+                      </div>
+                    </div>
+                    {report.referring_doctor && (
+                      <div className="flex items-center gap-3">
+                        <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">Referring Doctor</p>
+                          <p className="text-sm font-medium truncate">{report.referring_doctor}</p>
                         </div>
-                      );
-                    })}
+                      </div>
+                    )}
                   </div>
+                  {report.clinical_notes && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <p className="text-xs text-muted-foreground mb-1">Clinical Notes</p>
+                      <p className="text-sm">{report.clinical_notes}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            );
-          })}
-        </div>
-      </main>
+            </FadeIn>
+
+            {/* Test Results */}
+            {template.categories.map((category, catIndex) => {
+              const categoryHasData = category.fields.some(
+                (field) => reportData[field.name] !== undefined && reportData[field.name] !== null && reportData[field.name] !== ''
+              );
+              if (!categoryHasData) return null;
+
+              return (
+                <FadeIn key={category.name} delay={200 + catIndex * 100}>
+                  <Card>
+                    <CardHeader className="p-4 sm:p-6">
+                      <CardTitle className="text-base sm:text-lg text-primary">{category.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6 pt-0">
+                      <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {category.fields.map((field) => {
+                          const value = reportData[field.name];
+                          if (value === undefined || value === null || value === '') return null;
+                          const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
+                          const isAbnormal = status === 'abnormal';
+
+                          return (
+                            <div
+                              key={field.name}
+                              className={`p-3 rounded-lg border transition-all ${
+                                isAbnormal 
+                                  ? 'border-destructive/50 bg-destructive/5' 
+                                  : 'border-border hover:border-primary/30'
+                              }`}
+                            >
+                              <p className="text-xs text-muted-foreground mb-1 truncate">{field.label}</p>
+                              <p className={`text-base sm:text-lg font-semibold ${isAbnormal ? 'text-destructive' : ''}`}>
+                                {String(value)}
+                                {field.unit && <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1">{field.unit}</span>}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </FadeIn>
+              );
+            })}
+          </div>
+        </main>
+      </PageTransition>
     </div>
   );
 }

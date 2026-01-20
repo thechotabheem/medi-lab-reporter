@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { PageHeader } from '@/components/ui/page-header';
+import { IconWrapper } from '@/components/ui/icon-wrapper';
+import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import {
   Select,
   SelectContent,
@@ -16,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { FlaskConical, ArrowLeft, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2 } from 'lucide-react';
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -44,20 +47,12 @@ export default function AddPatient() {
     e.preventDefault();
 
     if (!profile?.clinic_id) {
-      toast({
-        title: 'Error',
-        description: 'Clinic information not found. Please try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Clinic information not found.', variant: 'destructive' });
       return;
     }
 
     if (!formData.first_name || !formData.last_name || !formData.date_of_birth || !formData.gender) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
       return;
     }
 
@@ -78,171 +73,157 @@ export default function AddPatient() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Patient added',
-        description: `${formData.first_name} ${formData.last_name} has been added successfully.`,
-      });
-
+      toast({ title: 'Patient added', description: `${formData.first_name} ${formData.last_name} has been added.` });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       navigate('/patients');
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to add patient. Please try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message || 'Failed to add patient.', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/patients')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <FlaskConical className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="font-semibold">Add Patient</h1>
-            <p className="text-xs text-muted-foreground">Register a new patient</p>
-          </div>
-        </div>
-      </header>
+    <div className="page-container">
+      <PageHeader
+        title="Add Patient"
+        subtitle="Register a new patient"
+        icon={<UserPlus className="h-5 w-5" />}
+        showBack
+        backPath="/patients"
+      />
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Patient Information</CardTitle>
-            <CardDescription>Enter the patient's details below. Fields marked with * are required.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => handleChange('first_name', e.target.value)}
-                    placeholder="John"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
-                  <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => handleChange('last_name', e.target.value)}
-                    placeholder="Doe"
-                    required
-                  />
-                </div>
-              </div>
+      <PageTransition>
+        <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl">
+          <FadeIn delay={100}>
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">Patient Information</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  Fields marked with * are required
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name" className="text-sm">First Name *</Label>
+                      <Input
+                        id="first_name"
+                        value={formData.first_name}
+                        onChange={(e) => handleChange('first_name', e.target.value)}
+                        placeholder="John"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name" className="text-sm">Last Name *</Label>
+                      <Input
+                        id="last_name"
+                        value={formData.last_name}
+                        onChange={(e) => handleChange('last_name', e.target.value)}
+                        placeholder="Doe"
+                        required
+                      />
+                    </div>
+                  </div>
 
-              {/* DOB and Gender */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth *</Label>
-                  <Input
-                    id="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender *</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) => handleChange('gender', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                  {/* DOB and Gender */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date_of_birth" className="text-sm">Date of Birth *</Label>
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={formData.date_of_birth}
+                        onChange={(e) => handleChange('date_of_birth', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="gender" className="text-sm">Gender *</Label>
+                      <Select value={formData.gender} onValueChange={(value) => handleChange('gender', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-              {/* Patient ID */}
-              <div className="space-y-2">
-                <Label htmlFor="patient_id_number">Patient ID Number</Label>
-                <Input
-                  id="patient_id_number"
-                  value={formData.patient_id_number}
-                  onChange={(e) => handleChange('patient_id_number', e.target.value)}
-                  placeholder="Optional unique identifier"
-                />
-              </div>
+                  {/* Patient ID */}
+                  <div className="space-y-2">
+                    <Label htmlFor="patient_id_number" className="text-sm">Patient ID Number</Label>
+                    <Input
+                      id="patient_id_number"
+                      value={formData.patient_id_number}
+                      onChange={(e) => handleChange('patient_id_number', e.target.value)}
+                      placeholder="Optional unique identifier"
+                    />
+                  </div>
 
-              {/* Contact Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    placeholder="+1 234 567 8900"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    placeholder="patient@example.com"
-                  />
-                </div>
-              </div>
+                  {/* Contact Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-sm">Phone</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleChange('phone', e.target.value)}
+                        placeholder="+1 234 567 8900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        placeholder="patient@example.com"
+                      />
+                    </div>
+                  </div>
 
-              {/* Address */}
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder="Full address"
-                  rows={3}
-                />
-              </div>
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <Label htmlFor="address" className="text-sm">Address</Label>
+                    <Textarea
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => handleChange('address', e.target.value)}
+                      placeholder="Full address"
+                      rows={3}
+                    />
+                  </div>
 
-              {/* Actions */}
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => navigate('/patients')}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Add Patient
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </main>
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 order-2 sm:order-1"
+                      onClick={() => navigate('/patients')}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="flex-1 order-1 sm:order-2" disabled={isSubmitting}>
+                      {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Add Patient
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </FadeIn>
+        </main>
+      </PageTransition>
     </div>
   );
 }

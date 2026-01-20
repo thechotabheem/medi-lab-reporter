@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { PageTransition } from '@/components/ui/page-transition';
 import { 
   FlaskConical, 
   Users, 
@@ -48,16 +50,21 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <span className="text-xs sm:text-sm text-muted-foreground hidden md:block">
                 {profile?.full_name}
               </span>
+              <ThemeToggle />
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleSignOut}
                 className="text-xs sm:text-sm"
               >
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            </div>
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
               </Button>

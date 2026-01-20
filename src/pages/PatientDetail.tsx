@@ -11,6 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
+import { IconWrapper } from '@/components/ui/icon-wrapper';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageTransition, FadeIn } from '@/components/ui/page-transition';
+import { Skeleton, SkeletonList, SkeletonForm } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -30,8 +35,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  FlaskConical,
-  ArrowLeft,
   User,
   Phone,
   Mail,
@@ -43,6 +46,7 @@ import {
   X,
   FileText,
   Plus,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Patient, Gender } from '@/types/database';
@@ -93,10 +97,7 @@ export default function PatientDetail() {
 
   const handleSave = async () => {
     if (!patient?.id) return;
-    await updatePatient.mutateAsync({
-      id: patient.id,
-      ...editData,
-    } as any);
+    await updatePatient.mutateAsync({ id: patient.id, ...editData } as any);
     setIsEditing(false);
   };
 
@@ -108,329 +109,313 @@ export default function PatientDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="page-container">
+        <PageHeader title="Loading..." showBack backPath="/patients" />
+        <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <Card>
+                <CardHeader className="p-4 sm:p-6">
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-4 w-32 mt-2" />
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <SkeletonForm />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="p-4 sm:p-6">
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <SkeletonList count={3} />
+                </CardContent>
+              </Card>
+            </div>
+            <div className="space-y-4 sm:space-y-6">
+              <Card>
+                <CardContent className="p-4 sm:p-6 space-y-3">
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
   if (!patient) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Patient not found</p>
-            <Button onClick={() => navigate('/patients')} className="mt-4">
-              Back to Patients
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="page-container flex items-center justify-center">
+        <EmptyState
+          icon={User}
+          title="Patient not found"
+          description="The patient you're looking for doesn't exist or has been deleted."
+          actionLabel="Back to Patients"
+          onAction={() => navigate('/patients')}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/patients')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <User className="h-5 w-5 text-primary" />
+    <div className="page-container">
+      <PageHeader
+        title={`${patient.first_name} ${patient.last_name}`}
+        subtitle={patient.patient_id_number || 'No ID'}
+        icon={<User className="h-5 w-5" />}
+        showBack
+        backPath="/patients"
+        actions={
+          !isEditing && (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleEdit} className="text-xs sm:text-sm">
+                <Edit2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Edit</span>
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="text-xs sm:text-sm">
+                    <Trash2 className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="mx-4 max-w-md">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Patient?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete {patient.first_name} {patient.last_name} and all their reports.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
-            <div>
-              <h1 className="font-semibold">
-                {patient.first_name} {patient.last_name}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                {patient.patient_id_number || 'No ID'}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {!isEditing && (
-              <>
-                <Button variant="outline" size="sm" onClick={handleEdit}>
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Patient?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete {patient.first_name} {patient.last_name} and all their reports. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+          )
+        }
+      />
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Patient Info */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Patient Information</CardTitle>
-                <CardDescription>Personal and contact details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {isEditing ? (
-                  <>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label>First Name</Label>
-                        <Input
-                          value={editData.first_name || ''}
-                          onChange={(e) => setEditData({ ...editData, first_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Last Name</Label>
-                        <Input
-                          value={editData.last_name || ''}
-                          onChange={(e) => setEditData({ ...editData, last_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Date of Birth</Label>
-                        <Input
-                          type="date"
-                          value={editData.date_of_birth || ''}
-                          onChange={(e) => setEditData({ ...editData, date_of_birth: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Gender</Label>
-                        <Select
-                          value={editData.gender}
-                          onValueChange={(value: Gender) => setEditData({ ...editData, gender: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="male">Male</SelectItem>
-                            <SelectItem value="female">Female</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Patient ID</Label>
-                        <Input
-                          value={editData.patient_id_number || ''}
-                          onChange={(e) => setEditData({ ...editData, patient_id_number: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Phone</Label>
-                        <Input
-                          value={editData.phone || ''}
-                          onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2 sm:col-span-2">
-                        <Label>Email</Label>
-                        <Input
-                          type="email"
-                          value={editData.email || ''}
-                          onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2 sm:col-span-2">
-                        <Label>Address</Label>
-                        <Textarea
-                          value={editData.address || ''}
-                          onChange={(e) => setEditData({ ...editData, address: e.target.value })}
-                          rows={2}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-4">
-                      <Button onClick={handleSave} disabled={updatePatient.isPending}>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Changes
-                      </Button>
-                      <Button variant="outline" onClick={() => setIsEditing(false)}>
-                        <X className="h-4 w-4 mr-2" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Date of Birth</p>
-                        <p className="text-sm font-medium">
-                          {format(new Date(patient.date_of_birth), 'MMMM d, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Gender</p>
-                        <p className="text-sm font-medium capitalize">{patient.gender}</p>
-                      </div>
-                    </div>
-                    {patient.phone && (
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Phone</p>
-                          <p className="text-sm font-medium">{patient.phone}</p>
+      <PageTransition>
+        <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+            {/* Patient Info */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <FadeIn delay={100}>
+                <Card>
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-base sm:text-lg">Patient Information</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Personal and contact details</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
+                    {isEditing ? (
+                      <>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label className="text-sm">First Name</Label>
+                            <Input value={editData.first_name || ''} onChange={(e) => setEditData({ ...editData, first_name: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Last Name</Label>
+                            <Input value={editData.last_name || ''} onChange={(e) => setEditData({ ...editData, last_name: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Date of Birth</Label>
+                            <Input type="date" value={editData.date_of_birth || ''} onChange={(e) => setEditData({ ...editData, date_of_birth: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Gender</Label>
+                            <Select value={editData.gender} onValueChange={(value: Gender) => setEditData({ ...editData, gender: value })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="male">Male</SelectItem>
+                                <SelectItem value="female">Female</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Patient ID</Label>
+                            <Input value={editData.patient_id_number || ''} onChange={(e) => setEditData({ ...editData, patient_id_number: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Phone</Label>
+                            <Input value={editData.phone || ''} onChange={(e) => setEditData({ ...editData, phone: e.target.value })} />
+                          </div>
+                          <div className="space-y-2 sm:col-span-2">
+                            <Label className="text-sm">Email</Label>
+                            <Input type="email" value={editData.email || ''} onChange={(e) => setEditData({ ...editData, email: e.target.value })} />
+                          </div>
+                          <div className="space-y-2 sm:col-span-2">
+                            <Label className="text-sm">Address</Label>
+                            <Textarea value={editData.address || ''} onChange={(e) => setEditData({ ...editData, address: e.target.value })} rows={2} />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {patient.email && (
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Email</p>
-                          <p className="text-sm font-medium">{patient.email}</p>
+                        <div className="flex gap-2 pt-4">
+                          <Button onClick={handleSave} disabled={updatePatient.isPending} size="sm">
+                            {updatePatient.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                            Save
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                            <X className="h-4 w-4 mr-2" />Cancel
+                          </Button>
                         </div>
-                      </div>
-                    )}
-                    {patient.address && (
-                      <div className="flex items-start gap-3 sm:col-span-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Address</p>
-                          <p className="text-sm font-medium">{patient.address}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Reports History */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Report History</CardTitle>
-                  <CardDescription>{reports?.length || 0} reports found</CardDescription>
-                </div>
-                <Button size="sm" onClick={() => navigate('/reports/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Report
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {reportsLoading ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
-                    ))}
-                  </div>
-                ) : reports?.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">No reports yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {reports?.map((report) => (
-                      <div
-                        key={report.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
-                        onClick={() => navigate(`/reports/${report.id}`)}
-                      >
+                      </>
+                    ) : (
+                      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {getReportTypeName(report.report_type)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {report.report_number} • {format(new Date(report.test_date), 'MMM d, yyyy')}
-                            </p>
+                          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground">Date of Birth</p>
+                            <p className="text-sm font-medium">{format(new Date(patient.date_of_birth), 'MMMM d, yyyy')}</p>
                           </div>
                         </div>
-                        <Badge
-                          variant={
-                            report.status === 'completed'
-                              ? 'default'
-                              : report.status === 'verified'
-                              ? 'secondary'
-                              : 'outline'
-                          }
-                        >
-                          {report.status}
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                          <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div>
+                            <p className="text-xs text-muted-foreground">Gender</p>
+                            <p className="text-sm font-medium capitalize">{patient.gender}</p>
+                          </div>
+                        </div>
+                        {patient.phone && (
+                          <div className="flex items-center gap-3">
+                            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">Phone</p>
+                              <p className="text-sm font-medium truncate">{patient.phone}</p>
+                            </div>
+                          </div>
+                        )}
+                        {patient.email && (
+                          <div className="flex items-center gap-3">
+                            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">Email</p>
+                              <p className="text-sm font-medium truncate">{patient.email}</p>
+                            </div>
+                          </div>
+                        )}
+                        {patient.address && (
+                          <div className="flex items-start gap-3 sm:col-span-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Address</p>
+                              <p className="text-sm font-medium">{patient.address}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </FadeIn>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button className="w-full" onClick={() => navigate('/reports/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Report
-                </Button>
-              </CardContent>
-            </Card>
+              {/* Reports History */}
+              <FadeIn delay={200}>
+                <Card>
+                  <CardHeader className="p-4 sm:p-6 flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base sm:text-lg">Report History</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">{reports?.length || 0} reports found</CardDescription>
+                    </div>
+                    <Button size="sm" onClick={() => navigate('/reports/new')} className="text-xs sm:text-sm">
+                      <Plus className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">New Report</span>
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    {reportsLoading ? (
+                      <SkeletonList count={3} />
+                    ) : reports?.length === 0 ? (
+                      <div className="text-center py-8">
+                        <IconWrapper variant="muted" size="lg" className="mx-auto mb-3">
+                          <FileText className="h-6 w-6" />
+                        </IconWrapper>
+                        <p className="text-muted-foreground text-sm">No reports yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 sm:space-y-3">
+                        {reports?.map((report, index) => (
+                          <div
+                            key={report.id}
+                            className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/40 transition-all duration-200 cursor-pointer group animate-fade-in-up"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                            onClick={() => navigate(`/reports/${report.id}`)}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <IconWrapper size="default" className="shrink-0 group-hover:scale-105 transition-transform">
+                                <FileText className="h-4 w-4" />
+                              </IconWrapper>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium group-hover:text-primary transition-colors truncate">
+                                  {getReportTypeName(report.report_type)}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {report.report_number} • {format(new Date(report.test_date), 'MMM d, yyyy')}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge
+                              variant={
+                                report.status === 'completed' ? 'default' : report.status === 'verified' ? 'secondary' : 'outline'
+                              }
+                              className="text-2xs shrink-0"
+                            >
+                              {report.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Statistics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Reports</span>
-                  <span className="text-sm font-medium">{reports?.length || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Completed</span>
-                  <span className="text-sm font-medium">
-                    {reports?.filter((r) => r.status === 'completed').length || 0}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Drafts</span>
-                  <span className="text-sm font-medium">
-                    {reports?.filter((r) => r.status === 'draft').length || 0}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Sidebar */}
+            <div className="space-y-4 sm:space-y-6">
+              <FadeIn delay={300}>
+                <Card>
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-sm sm:text-base">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <Button className="w-full" onClick={() => navigate('/reports/new')} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Report
+                    </Button>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+
+              <FadeIn delay={400}>
+                <Card>
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-sm sm:text-base">Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0 space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Total Reports</span>
+                      <span className="text-xs sm:text-sm font-medium">{reports?.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Completed</span>
+                      <span className="text-xs sm:text-sm font-medium">{reports?.filter((r) => r.status === 'completed').length || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Drafts</span>
+                      <span className="text-xs sm:text-sm font-medium">{reports?.filter((r) => r.status === 'draft').length || 0}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </PageTransition>
     </div>
   );
 }
