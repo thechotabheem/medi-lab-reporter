@@ -9,7 +9,10 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
+import Reports from "./pages/Reports";
+import ReportView from "./pages/ReportView";
 import Patients from "./pages/Patients";
+import PatientDetail from "./pages/PatientDetail";
 import AddPatient from "./pages/AddPatient";
 import Settings from "./pages/Settings";
 import ClinicSettings from "./pages/ClinicSettings";
@@ -45,6 +48,22 @@ const App = () => (
               }
             />
             <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/:id"
+              element={
+                <ProtectedRoute>
+                  <ReportView />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/patients"
               element={
                 <ProtectedRoute>
@@ -57,6 +76,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AddPatient />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/:id"
+              element={
+                <ProtectedRoute>
+                  <PatientDetail />
                 </ProtectedRoute>
               }
             />
