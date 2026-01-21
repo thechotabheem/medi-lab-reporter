@@ -24,24 +24,24 @@ export function ActionCard({
   return (
     <Card
       className={cn(
-        "group cursor-pointer transition-all duration-300 ease-out",
+        "group cursor-pointer transition-all duration-300 ease-out h-full",
         "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
         "active:translate-y-0 active:shadow-md",
         className
       )}
       onClick={onClick}
     >
-      <CardHeader className="p-4 sm:p-6">
+      <CardHeader className="p-4 sm:p-6 h-full flex flex-col">
         <IconWrapper
           variant={iconVariant}
           size="lg"
-          className="mb-3 group-hover:scale-105 transition-transform duration-300"
+          className="mb-3 group-hover:scale-105 transition-transform duration-300 shrink-0"
         >
-          <Icon className="h-6 w-6" />
+          <Icon className="h-5 w-5" />
         </IconWrapper>
-        <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
+        <CardTitle className="text-sm sm:text-base font-semibold">{title}</CardTitle>
         {description && (
-          <CardDescription className="text-xs sm:text-sm line-clamp-2">
+          <CardDescription className="text-xs sm:text-sm line-clamp-2 mt-1 flex-1">
             {description}
           </CardDescription>
         )}
