@@ -1,5 +1,5 @@
 export type Gender = 'male' | 'female' | 'other';
-export type ReportType = 'blood_test' | 'urine_analysis' | 'hormone_immunology' | 'microbiology' | 'ultrasound';
+export type ReportType = 'blood_test' | 'urine_analysis' | 'screening_tests' | 'blood_group_typing';
 export type AppRole = 'admin' | 'lab_technician' | 'receptionist';
 export type ReportStatus = 'draft' | 'completed' | 'verified';
 

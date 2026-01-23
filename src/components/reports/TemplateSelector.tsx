@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { reportTemplates } from '@/lib/report-templates';
 import type { ReportType } from '@/types/database';
-import { Beaker, Droplets, Activity, Bug, Radio } from 'lucide-react';
+import { Beaker, Droplets, ShieldCheck, Droplet } from 'lucide-react';
 
 interface TemplateSelectorProps {
   onSelect: (type: ReportType) => void;
@@ -12,24 +12,22 @@ interface TemplateSelectorProps {
 const templateIcons: Record<ReportType, React.ReactNode> = {
   blood_test: <Beaker className="h-8 w-8" />,
   urine_analysis: <Droplets className="h-8 w-8" />,
-  hormone_immunology: <Activity className="h-8 w-8" />,
-  microbiology: <Bug className="h-8 w-8" />,
-  ultrasound: <Radio className="h-8 w-8" />,
+  screening_tests: <ShieldCheck className="h-8 w-8" />,
+  blood_group_typing: <Droplet className="h-8 w-8" />,
 };
 
 const templateDescriptions: Record<ReportType, string> = {
-  blood_test: 'CBC, Lipid Profile, Liver & Kidney Function, Blood Sugar',
+  blood_test: 'CBC, LFT, RFT, Lipid Profile, ESR, Blood Sugar, Serum Calcium',
   urine_analysis: 'Physical, Chemical, and Microscopic Examination',
-  hormone_immunology: 'Thyroid, Reproductive Hormones, Diabetes Markers',
-  microbiology: 'Culture, Gram Stain, Antibiotic Sensitivity',
-  ultrasound: 'Abdominal, Pelvic, and Other Ultrasound Reports',
+  screening_tests: 'MP, Typhoid, HCV, HBsAg, HIV, VDRL, H. Pylori',
+  blood_group_typing: 'Blood Group (ABO & Rh) and R.A Factor',
 };
 
 export const TemplateSelector = ({ onSelect, selectedType }: TemplateSelectorProps) => {
   const templates = Object.entries(reportTemplates) as [ReportType, typeof reportTemplates.blood_test][];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {templates.map(([type, template]) => (
         <Card
           key={type}
