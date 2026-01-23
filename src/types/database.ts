@@ -1,5 +1,26 @@
 export type Gender = 'male' | 'female' | 'other';
-export type ReportType = 'blood_test' | 'urine_analysis' | 'screening_tests' | 'blood_group_typing';
+export type ReportType = 
+  | 'blood_test' 
+  | 'urine_analysis' 
+  | 'screening_tests' 
+  | 'blood_group_typing'
+  | 'cbc'
+  | 'lft'
+  | 'rft'
+  | 'lipid_profile'
+  | 'esr'
+  | 'bsr'
+  | 'bsf'
+  | 'serum_calcium'
+  | 'mp'
+  | 'typhoid'
+  | 'hcv'
+  | 'hbsag'
+  | 'hiv'
+  | 'vdrl'
+  | 'h_pylori'
+  | 'blood_group'
+  | 'ra_factor';
 export type AppRole = 'admin' | 'lab_technician' | 'receptionist';
 export type ReportStatus = 'draft' | 'completed' | 'verified';
 

@@ -89,10 +89,23 @@ export default function Reports() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="blood_test">Value Based Tests</SelectItem>
-                  <SelectItem value="urine_analysis">Urine Analysis</SelectItem>
-                  <SelectItem value="screening_tests">Screening Tests</SelectItem>
-                  <SelectItem value="blood_group_typing">Blood Group & Typing</SelectItem>
+                  <SelectItem value="cbc">CBC</SelectItem>
+                  <SelectItem value="lft">LFT</SelectItem>
+                  <SelectItem value="rft">RFT</SelectItem>
+                  <SelectItem value="lipid_profile">Lipid Profile</SelectItem>
+                  <SelectItem value="esr">ESR</SelectItem>
+                  <SelectItem value="bsr">BSR</SelectItem>
+                  <SelectItem value="bsf">BSF</SelectItem>
+                  <SelectItem value="serum_calcium">Serum Calcium</SelectItem>
+                  <SelectItem value="mp">MP</SelectItem>
+                  <SelectItem value="typhoid">Typhoid</SelectItem>
+                  <SelectItem value="hcv">HCV</SelectItem>
+                  <SelectItem value="hbsag">HBsAg</SelectItem>
+                  <SelectItem value="hiv">HIV</SelectItem>
+                  <SelectItem value="vdrl">VDRL</SelectItem>
+                  <SelectItem value="h_pylori">H. Pylori</SelectItem>
+                  <SelectItem value="blood_group">Blood Group</SelectItem>
+                  <SelectItem value="ra_factor">R.A Factor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
