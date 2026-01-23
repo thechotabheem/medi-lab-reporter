@@ -84,16 +84,15 @@ export default function Reports() {
                 </SelectContent>
               </Select>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="blood_test">Blood Test</SelectItem>
+                  <SelectItem value="blood_test">Value Based Tests</SelectItem>
                   <SelectItem value="urine_analysis">Urine Analysis</SelectItem>
-                  <SelectItem value="hormone_immunology">Hormone</SelectItem>
-                  <SelectItem value="microbiology">Microbiology</SelectItem>
-                  <SelectItem value="ultrasound">Ultrasound</SelectItem>
+                  <SelectItem value="screening_tests">Screening Tests</SelectItem>
+                  <SelectItem value="blood_group_typing">Blood Group & Typing</SelectItem>
                 </SelectContent>
               </Select>
             </div>

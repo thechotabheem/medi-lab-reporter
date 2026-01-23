@@ -286,6 +286,8 @@ export type Database = {
         | "hormone_immunology"
         | "microbiology"
         | "ultrasound"
+        | "screening_tests"
+        | "blood_group_typing"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -421,6 +423,8 @@ export const Constants = {
         "hormone_immunology",
         "microbiology",
         "ultrasound",
+        "screening_tests",
+        "blood_group_typing",
       ],
     },
   },
