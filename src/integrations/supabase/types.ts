@@ -288,6 +288,23 @@ export type Database = {
         | "ultrasound"
         | "screening_tests"
         | "blood_group_typing"
+        | "cbc"
+        | "lft"
+        | "rft"
+        | "lipid_profile"
+        | "esr"
+        | "bsr"
+        | "bsf"
+        | "serum_calcium"
+        | "mp"
+        | "typhoid"
+        | "hcv"
+        | "hbsag"
+        | "hiv"
+        | "vdrl"
+        | "h_pylori"
+        | "blood_group"
+        | "ra_factor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -425,6 +442,23 @@ export const Constants = {
         "ultrasound",
         "screening_tests",
         "blood_group_typing",
+        "cbc",
+        "lft",
+        "rft",
+        "lipid_profile",
+        "esr",
+        "bsr",
+        "bsf",
+        "serum_calcium",
+        "mp",
+        "typhoid",
+        "hcv",
+        "hbsag",
+        "hiv",
+        "vdrl",
+        "h_pylori",
+        "blood_group",
+        "ra_factor",
       ],
     },
   },
