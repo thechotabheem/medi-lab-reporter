@@ -146,7 +146,7 @@ export default function CreateReport() {
   const patientDisplayName = getPatientDisplayName();
 
   return (
-    <div className="page-container pb-24">
+    <div className="page-container pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
       <PageHeader title="Create New Report" subtitle="Fill in all sections to create a report" showBack backPath="/dashboard" />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 space-y-6">
