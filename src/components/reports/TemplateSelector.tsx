@@ -78,12 +78,12 @@ export const TemplateSelector = ({ onSelect, selectedType }: TemplateSelectorPro
               return (
                 <Card
                   key={type}
-                  className={`cursor-pointer transition-all hover:border-primary hover:shadow-md ${
+                  className={`cursor-pointer transition-all hover:border-primary hover:shadow-md min-h-[120px] ${
                     selectedType === type ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary' : ''
                   }`}
                   onClick={() => onSelect(type)}
                 >
-                  <CardHeader className="p-4 pb-2">
+                  <CardHeader className="p-3 sm:p-4 pb-2">
                     <div className="flex items-center justify-between">
                       <div className={`p-2 rounded-lg ${selectedType === type ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                         {templateIcons[type]}
@@ -92,9 +92,9 @@ export const TemplateSelector = ({ onSelect, selectedType }: TemplateSelectorPro
                         <Badge variant="default" className="text-xs">✓</Badge>
                       )}
                     </div>
-                    <CardTitle className="text-sm mt-2 leading-tight">{template.name}</CardTitle>
+                    <CardTitle className="text-xs sm:text-sm mt-2 leading-tight">{template.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-4 pt-0">
+                  <CardContent className="p-3 sm:p-4 pt-0">
                     <p className="text-xs text-muted-foreground">
                       {template.categories[0]?.fields.length || 0} fields
                     </p>

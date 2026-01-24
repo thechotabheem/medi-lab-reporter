@@ -123,9 +123,10 @@ export const DynamicReportForm = ({
     const status = getNormalRangeStatus(field, formValues[field.name]);
 
     return (
-      <div key={field.name} className="grid grid-cols-12 gap-4 items-center py-2 border-b last:border-0">
-        <div className="col-span-4">
-          <Label className="flex items-center gap-2">
+      <div key={field.name} className="flex flex-col gap-2 py-3 border-b last:border-0 md:grid md:grid-cols-12 md:gap-4 md:items-center md:py-2">
+        {/* Test Label */}
+        <div className="md:col-span-4">
+          <Label className="flex items-center gap-2 text-sm font-medium">
             {field.label}
             {field.calculated && (
               <Badge variant="secondary" className="text-xs">
@@ -136,7 +137,8 @@ export const DynamicReportForm = ({
           </Label>
         </div>
 
-        <div className="col-span-4">
+        {/* Result Input */}
+        <div className="md:col-span-4">
           <Controller
             name={field.name}
             control={control}
@@ -195,18 +197,21 @@ export const DynamicReportForm = ({
           />
         </div>
 
-        <div className="col-span-3 text-sm text-muted-foreground">
-          {formatNormalRange(field)}
-          {field.unit && ` ${field.unit}`}
-        </div>
+        {/* Normal Range & Status - stacked on mobile, inline on desktop */}
+        <div className="flex items-center justify-between gap-2 md:col-span-4 md:contents">
+          <span className="text-xs text-muted-foreground md:col-span-3 md:text-sm">
+            {formatNormalRange(field)}
+            {field.unit && ` ${field.unit}`}
+          </span>
 
-        <div className="col-span-1 flex justify-center">
-          {status === 'normal' && (
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          )}
-          {status === 'abnormal' && (
-            <AlertCircle className="h-5 w-5 text-destructive" />
-          )}
+          <div className="flex items-center gap-1 md:col-span-1 md:justify-center">
+            {status === 'normal' && (
+              <CheckCircle className="h-4 w-4 text-green-500 md:h-5 md:w-5" />
+            )}
+            {status === 'abnormal' && (
+              <AlertCircle className="h-4 w-4 text-destructive md:h-5 md:w-5" />
+            )}
+          </div>
         </div>
       </div>
     );
@@ -227,7 +232,8 @@ export const DynamicReportForm = ({
             </AccordionTrigger>
             <AccordionContent>
               <Card className="border-0 shadow-none">
-                <CardHeader className="px-0 py-2">
+                {/* Table header - hidden on mobile */}
+                <CardHeader className="hidden md:block px-0 py-2">
                   <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground">
                     <div className="col-span-4">Test</div>
                     <div className="col-span-4">Result</div>

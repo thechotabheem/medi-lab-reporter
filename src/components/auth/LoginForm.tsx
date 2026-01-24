@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,7 +20,7 @@ interface LoginFormProps {
   onSwitchToSignup: () => void;
 }
 
-export const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
+export const LoginForm = React.forwardRef<HTMLFormElement, LoginFormProps>(({ onSwitchToSignup }, ref) => {
   const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +53,7 @@ export const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form ref={ref} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -118,4 +118,6 @@ export const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
       </p>
     </form>
   );
-};
+});
+
+LoginForm.displayName = 'LoginForm';
