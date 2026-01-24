@@ -6,19 +6,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
-import { PatientSelector } from '@/components/reports/PatientSelector';
+import { PatientSelector, NewPatientData } from '@/components/reports/PatientSelector';
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
-import { useCreateReport } from '@/hooks/useReports';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
 import type { Patient, ReportType } from '@/types/database';
 import { Check, Save } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CreateReport() {
   const navigate = useNavigate();
-  const createReport = useCreateReport();
+  const { profile, user } = useAuth();
+  const queryClient = useQueryClient();
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [newPatientData, setNewPatientData] = useState<NewPatientData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ReportType | null>(null);
   const [reportDetails, setReportDetails] = useState({
     referring_doctor: '',
@@ -26,28 +31,119 @@ export default function CreateReport() {
     test_date: new Date().toISOString().split('T')[0],
   });
   const [reportData, setReportData] = useState<Record<string, string | number | boolean | null>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleReportDataChange = useCallback((data: Record<string, string | number | boolean | null>) => {
     setReportData(data);
   }, []);
 
-  const canSave = selectedPatient && selectedTemplate && reportDetails.test_date;
+  // Can save if we have (existing patient OR valid new patient data) AND a template AND test date
+  const canSave = (selectedPatient || newPatientData) && selectedTemplate && reportDetails.test_date;
+
+  // Get display name for patient section
+  const getPatientDisplayName = () => {
+    if (selectedPatient) {
+      return `${selectedPatient.first_name} ${selectedPatient.last_name}`;
+    }
+    if (newPatientData) {
+      return `${newPatientData.first_name} ${newPatientData.last_name} (new)`;
+    }
+    return null;
+  };
+
+  // Get patient for the form (use a mock patient object for new patients to calculate reference ranges)
+  const getPatientForForm = (): Patient | null => {
+    if (selectedPatient) return selectedPatient;
+    if (newPatientData) {
+      return {
+        id: 'new',
+        clinic_id: profile?.clinic_id || '',
+        first_name: newPatientData.first_name,
+        last_name: newPatientData.last_name,
+        date_of_birth: newPatientData.date_of_birth,
+        gender: newPatientData.gender,
+        phone: newPatientData.phone || null,
+        patient_id_number: newPatientData.patient_id_number || null,
+        email: null,
+        address: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    }
+    return null;
+  };
 
   const handleSave = async (status: 'draft' | 'completed') => {
-    if (!selectedPatient || !selectedTemplate) return;
+    if (!profile?.clinic_id || !selectedTemplate) return;
+
+    setIsSaving(true);
+
     try {
-      await createReport.mutateAsync({
-        patient_id: selectedPatient.id,
-        report_type: selectedTemplate,
-        report_data: reportData,
-        referring_doctor: reportDetails.referring_doctor || undefined,
-        clinical_notes: reportDetails.clinical_notes || undefined,
-        test_date: reportDetails.test_date,
-        status,
-      });
+      let patientId: string;
+
+      // If new patient, create them first
+      if (newPatientData && !selectedPatient) {
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients')
+          .insert({
+            clinic_id: profile.clinic_id,
+            first_name: newPatientData.first_name,
+            last_name: newPatientData.last_name,
+            date_of_birth: newPatientData.date_of_birth,
+            gender: newPatientData.gender,
+            phone: newPatientData.phone || null,
+            patient_id_number: newPatientData.patient_id_number || null,
+          })
+          .select()
+          .single();
+
+        if (patientError) throw patientError;
+        patientId = newPatient.id;
+        
+        // Invalidate patients query so the list updates
+        queryClient.invalidateQueries({ queryKey: ['patients'] });
+      } else if (selectedPatient) {
+        patientId = selectedPatient.id;
+      } else {
+        throw new Error('No patient selected');
+      }
+
+      // Generate report number
+      const reportNumber = `RPT-${Date.now().toString(36).toUpperCase()}`;
+
+      // Create the report
+      const { error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          clinic_id: profile.clinic_id,
+          created_by: user?.id,
+          report_number: reportNumber,
+          patient_id: patientId,
+          report_type: selectedTemplate,
+          report_data: reportData,
+          referring_doctor: reportDetails.referring_doctor || null,
+          clinical_notes: reportDetails.clinical_notes || null,
+          test_date: reportDetails.test_date,
+          status,
+        });
+
+      if (reportError) throw reportError;
+
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      toast.success(newPatientData && !selectedPatient 
+        ? 'Patient registered and report created successfully' 
+        : 'Report created successfully'
+      );
       navigate('/dashboard');
-    } catch (error) {}
+    } catch (error: any) {
+      toast.error('Failed to save: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const patientForForm = getPatientForForm();
+  const patientDisplayName = getPatientDisplayName();
 
   return (
     <div className="page-container pb-24">
@@ -57,11 +153,16 @@ export default function CreateReport() {
         {/* Section 1: Patient Selection */}
         <Card>
           <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">1. Select Patient</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Choose the patient for this report</CardDescription>
+            <CardTitle className="text-base sm:text-lg">1. Patient</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Add a new patient or select an existing one</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
-            <PatientSelector onSelect={setSelectedPatient} selectedPatient={selectedPatient} />
+            <PatientSelector 
+              onSelect={setSelectedPatient} 
+              selectedPatient={selectedPatient}
+              onNewPatientChange={setNewPatientData}
+              newPatientData={newPatientData}
+            />
           </CardContent>
         </Card>
 
@@ -81,8 +182,8 @@ export default function CreateReport() {
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg">3. Report Details</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              {selectedTemplate && selectedPatient
-                ? `${getReportTypeName(selectedTemplate)} for ${selectedPatient.first_name} ${selectedPatient.last_name}`
+              {selectedTemplate && patientDisplayName
+                ? `${getReportTypeName(selectedTemplate)} for ${patientDisplayName}`
                 : 'Add additional information'}
             </CardDescription>
           </CardHeader>
@@ -121,7 +222,7 @@ export default function CreateReport() {
         </Card>
 
         {/* Section 4: Test Results - Only show when patient and template are selected */}
-        {selectedTemplate && selectedPatient && (
+        {selectedTemplate && patientForForm && (
           <Card>
             <CardHeader className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -130,14 +231,14 @@ export default function CreateReport() {
                   <CardDescription className="text-xs sm:text-sm">Abnormal values will be highlighted</CardDescription>
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">
-                  Patient: <span className="font-medium text-foreground">{selectedPatient.first_name} {selectedPatient.last_name}</span>
+                  Patient: <span className="font-medium text-foreground">{patientDisplayName}</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0">
               <DynamicReportForm
                 reportType={selectedTemplate}
-                patient={selectedPatient}
+                patient={patientForForm}
                 onChange={handleReportDataChange}
                 initialData={reportData}
               />
@@ -154,7 +255,7 @@ export default function CreateReport() {
               variant="outline"
               size="sm"
               onClick={() => handleSave('draft')}
-              disabled={!canSave || createReport.isPending}
+              disabled={!canSave || isSaving}
               className="text-xs sm:text-sm"
             >
               <Save className="h-4 w-4 sm:mr-2" />
@@ -163,10 +264,10 @@ export default function CreateReport() {
             <Button
               size="sm"
               onClick={() => handleSave('completed')}
-              disabled={!canSave || createReport.isPending}
+              disabled={!canSave || isSaving}
               className="text-xs sm:text-sm"
             >
-              {createReport.isPending ? (
+              {isSaving ? (
                 <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
               ) : (
                 <Check className="h-4 w-4 sm:mr-2" />
