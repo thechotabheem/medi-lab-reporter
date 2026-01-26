@@ -4,22 +4,58 @@ import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { reportTemplates, getReportTypeName } from './report-templates';
 
+interface ClinicWithBranding {
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  logo_url?: string | null;
+  header_text?: string | null;
+  footer_text?: string | null;
+  watermark_text?: string | null;
+  enable_qr_code?: boolean;
+  accent_color?: string | null;
+}
+
 interface GeneratePDFOptions {
   report: Report;
   patient: Patient;
-  clinic?: Clinic | null;
+  clinic?: ClinicWithBranding | null;
+  reportUrl?: string; // URL for QR code
 }
 
-// Colors
-const COLORS = {
-  primary: [0, 150, 136] as [number, number, number],      // Teal
-  primaryDark: [0, 121, 107] as [number, number, number],  // Dark Teal
-  destructive: [220, 38, 38] as [number, number, number],  // Red
-  success: [22, 163, 74] as [number, number, number],      // Green
-  text: [30, 30, 30] as [number, number, number],          // Dark text
-  textMuted: [100, 100, 100] as [number, number, number],  // Muted text
-  border: [200, 200, 200] as [number, number, number],     // Light border
-  background: [248, 250, 252] as [number, number, number], // Light background
+// Helper to parse hex color to RGB
+const hexToRgb = (hex: string): [number, number, number] => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (result) {
+    return [
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16),
+    ];
+  }
+  return [0, 150, 136]; // Default teal
+};
+
+// Helper to darken a color
+const darkenColor = (rgb: [number, number, number], factor: number = 0.8): [number, number, number] => {
+  return [
+    Math.round(rgb[0] * factor),
+    Math.round(rgb[1] * factor),
+    Math.round(rgb[2] * factor),
+  ];
+};
+
+// Default colors
+const DEFAULT_COLORS = {
+  primary: [0, 150, 136] as [number, number, number],
+  primaryDark: [0, 121, 107] as [number, number, number],
+  destructive: [220, 38, 38] as [number, number, number],
+  success: [22, 163, 74] as [number, number, number],
+  text: [30, 30, 30] as [number, number, number],
+  textMuted: [100, 100, 100] as [number, number, number],
+  border: [200, 200, 200] as [number, number, number],
+  background: [248, 250, 252] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
 };
 
@@ -109,10 +145,20 @@ const loadImageAsBase64 = async (url: string): Promise<string | null> => {
   }
 };
 
-export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDFOptions): Promise<jsPDF> => {
+export const generateReportPDF = async ({ report, patient, clinic, reportUrl }: GeneratePDFOptions): Promise<jsPDF> => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Get colors from clinic accent color or use defaults
+  const accentColor = clinic?.accent_color ? hexToRgb(clinic.accent_color) : DEFAULT_COLORS.primary;
+  const accentColorDark = darkenColor(accentColor);
+  
+  const COLORS = {
+    ...DEFAULT_COLORS,
+    primary: accentColor,
+    primaryDark: accentColorDark,
+  };
   
   // Pre-load logo if available
   let logoBase64: string | null = null;
@@ -123,7 +169,34 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
   // Page tracking for "Page X of Y"
   const pageNumbers: { x: number; y: number; page: number }[] = [];
 
-  // Function to draw header on a page
+  // Function to draw watermark on a page
+  const drawWatermark = (pageNum: number) => {
+    if (!clinic?.watermark_text) return;
+    
+    doc.setPage(pageNum);
+    doc.saveGraphicsState();
+    
+    // Set watermark style
+    doc.setFontSize(50);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(200, 200, 200); // Light gray
+    
+    // Draw diagonal watermark
+    const text = clinic.watermark_text.toUpperCase();
+    const textWidth = doc.getTextWidth(text);
+    
+    // Center the watermark
+    const centerX = pageWidth / 2;
+    const centerY = pageHeight / 2;
+    
+    // Rotate and draw
+    doc.text(text, centerX, centerY, {
+      align: 'center',
+      angle: 45,
+    });
+    
+    doc.restoreGraphicsState();
+  };
   const drawHeader = (pageNum: number, isFirstPage: boolean) => {
     doc.setPage(pageNum);
     let yPos = MARGIN;
@@ -511,10 +584,11 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
   doc.setTextColor(...COLORS.primary);
   doc.text('--- End of Report ---', pageWidth / 2, yPos, { align: 'center' });
 
-  // ============ DRAW ALL FOOTERS ============
+  // ============ DRAW ALL FOOTERS AND WATERMARKS ============
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     drawFooter(i);
+    drawWatermark(i);
   }
 
   // ============ ADD PAGE NUMBERS ============

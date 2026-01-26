@@ -11,6 +11,7 @@ import {
   Settings as SettingsIcon,
   Building2,
   Bell,
+  FileText,
 } from 'lucide-react';
 
 export default function Settings() {
@@ -53,6 +54,34 @@ export default function Settings() {
                     onClick={() => navigate('/settings/clinic')}
                   >
                     Manage Clinic Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
+
+            {/* Template Customization */}
+            <FadeIn delay={150}>
+              <Card>
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3">
+                    <IconWrapper variant="default" size="default">
+                      <FileText className="h-5 w-5" />
+                    </IconWrapper>
+                    <div>
+                      <CardTitle className="text-base sm:text-lg">Report Templates</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        Customize test fields and normal ranges
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => navigate('/settings/templates')}
+                  >
+                    Customize Templates
                   </Button>
                 </CardContent>
               </Card>

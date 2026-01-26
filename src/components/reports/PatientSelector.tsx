@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePatients } from '@/hooks/usePatients';
-import { Search, User, Phone, UserPlus } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
+import { Search, User, Phone, UserPlus, Loader2 } from 'lucide-react';
 import type { Patient, Gender } from '@/types/database';
 import { calculateAgeFromDOB } from '@/lib/utils';
 
@@ -40,6 +41,7 @@ export const PatientSelector = ({
 }: PatientSelectorProps) => {
   const { data: patients, isLoading } = usePatients();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [activeTab, setActiveTab] = useState<string>(selectedPatient ? 'existing' : 'new');
   
   const [newPatient, setNewPatient] = useState<NewPatientData>({
@@ -50,14 +52,19 @@ export const PatientSelector = ({
     patient_id_number: newPatientData?.patient_id_number || '',
   });
 
-  const filteredPatients = patients?.filter((patient) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
+  const filteredPatients = useMemo(() => {
+    if (!patients) return [];
+    if (!debouncedSearchTerm) return patients;
+    
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    return patients.filter((patient) => (
       patient.full_name.toLowerCase().includes(searchLower) ||
       patient.patient_id_number?.toLowerCase().includes(searchLower) ||
-      patient.phone?.includes(searchTerm)
-    );
-  });
+      patient.phone?.includes(debouncedSearchTerm)
+    ));
+  }, [patients, debouncedSearchTerm]);
+
+  const isSearching = searchTerm !== debouncedSearchTerm;
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -185,7 +192,11 @@ export const PatientSelector = ({
         ) : (
           <>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              {isSearching ? (
+                <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+              ) : (
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              )}
               <Input
                 placeholder="Search patients by name, ID, or phone..."
                 value={searchTerm}

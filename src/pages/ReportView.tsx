@@ -47,10 +47,12 @@ import {
   MapPin,
   Check,
   X,
+  Printer,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { reportTemplates, getReportTypeName } from '@/lib/report-templates';
+import '@/styles/print.css';
 
 const calculateAge = (dateOfBirth: string): string => {
   const today = new Date();
@@ -126,6 +128,10 @@ export default function ReportView() {
     } finally {
       setIsGeneratingPDF(false);
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleDelete = async () => {
@@ -248,7 +254,11 @@ export default function ReportView() {
         icon={<FileText className="h-5 w-5" />}
         showBack
         actions={
-          <div className="flex gap-1 sm:gap-2">
+          <div className="flex gap-1 sm:gap-2 print-hide">
+            <Button variant="outline" size="sm" onClick={handlePrint} className="text-xs sm:text-sm">
+              <Printer className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
             <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={isGeneratingPDF} className="text-xs sm:text-sm">
               {isGeneratingPDF ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 sm:mr-2" />}
               <span className="hidden sm:inline">PDF</span>
