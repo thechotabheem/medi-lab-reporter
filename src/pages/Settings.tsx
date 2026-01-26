@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,13 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import {
   Settings as SettingsIcon,
   Building2,
   Bell,
-  Palette,
 } from 'lucide-react';
 
 export default function Settings() {
@@ -122,31 +119,6 @@ export default function Settings() {
                       checked={notificationSettings.newPatients}
                       onCheckedChange={(checked) => updateSetting('newPatients', checked)}
                     />
-                  </div>
-                </CardContent>
-              </Card>
-            </FadeIn>
-
-            {/* Appearance Settings */}
-            <FadeIn delay={300}>
-              <Card>
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex items-center gap-3">
-                    <IconWrapper variant="muted" size="default">
-                      <Palette className="h-5 w-5" />
-                    </IconWrapper>
-                    <div>
-                      <CardTitle className="text-base sm:text-lg">Appearance</CardTitle>
-                      <CardDescription className="text-xs sm:text-sm">
-                        Customize the look and feel
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
-                  <div className="space-y-3">
-                    <Label className="text-sm">Theme</Label>
-                    <ThemeToggle variant="inline" />
                   </div>
                 </CardContent>
               </Card>
