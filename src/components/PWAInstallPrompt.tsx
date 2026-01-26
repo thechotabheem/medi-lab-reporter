@@ -13,8 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MonitorSmartphone, Check, ExternalLink } from "lucide-react";
+import { MonitorSmartphone, Check, ExternalLink, ArrowRight } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Link } from "react-router-dom";
 
 export const PWAInstallPrompt = () => {
   const { canInstall, isInstalled, triggerInstall } = usePWAInstall();
@@ -105,6 +106,15 @@ export const PWAInstallPrompt = () => {
             <p className="text-xs text-muted-foreground">
               Note: The install button only works when opening the app directly in Chrome or Edge browsers, not in embedded previews.
             </p>
+
+            <div className="pt-2 border-t">
+              <Button variant="outline" className="w-full" asChild onClick={() => setShowInstructions(false)}>
+                <Link to="/install">
+                  View Full Installation Guide
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
