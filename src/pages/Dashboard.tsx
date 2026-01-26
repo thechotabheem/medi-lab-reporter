@@ -50,8 +50,11 @@ export default function Dashboard() {
         </div>
       </header>
       
-      {/* Decorative Divider */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      {/* Decorative Divider with Glow */}
+      <div className="relative">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="absolute inset-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
+      </div>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:py-8">
@@ -62,6 +65,14 @@ export default function Dashboard() {
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's an overview of your lab activity
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-2">
+            {new Date().toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
           </p>
         </div>
 
