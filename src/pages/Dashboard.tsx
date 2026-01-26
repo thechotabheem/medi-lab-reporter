@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClinic } from '@/contexts/ClinicContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useWeather } from '@/hooks/useWeather';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { clinic } = useClinic();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { weather } = useWeather();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -83,18 +85,30 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's an overview of your lab activity
           </p>
-          <p className="text-xs text-muted-foreground/70 mt-2">
-            {currentTime.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-            <span className="mx-2">•</span>
-            {currentTime.toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit'
-            })}
+          <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
+            <span>
+              {currentTime.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </span>
+            <span>•</span>
+            <span>
+              {currentTime.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+              })}
+            </span>
+            {weather && (
+              <>
+                <span>•</span>
+                <span className="inline-flex items-center gap-1">
+                  {weather.icon} {weather.temperature}°C {weather.description}
+                </span>
+              </>
+            )}
           </p>
         </div>
 
