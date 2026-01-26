@@ -34,6 +34,13 @@ export default function Dashboard() {
 
   const clinicName = clinic?.name || 'Medical Lab';
 
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   return (
     <div className="page-container">
       {/* Header */}
@@ -71,7 +78,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Welcome to <span className="text-gradient-primary">{clinicName}!</span>
+            {getGreeting()}! Welcome to <span className="text-gradient-primary">{clinicName}</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's an overview of your lab activity
