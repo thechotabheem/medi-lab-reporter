@@ -8,7 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-interface PWAInstallState {
+export interface PWAInstallState {
   canInstall: boolean;
   isInstalled: boolean;
   hasPrompt: boolean;
@@ -21,17 +21,48 @@ let isInstalled = false;
 let lastEventAt: number | null = null;
 const listeners = new Set<() => void>();
 
+// Memoized snapshot to prevent infinite re-renders
+let cachedSnapshot: PWAInstallState = {
+  canInstall: false,
+  isInstalled: false,
+  hasPrompt: false,
+  lastEventAt: null,
+};
+
 // Check if already installed via display-mode
 const checkInstalled = (): boolean => {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(display-mode: standalone)").matches;
 };
 
+// Update the cached snapshot
+const updateSnapshot = () => {
+  const newCanInstall = !!deferredPrompt && !isInstalled;
+  const newHasPrompt = !!deferredPrompt;
+  
+  // Only create a new object if values actually changed
+  if (
+    cachedSnapshot.canInstall !== newCanInstall ||
+    cachedSnapshot.isInstalled !== isInstalled ||
+    cachedSnapshot.hasPrompt !== newHasPrompt ||
+    cachedSnapshot.lastEventAt !== lastEventAt
+  ) {
+    cachedSnapshot = {
+      canInstall: newCanInstall,
+      isInstalled,
+      hasPrompt: newHasPrompt,
+      lastEventAt,
+    };
+  }
+};
+
 // Initialize installed state
 isInstalled = checkInstalled();
+updateSnapshot();
 
 // Notify all subscribers
 const notify = () => {
+  updateSnapshot();
   listeners.forEach((listener) => listener());
 };
 
@@ -64,15 +95,10 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Get the current PWA install state snapshot
+ * Get the current PWA install state snapshot (memoized)
  */
 export function getSnapshot(): PWAInstallState {
-  return {
-    canInstall: !!deferredPrompt && !isInstalled,
-    isInstalled,
-    hasPrompt: !!deferredPrompt,
-    lastEventAt,
-  };
+  return cachedSnapshot;
 }
 
 /**
