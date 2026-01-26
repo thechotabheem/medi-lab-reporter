@@ -23,6 +23,11 @@ const COLORS = {
   white: [255, 255, 255] as [number, number, number],
 };
 
+// Page margins and constants
+const MARGIN = 15;
+const HEADER_HEIGHT = 35;
+const FOOTER_HEIGHT = 20;
+
 const getValueStatus = (
   value: number | string | null | undefined,
   field: { normalRange?: { min?: number; max?: number; male?: { min?: number; max?: number }; female?: { min?: number; max?: number } } },
@@ -86,64 +91,160 @@ const calculateAge = (dateOfBirth: string): string => {
   return `${age} years`;
 };
 
+// Load image and convert to base64
+const loadImageAsBase64 = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
 export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDFOptions): Promise<jsPDF> => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
-  let yPos = margin;
-
-  // ============ HEADER / LETTERHEAD ============
   
-  // Clinic Name
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text(clinic?.name || 'Medical Laboratory', pageWidth / 2, yPos, { align: 'center' });
-  yPos += 7;
-
-  // Header Text (tagline)
-  if (clinic?.header_text) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(...COLORS.textMuted);
-    const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - margin * 2);
-    doc.text(headerLines, pageWidth / 2, yPos, { align: 'center' });
-    yPos += headerLines.length * 4 + 2;
+  // Pre-load logo if available
+  let logoBase64: string | null = null;
+  if (clinic?.logo_url) {
+    logoBase64 = await loadImageAsBase64(clinic.logo_url);
   }
 
-  // Contact Info Line
-  if (clinic?.address || clinic?.phone || clinic?.email) {
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.textMuted);
-    const contactParts = [clinic?.address, clinic?.phone, clinic?.email].filter(Boolean);
-    doc.text(contactParts.join('  |  '), pageWidth / 2, yPos, { align: 'center' });
-    yPos += 6;
-  }
+  // Page tracking for "Page X of Y"
+  const pageNumbers: { x: number; y: number; page: number }[] = [];
 
-  // Decorative Header Line
-  doc.setDrawColor(...COLORS.primary);
-  doc.setLineWidth(1.5);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 2;
-  doc.setLineWidth(0.5);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 8;
+  // Function to draw header on a page
+  const drawHeader = (pageNum: number, isFirstPage: boolean) => {
+    doc.setPage(pageNum);
+    let yPos = MARGIN;
+
+    if (isFirstPage) {
+      // Full header on first page
+      // Logo + Clinic Name
+      let nameStartX = pageWidth / 2;
+      
+      if (logoBase64) {
+        try {
+          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 5, 20, 20);
+          nameStartX = (pageWidth + 25) / 2;
+        } catch {
+          // Logo failed, continue without
+        }
+      }
+
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.primaryDark);
+      doc.text(clinic?.name || 'Medical Laboratory', nameStartX, yPos + 5, { align: 'center' });
+      yPos += 10;
+
+      // Header Text (tagline)
+      if (clinic?.header_text) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(...COLORS.textMuted);
+        const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - MARGIN * 2 - 30);
+        doc.text(headerLines, pageWidth / 2, yPos, { align: 'center' });
+        yPos += headerLines.length * 4 + 2;
+      }
+
+      // Contact Info Line
+      if (clinic?.address || clinic?.phone || clinic?.email) {
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...COLORS.textMuted);
+        const contactParts = [clinic?.address, clinic?.phone, clinic?.email].filter(Boolean);
+        doc.text(contactParts.join('  |  '), pageWidth / 2, yPos, { align: 'center' });
+        yPos += 6;
+      }
+
+      // Decorative Header Line
+      doc.setDrawColor(...COLORS.primary);
+      doc.setLineWidth(1.5);
+      doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+      yPos += 2;
+      doc.setLineWidth(0.5);
+      doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+    } else {
+      // Compact header for continuation pages
+      if (logoBase64) {
+        try {
+          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 3, 12, 12);
+        } catch {
+          // Logo failed
+        }
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.primaryDark);
+      const headerX = logoBase64 ? MARGIN + 15 : MARGIN;
+      doc.text(clinic?.name || 'Medical Laboratory', headerX, yPos + 5);
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.textMuted);
+      doc.text(`Report #: ${report.report_number}`, pageWidth - MARGIN, yPos + 5, { align: 'right' });
+      
+      // Simple line
+      yPos += 10;
+      doc.setDrawColor(...COLORS.primary);
+      doc.setLineWidth(0.5);
+      doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+    }
+  };
+
+  // Function to draw footer on a page
+  const drawFooter = (pageNum: number) => {
+    doc.setPage(pageNum);
+    const footerY = pageHeight - FOOTER_HEIGHT;
+    
+    // Footer line
+    doc.setDrawColor(...COLORS.primary);
+    doc.setLineWidth(0.5);
+    doc.line(MARGIN, footerY, pageWidth - MARGIN, footerY);
+    
+    // Footer text
+    if (clinic?.footer_text) {
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(...COLORS.textMuted);
+      doc.text(clinic.footer_text, pageWidth / 2, footerY + 5, { align: 'center' });
+    }
+
+    // Store position for page number (will be filled in later)
+    pageNumbers.push({ x: pageWidth / 2, y: footerY + 12, page: pageNum });
+  };
+
+  let yPos = MARGIN;
+
+  // ============ FIRST PAGE HEADER ============
+  drawHeader(1, true);
+  yPos = MARGIN + HEADER_HEIGHT;
 
   // ============ REPORT TITLE BAR ============
   
   doc.setFillColor(...COLORS.primary);
-  doc.rect(margin, yPos, pageWidth - margin * 2, 10, 'F');
+  doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 10, 'F');
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.white);
-  doc.text(getReportTypeName(report.report_type), margin + 5, yPos + 7);
+  doc.text(getReportTypeName(report.report_type), MARGIN + 5, yPos + 7);
   
   // Report number on right
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Report #: ${report.report_number}`, pageWidth - margin - 5, yPos + 7, { align: 'right' });
+  doc.text(`Report #: ${report.report_number}`, pageWidth - MARGIN - 5, yPos + 7, { align: 'right' });
   yPos += 15;
 
   // ============ PATIENT & REPORT INFO ============
@@ -151,9 +252,9 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
   doc.setFillColor(...COLORS.background);
   doc.setDrawColor(...COLORS.border);
   doc.setLineWidth(0.3);
-  doc.rect(margin, yPos, pageWidth - margin * 2, 24, 'FD');
+  doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 24, 'FD');
 
-  const leftCol = margin + 5;
+  const leftCol = MARGIN + 5;
   const rightCol = pageWidth / 2 + 5;
   let infoY = yPos + 5;
 
@@ -195,14 +296,14 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.primary);
-    doc.text('CLINICAL NOTES', margin, yPos);
+    doc.text('CLINICAL NOTES', MARGIN, yPos);
     yPos += 4;
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.text);
     doc.setFontSize(9);
-    const notesLines = doc.splitTextToSize(report.clinical_notes, pageWidth - margin * 2);
-    doc.text(notesLines, margin, yPos);
+    const notesLines = doc.splitTextToSize(report.clinical_notes, pageWidth - MARGIN * 2);
+    doc.text(notesLines, MARGIN, yPos);
     yPos += notesLines.length * 4 + 6;
   }
 
@@ -231,9 +332,11 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
 
   if (abnormalValues.length > 0) {
     // Check if we need a new page
-    if (yPos > pageHeight - 60) {
+    if (yPos > pageHeight - FOOTER_HEIGHT - 50) {
+      drawFooter(doc.getNumberOfPages());
       doc.addPage();
-      yPos = margin;
+      drawHeader(doc.getNumberOfPages(), false);
+      yPos = MARGIN + 15;
     }
 
     doc.setFillColor(254, 242, 242); // Light red background
@@ -241,22 +344,22 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
     doc.setLineWidth(0.5);
     
     const alertHeight = Math.min(abnormalValues.length * 5 + 12, 40);
-    doc.rect(margin, yPos, pageWidth - margin * 2, alertHeight, 'FD');
+    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, alertHeight, 'FD');
     
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.destructive);
-    doc.text(`ABNORMAL VALUES DETECTED (${abnormalValues.length})`, margin + 5, yPos + 5);
+    doc.text(`ABNORMAL VALUES DETECTED (${abnormalValues.length})`, MARGIN + 5, yPos + 5);
     
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     let alertY = yPos + 10;
     abnormalValues.slice(0, 5).forEach((item) => {
-      doc.text(`• ${item.label}: ${item.value} (Ref: ${item.range})`, margin + 5, alertY);
+      doc.text(`• ${item.label}: ${item.value} (Ref: ${item.range})`, MARGIN + 5, alertY);
       alertY += 4;
     });
     if (abnormalValues.length > 5) {
-      doc.text(`... and ${abnormalValues.length - 5} more`, margin + 5, alertY);
+      doc.text(`... and ${abnormalValues.length - 5} more`, MARGIN + 5, alertY);
     }
     
     yPos += alertHeight + 6;
@@ -270,19 +373,21 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
     );
     if (categoryFields.length === 0) continue;
 
-    // Check if we need a new page
-    if (yPos > pageHeight - 50) {
+    // Check if we need a new page for category header
+    if (yPos > pageHeight - FOOTER_HEIGHT - 40) {
+      drawFooter(doc.getNumberOfPages());
       doc.addPage();
-      yPos = margin;
+      drawHeader(doc.getNumberOfPages(), false);
+      yPos = MARGIN + 15;
     }
 
     // Category Header
     doc.setFillColor(...COLORS.primary);
-    doc.rect(margin, yPos, pageWidth - margin * 2, 7, 'F');
+    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 7, 'F');
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.white);
-    doc.text(category.name.toUpperCase(), margin + 3, yPos + 5);
+    doc.text(category.name.toUpperCase(), MARGIN + 3, yPos + 5);
     yPos += 9;
 
     // Build table data
@@ -321,6 +426,7 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
       head: [['Test', 'Result', 'Unit', 'Reference Range', 'Status']],
       body: tableData,
       theme: 'grid',
+      showHead: 'everyPage',
       headStyles: {
         fillColor: COLORS.primaryDark,
         textColor: COLORS.white,
@@ -344,9 +450,16 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
       alternateRowStyles: {
         fillColor: [250, 250, 250],
       },
-      margin: { left: margin, right: margin },
+      margin: { left: MARGIN, right: MARGIN, top: MARGIN + 15, bottom: FOOTER_HEIGHT + 5 },
       tableLineColor: COLORS.border,
       tableLineWidth: 0.1,
+      didDrawPage: (data) => {
+        // Draw header and footer on new pages created by the table
+        const pageNum = doc.getNumberOfPages();
+        if (data.pageNumber > 1) {
+          drawHeader(pageNum, false);
+        }
+      },
     });
 
     yPos = (doc as any).lastAutoTable.finalY + 8;
@@ -355,74 +468,63 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
   // ============ SIGNATURE SECTION ============
 
   // Check if we need a new page for signatures
-  if (yPos > pageHeight - 50) {
+  if (yPos > pageHeight - FOOTER_HEIGHT - 45) {
+    drawFooter(doc.getNumberOfPages());
     doc.addPage();
-    yPos = margin;
+    drawHeader(doc.getNumberOfPages(), false);
+    yPos = MARGIN + 15;
   }
 
   // Separator line
   doc.setDrawColor(...COLORS.border);
   doc.setLineWidth(0.3);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
+  doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
   yPos += 10;
 
   // Signature boxes
-  const signatureWidth = (pageWidth - margin * 2 - 20) / 2;
+  const signatureWidth = (pageWidth - MARGIN * 2 - 20) / 2;
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.textMuted);
   
   // Left signature
-  doc.text('Lab Technician', margin, yPos);
+  doc.text('Lab Technician', MARGIN, yPos);
   doc.setDrawColor(...COLORS.textMuted);
   doc.setLineDashPattern([2, 2], 0);
-  doc.line(margin, yPos + 12, margin + signatureWidth, yPos + 12);
-  doc.text('Signature', margin, yPos + 16);
-  doc.text('Date: ____________', margin, yPos + 22);
+  doc.line(MARGIN, yPos + 12, MARGIN + signatureWidth, yPos + 12);
+  doc.text('Signature', MARGIN, yPos + 16);
+  doc.text('Date: ____________', MARGIN, yPos + 22);
 
   // Right signature  
-  doc.text('Pathologist', pageWidth - margin - signatureWidth, yPos);
-  doc.line(pageWidth - margin - signatureWidth, yPos + 12, pageWidth - margin, yPos + 12);
-  doc.text('Signature', pageWidth - margin - signatureWidth, yPos + 16);
-  doc.text('Date: ____________', pageWidth - margin - signatureWidth, yPos + 22);
+  doc.text('Pathologist', pageWidth - MARGIN - signatureWidth, yPos);
+  doc.line(pageWidth - MARGIN - signatureWidth, yPos + 12, pageWidth - MARGIN, yPos + 12);
+  doc.text('Signature', pageWidth - MARGIN - signatureWidth, yPos + 16);
+  doc.text('Date: ____________', pageWidth - MARGIN - signatureWidth, yPos + 22);
 
   doc.setLineDashPattern([], 0);
   yPos += 30;
 
-  // ============ FOOTER ============
-
-  const footerY = pageHeight - 15;
-  
-  // Footer line
-  doc.setDrawColor(...COLORS.primary);
-  doc.setLineWidth(0.5);
-  doc.line(margin, footerY - 8, pageWidth - margin, footerY - 8);
-  
-  // Footer text
-  if (clinic?.footer_text) {
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(...COLORS.textMuted);
-    doc.text(clinic.footer_text, pageWidth / 2, footerY - 3, { align: 'center' });
-  }
-
-  // Generation timestamp
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.textMuted);
-  doc.text(
-    `Report generated on ${format(new Date(), 'dd MMM yyyy, hh:mm a')}  |  This is a computer-generated report`,
-    pageWidth / 2,
-    footerY + 2,
-    { align: 'center' }
-  );
-
-  // End of Report marker
+  // End of Report marker (before footer)
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.primary);
-  doc.text('--- End of Report ---', pageWidth / 2, footerY + 8, { align: 'center' });
+  doc.text('--- End of Report ---', pageWidth / 2, yPos, { align: 'center' });
+
+  // ============ DRAW ALL FOOTERS ============
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    drawFooter(i);
+  }
+
+  // ============ ADD PAGE NUMBERS ============
+  for (const pn of pageNumbers) {
+    doc.setPage(pn.page);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(`Page ${pn.page} of ${totalPages}`, pn.x, pn.y, { align: 'center' });
+  }
 
   return doc;
 };
