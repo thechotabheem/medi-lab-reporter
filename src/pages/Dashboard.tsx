@@ -4,7 +4,7 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
+
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { 
   FlaskConical, 
@@ -44,10 +44,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 sm:gap-3">
-              <PWAInstallPrompt />
-              <ThemeToggle />
-            </div>
+            <PWAInstallPrompt />
           </div>
         </div>
       </header>
