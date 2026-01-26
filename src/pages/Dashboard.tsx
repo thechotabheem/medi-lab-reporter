@@ -49,11 +49,14 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
+      
+      {/* Decorative Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:py-8">
         {/* Welcome Section */}
-        <div className="mb-6 sm:mb-8 animate-fade-in">
+        <div className="mb-6 sm:mb-8 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             Welcome to <span className="text-gradient-primary">{clinicName}!</span>
           </h2>
