@@ -12,9 +12,9 @@ import {
   Plus,
   Phone,
   Mail,
-  Calendar,
+  User,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { calculateAgeFromDOB } from '@/lib/utils';
 
 export default function Patients() {
   const navigate = useNavigate();
@@ -24,8 +24,7 @@ export default function Patients() {
   const filteredPatients = patients?.filter((patient) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      patient.first_name.toLowerCase().includes(searchLower) ||
-      patient.last_name.toLowerCase().includes(searchLower) ||
+      patient.full_name.toLowerCase().includes(searchLower) ||
       patient.patient_id_number?.toLowerCase().includes(searchLower) ||
       patient.phone?.toLowerCase().includes(searchLower)
     );
@@ -90,41 +89,40 @@ export default function Patients() {
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {filteredPatients?.map((patient, index) => (
-              <Card
-                key={patient.id}
-                className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 animate-fade-in-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-                onClick={() => navigate(`/patients/${patient.id}`)}
-              >
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-base sm:text-lg group-hover:text-primary transition-colors">
-                    {patient.first_name} {patient.last_name}
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    {patient.patient_id_number || 'No ID'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-2 space-y-1.5 text-xs sm:text-sm text-muted-foreground">
-                  {patient.phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{patient.phone}</span>
-                    </div>
-                  )}
-                  {patient.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{patient.email}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 shrink-0" />
-                    <span>{format(new Date(patient.date_of_birth), 'MMM d, yyyy')}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {filteredPatients?.map((patient, index) => {
+              const age = calculateAgeFromDOB(patient.date_of_birth);
+              return (
+                <Card
+                  key={patient.id}
+                  className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  onClick={() => navigate(`/patients/${patient.id}`)}
+                >
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-base sm:text-lg group-hover:text-primary transition-colors">
+                      {patient.full_name}
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                      {patient.patient_id_number || 'No ID'} • {age} years • {patient.gender}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-2 space-y-1.5 text-xs sm:text-sm text-muted-foreground">
+                    {patient.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{patient.phone}</span>
+                      </div>
+                    )}
+                    {patient.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{patient.email}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </main>

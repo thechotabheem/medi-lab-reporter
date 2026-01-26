@@ -58,8 +58,7 @@ export interface Patient {
   id: string;
   clinic_id: string;
   patient_id_number?: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   gender: Gender;
   date_of_birth: string;
   phone?: string;

@@ -15,7 +15,7 @@ export const usePatients = () => {
         .from('patients')
         .select('*')
         .eq('clinic_id', profile.clinic_id)
-        .order('last_name', { ascending: true });
+        .order('full_name', { ascending: true });
 
       if (error) throw error;
       return data as Patient[];

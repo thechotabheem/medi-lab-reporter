@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from '@/components/ui/page-header';
-import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import {
   Select,
@@ -20,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Loader2 } from 'lucide-react';
+import { ageToDateOfBirth } from '@/lib/utils';
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -29,9 +29,8 @@ export default function AddPatient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    date_of_birth: '',
+    full_name: '',
+    age: '',
     gender: '' as 'male' | 'female' | 'other' | '',
     phone: '',
     email: '',
@@ -51,8 +50,14 @@ export default function AddPatient() {
       return;
     }
 
-    if (!formData.first_name || !formData.last_name || !formData.date_of_birth || !formData.gender) {
+    if (!formData.full_name || !formData.age || !formData.gender) {
       toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
+      return;
+    }
+
+    const age = parseInt(formData.age);
+    if (isNaN(age) || age < 0 || age > 150) {
+      toast({ title: 'Invalid age', description: 'Please enter a valid age.', variant: 'destructive' });
       return;
     }
 
@@ -61,9 +66,8 @@ export default function AddPatient() {
     try {
       const { error } = await supabase.from('patients').insert({
         clinic_id: profile.clinic_id,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        date_of_birth: formData.date_of_birth,
+        full_name: formData.full_name,
+        date_of_birth: ageToDateOfBirth(age),
         gender: formData.gender as 'male' | 'female' | 'other',
         phone: formData.phone || null,
         email: formData.email || null,
@@ -73,7 +77,7 @@ export default function AddPatient() {
 
       if (error) throw error;
 
-      toast({ title: 'Patient added', description: `${formData.first_name} ${formData.last_name} has been added.` });
+      toast({ title: 'Patient added', description: `${formData.full_name} has been added.` });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       navigate('/patients');
     } catch (error: any) {
@@ -105,39 +109,30 @@ export default function AddPatient() {
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                  {/* Name Fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first_name" className="text-sm">First Name *</Label>
-                      <Input
-                        id="first_name"
-                        value={formData.first_name}
-                        onChange={(e) => handleChange('first_name', e.target.value)}
-                        placeholder="John"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last_name" className="text-sm">Last Name *</Label>
-                      <Input
-                        id="last_name"
-                        value={formData.last_name}
-                        onChange={(e) => handleChange('last_name', e.target.value)}
-                        placeholder="Doe"
-                        required
-                      />
-                    </div>
+                  {/* Full Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name" className="text-sm">Full Name *</Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => handleChange('full_name', e.target.value)}
+                      placeholder="John Doe"
+                      required
+                    />
                   </div>
 
-                  {/* DOB and Gender */}
+                  {/* Age and Gender */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="date_of_birth" className="text-sm">Date of Birth *</Label>
+                      <Label htmlFor="age" className="text-sm">Age (years) *</Label>
                       <Input
-                        id="date_of_birth"
-                        type="date"
-                        value={formData.date_of_birth}
-                        onChange={(e) => handleChange('date_of_birth', e.target.value)}
+                        id="age"
+                        type="number"
+                        min="0"
+                        max="150"
+                        value={formData.age}
+                        onChange={(e) => handleChange('age', e.target.value)}
+                        placeholder="35"
                         required
                       />
                     </div>

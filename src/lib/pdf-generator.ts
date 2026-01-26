@@ -176,7 +176,7 @@ export const generateReportPDF = async ({ report, patient, clinic }: GeneratePDF
   // Values - Left column
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.text);
-  doc.text(`${patient.first_name} ${patient.last_name}`, leftCol + 28, infoY);
+  doc.text(patient.full_name, leftCol + 28, infoY);
   doc.text(`${calculateAge(patient.date_of_birth)} / ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`, leftCol + 28, infoY + 6);
   doc.text(patient.patient_id_number || '-', leftCol + 28, infoY + 12);
   doc.text(report.referring_doctor || '-', leftCol + 28, infoY + 18);
