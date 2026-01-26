@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface DashboardStats {
@@ -11,12 +11,12 @@ interface DashboardStats {
 }
 
 export const useDashboardStats = () => {
-  const { profile } = useAuth();
+  const { clinicId } = useClinic();
 
   return useQuery({
-    queryKey: ['dashboard-stats', profile?.clinic_id],
+    queryKey: ['dashboard-stats', clinicId],
     queryFn: async (): Promise<DashboardStats> => {
-      if (!profile?.clinic_id) {
+      if (!clinicId) {
         return { totalReports: 0, totalPatients: 0, monthlyReports: 0, draftReports: 0 };
       }
 
@@ -28,21 +28,21 @@ export const useDashboardStats = () => {
         supabase
           .from('reports')
           .select('id', { count: 'exact', head: true })
-          .eq('clinic_id', profile.clinic_id),
+          .eq('clinic_id', clinicId),
         supabase
           .from('patients')
           .select('id', { count: 'exact', head: true })
-          .eq('clinic_id', profile.clinic_id),
+          .eq('clinic_id', clinicId),
         supabase
           .from('reports')
           .select('id', { count: 'exact', head: true })
-          .eq('clinic_id', profile.clinic_id)
+          .eq('clinic_id', clinicId)
           .gte('created_at', monthStart)
           .lte('created_at', monthEnd),
         supabase
           .from('reports')
           .select('id', { count: 'exact', head: true })
-          .eq('clinic_id', profile.clinic_id)
+          .eq('clinic_id', clinicId)
           .eq('status', 'draft'),
       ]);
 
@@ -53,6 +53,6 @@ export const useDashboardStats = () => {
         draftReports: draftsRes.count || 0,
       };
     },
-    enabled: !!profile?.clinic_id,
+    enabled: !!clinicId,
   });
 };

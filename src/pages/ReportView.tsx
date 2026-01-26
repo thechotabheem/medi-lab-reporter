@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { useUpdateReport, useDeleteReport } from '@/hooks/useReportMutations';
 import { generateReportPDF, downloadPDF, sharePDFViaWhatsApp } from '@/lib/pdf-generator';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,7 @@ const calculateAge = (dateOfBirth: string): string => {
 export default function ReportView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { clinicId } = useClinic();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const deleteReport = useDeleteReport();
@@ -84,22 +84,22 @@ export default function ReportView() {
       if (error) throw error;
       return data as Report & { patient: Patient };
     },
-    enabled: !!id && !!profile?.clinic_id,
+    enabled: !!id,
   });
 
   const { data: clinic } = useQuery({
-    queryKey: ['clinic', profile?.clinic_id],
+    queryKey: ['clinic', clinicId],
     queryFn: async () => {
-      if (!profile?.clinic_id) return null;
+      if (!clinicId) return null;
       const { data, error } = await supabase
         .from('clinics')
         .select('*')
-        .eq('id', profile.clinic_id)
+        .eq('id', clinicId)
         .single();
       if (error) throw error;
       return data as Clinic;
     },
-    enabled: !!profile?.clinic_id,
+    enabled: !!clinicId,
   });
 
   const handleDownloadPDF = async () => {

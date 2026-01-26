@@ -1,32 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import type { Report, ReportType } from '@/types/database';
 import { toast } from 'sonner';
 
 export const useReports = () => {
-  const { profile } = useAuth();
+  const { clinicId } = useClinic();
 
   return useQuery({
-    queryKey: ['reports', profile?.clinic_id],
+    queryKey: ['reports', clinicId],
     queryFn: async () => {
-      if (!profile?.clinic_id) return [];
-
       const { data, error } = await supabase
         .from('reports')
         .select('*, patient:patients(*)')
-        .eq('clinic_id', profile.clinic_id)
+        .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as Report[];
     },
-    enabled: !!profile?.clinic_id,
+    enabled: !!clinicId,
   });
 };
 
 export const useCreateReport = () => {
-  const { profile, user } = useAuth();
+  const { clinicId } = useClinic();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -39,7 +37,7 @@ export const useCreateReport = () => {
       test_date: string;
       status: 'draft' | 'completed';
     }) => {
-      if (!profile?.clinic_id) throw new Error('No clinic found');
+      if (!clinicId) throw new Error('No clinic found');
 
       // Generate report number
       const reportNumber = `RPT-${Date.now().toString(36).toUpperCase()}`;
@@ -47,8 +45,8 @@ export const useCreateReport = () => {
       const { data, error } = await supabase
         .from('reports')
         .insert([{
-          clinic_id: profile.clinic_id,
-          created_by: user?.id,
+          clinic_id: clinicId,
+          created_by: null,
           report_number: reportNumber,
           patient_id: reportData.patient_id,
           report_type: reportData.report_type,

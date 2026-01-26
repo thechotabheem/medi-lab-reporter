@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ import { ageToDateOfBirth } from '@/lib/utils';
 
 export default function AddPatient() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { clinicId } = useClinic();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +45,7 @@ export default function AddPatient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!profile?.clinic_id) {
+    if (!clinicId) {
       toast({ title: 'Error', description: 'Clinic information not found.', variant: 'destructive' });
       return;
     }
@@ -65,7 +65,7 @@ export default function AddPatient() {
 
     try {
       const { error } = await supabase.from('patients').insert({
-        clinic_id: profile.clinic_id,
+        clinic_id: clinicId,
         full_name: formData.full_name,
         date_of_birth: ageToDateOfBirth(age),
         gender: formData.gender as 'male' | 'female' | 'other',

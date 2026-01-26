@@ -1,6 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import type { Gender } from '@/types/database';
 import { toast } from 'sonner';
 
@@ -65,24 +64,20 @@ export const useDeletePatient = () => {
 };
 
 export const usePatient = (patientId: string | undefined) => {
-  const { profile } = useAuth();
+  return useQuery({
+    queryKey: ['patient', patientId],
+    queryFn: async () => {
+      if (!patientId) return null;
 
-  return {
-    ...require('@tanstack/react-query').useQuery({
-      queryKey: ['patient', patientId],
-      queryFn: async () => {
-        if (!patientId) return null;
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('id', patientId)
+        .single();
 
-        const { data, error } = await supabase
-          .from('patients')
-          .select('*')
-          .eq('id', patientId)
-          .single();
-
-        if (error) throw error;
-        return data;
-      },
-      enabled: !!patientId && !!profile?.clinic_id,
-    }),
-  };
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!patientId,
+  });
 };

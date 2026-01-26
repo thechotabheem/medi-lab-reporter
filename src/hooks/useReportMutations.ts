@@ -1,12 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import type { Report, ReportType } from '@/types/database';
+import type { Report } from '@/types/database';
 import { toast } from 'sonner';
 
 export const useReport = (reportId: string | undefined) => {
-  const { profile } = useAuth();
-
   return useQuery({
     queryKey: ['report', reportId],
     queryFn: async () => {
@@ -21,13 +18,11 @@ export const useReport = (reportId: string | undefined) => {
       if (error) throw error;
       return data as Report;
     },
-    enabled: !!reportId && !!profile?.clinic_id,
+    enabled: !!reportId,
   });
 };
 
 export const usePatientReports = (patientId: string | undefined) => {
-  const { profile } = useAuth();
-
   return useQuery({
     queryKey: ['patient-reports', patientId],
     queryFn: async () => {
@@ -42,7 +37,7 @@ export const usePatientReports = (patientId: string | undefined) => {
       if (error) throw error;
       return data as Report[];
     },
-    enabled: !!patientId && !!profile?.clinic_id,
+    enabled: !!patientId,
   });
 };
 
