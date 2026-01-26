@@ -25,7 +25,7 @@ export const PWAInstallPrompt = () => {
     ? "App Installed" 
     : canInstall 
       ? "Install App" 
-      : "Install not available";
+      : "Install Guide";
 
   const handleClick = () => {
     if (canInstall) {
@@ -65,7 +65,7 @@ export const PWAInstallPrompt = () => {
           <DialogHeader>
             <DialogTitle>Install MediLab Reporter</DialogTitle>
             <DialogDescription>
-              To install this app, you need to open it directly in a supported browser.
+              To install this app, use your browser's menu or open it directly in a supported browser.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -88,7 +88,7 @@ export const PWAInstallPrompt = () => {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex gap-2">
                   <span className="font-medium text-foreground">Chrome/Edge:</span>
-                  <span>Click the install icon in the address bar, or Menu → "Install app"</span>
+                  <span>Menu (⋮) → "Save and share" → "Install MediLab..."</span>
                 </div>
                 
                 <div className="flex gap-2">
@@ -98,19 +98,19 @@ export const PWAInstallPrompt = () => {
                 
                 <div className="flex gap-2">
                   <span className="font-medium text-foreground">Android:</span>
-                  <span>Tap Menu (⋮) → "Add to Home Screen" or "Install app"</span>
+                  <span>Menu (⋮) → "Install app" or "Add to Home Screen"</span>
                 </div>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Note: The install button only works when opening the app directly in Chrome or Edge browsers, not in embedded previews.
+              Note: The install button works when Chrome is ready to offer installation. If you don't see the option, visit the install page to check your PWA status.
             </p>
 
             <div className="pt-2 border-t">
               <Button variant="outline" className="w-full" asChild onClick={() => setShowInstructions(false)}>
                 <Link to="/install">
-                  View Full Installation Guide
+                  View Full Installation Guide & Status
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
