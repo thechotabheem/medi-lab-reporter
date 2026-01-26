@@ -6,6 +6,7 @@ import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { 
   FlaskConical, 
   Users, 
@@ -53,6 +54,7 @@ export default function Dashboard() {
               <span className="text-xs sm:text-sm text-muted-foreground hidden md:block">
                 {profile?.full_name}
               </span>
+              <PWAInstallPrompt />
               <ThemeToggle />
               <Button 
                 variant="outline" 
