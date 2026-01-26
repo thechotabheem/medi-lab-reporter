@@ -37,7 +37,7 @@ export default function Dashboard() {
               <IconWrapper size="sm" className="flex sm:hidden">
                 <FlaskConical className="h-4 w-4" />
               </IconWrapper>
-              <div>
+              <div className="text-center">
                 <h1 className="font-semibold text-sm sm:text-base">MedLab Reporter</h1>
                 <p className="text-2xs sm:text-xs text-muted-foreground">
                   {clinicName}
