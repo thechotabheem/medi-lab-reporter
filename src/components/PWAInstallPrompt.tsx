@@ -5,13 +5,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MonitorSmartphone } from "lucide-react";
+import { MonitorSmartphone, Check } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 export const PWAInstallPrompt = () => {
-  const { canInstall, triggerInstall } = usePWAInstall();
+  const { canInstall, isInstalled, triggerInstall } = usePWAInstall();
 
-  if (!canInstall) return null;
+  const tooltipMessage = isInstalled 
+    ? "App Installed" 
+    : canInstall 
+      ? "Install App" 
+      : "Install not available";
 
   return (
     <TooltipProvider>
@@ -21,13 +25,18 @@ export const PWAInstallPrompt = () => {
             variant="ghost"
             size="icon"
             className="h-9 w-9"
-            onClick={triggerInstall}
+            onClick={canInstall ? triggerInstall : undefined}
+            disabled={!canInstall}
           >
-            <MonitorSmartphone className="h-4 w-4" />
+            {isInstalled ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <MonitorSmartphone className="h-4 w-4" />
+            )}
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Install App</p>
+          <p>{tooltipMessage}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
