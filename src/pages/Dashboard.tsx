@@ -6,7 +6,7 @@ import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 import { RecentReportsWidget } from '@/components/dashboard/RecentReportsWidget';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+
 import { 
   FlaskConical, 
   Users, 
@@ -45,7 +45,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <PWAInstallPrompt />
+            
           </div>
         </div>
       </header>
