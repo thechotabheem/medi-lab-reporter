@@ -1,0 +1,286 @@
+/* Print Styles for Medical Lab Reports */
+@media print {
+  /* Reset page margins */
+  @page {
+    margin: 1.5cm 1cm;
+    size: A4;
+  }
+  
+  /* Hide non-printable elements */
+  .app-header,
+  .page-header,
+  .no-print,
+  button,
+  .btn,
+  nav,
+  footer,
+  .toast,
+  .sonner-toaster,
+  .fixed,
+  .sticky,
+  [role="dialog"],
+  [role="alertdialog"],
+  .print-hide {
+    display: none !important;
+  }
+  
+  /* Force white background and black text */
+  *,
+  *::before,
+  *::after {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Preserve destructive/abnormal colors */
+  .text-destructive,
+  .abnormal-value,
+  [data-status="abnormal"] {
+    color: #dc2626 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Preserve primary/success colors */
+  .text-primary,
+  .normal-value,
+  [data-status="normal"] {
+    color: #16a34a !important;
+  }
+  
+  /* Body adjustments */
+  body {
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    background: white !important;
+  }
+  
+  /* Page container */
+  .page-container {
+    min-height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Main content area */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  
+  /* Card styling for print */
+  .card,
+  [class*="Card"] {
+    border: 1px solid #e5e5e5 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Table styling */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  
+  th,
+  td {
+    border: 1px solid #d1d5db !important;
+    padding: 6px 8px !important;
+    text-align: left !important;
+  }
+  
+  th {
+    background-color: #f3f4f6 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Preserve table header colors */
+  thead tr,
+  .bg-primary {
+    background-color: #0d9488 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  thead th,
+  .bg-primary * {
+    color: white !important;
+  }
+  
+  /* Page breaks */
+  .test-category,
+  .report-section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .page-break-before {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+  
+  .page-break-after {
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+  
+  /* Keep headers with content */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  
+  /* Print-specific letterhead */
+  .print-letterhead {
+    display: block !important;
+    text-align: center !important;
+    border-bottom: 2px solid #0d9488 !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .print-letterhead h1 {
+    font-size: 18pt !important;
+    font-weight: 700 !important;
+    color: #0d9488 !important;
+    margin: 0 !important;
+  }
+  
+  .print-letterhead p {
+    font-size: 9pt !important;
+    color: #6b7280 !important;
+    margin: 4px 0 0 !important;
+  }
+  
+  /* Print-specific footer */
+  .print-footer {
+    display: block !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 8pt !important;
+    color: #9ca3af !important;
+    border-top: 1px solid #e5e5e5 !important;
+    padding-top: 8px !important;
+  }
+  
+  /* Signature section */
+  .signature-section {
+    margin-top: 32px !important;
+    break-inside: avoid !important;
+  }
+  
+  .signature-line {
+    border-bottom: 1px dashed #9ca3af !important;
+    min-width: 150px !important;
+  }
+  
+  /* Links - show URL in print */
+  a[href]::after {
+    content: none !important; /* Don't show URLs in medical reports */
+  }
+  
+  /* Badge styling for print */
+  .badge,
+  [class*="Badge"] {
+    border: 1px solid #d1d5db !important;
+    padding: 2px 6px !important;
+    font-size: 9pt !important;
+  }
+  
+  /* Abnormal values alert box */
+  .abnormal-alert,
+  [class*="destructive"] {
+    border: 2px solid #dc2626 !important;
+    background-color: #fef2f2 !important;
+    padding: 8px !important;
+    margin: 8px 0 !important;
+  }
+  
+  /* Patient info grid */
+  .patient-info-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    background-color: #f9fafb !important;
+    padding: 12px !important;
+    border: 1px solid #e5e5e5 !important;
+    break-inside: avoid !important;
+  }
+  
+  .patient-info-grid dt {
+    font-size: 8pt !important;
+    color: #6b7280 !important;
+  }
+  
+  .patient-info-grid dd {
+    font-size: 10pt !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Logo for print */
+  .print-logo {
+    max-height: 48px !important;
+    max-width: 120px !important;
+  }
+  
+  /* Test results table */
+  .results-table {
+    font-size: 10pt !important;
+  }
+  
+  .results-table th {
+    background-color: #14b8a6 !important;
+    color: white !important;
+    font-size: 9pt !important;
+  }
+  
+  .results-table td {
+    font-size: 10pt !important;
+  }
+  
+  /* Status indicators */
+  .status-normal::before {
+    content: "✓ " !important;
+    color: #16a34a !important;
+  }
+  
+  .status-abnormal::before {
+    content: "⚠ " !important;
+    color: #dc2626 !important;
+  }
+  
+  /* Hide scrollbars */
+  *::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  /* Ensure images print */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Container max width reset */
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}
+
+/* Print button visibility helper */
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  .print-only {
+    display: block !important;
+  }
+}

@@ -4,7 +4,8 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { RecentReportsWidget } from '@/components/dashboard/RecentReportsWidget';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { 
   FlaskConical, 
@@ -104,7 +105,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <div className="animate-fade-in-up animation-delay-200">
             <ActionCard
               title="New Report"
@@ -142,7 +143,20 @@ export default function Dashboard() {
             />
           </div>
         </div>
+
+        {/* Recent Reports Widget */}
+        <div className="animate-fade-in-up animation-delay-600">
+          <RecentReportsWidget />
+        </div>
       </main>
+
+      {/* Mobile FAB */}
+      <div className="sm:hidden">
+        <FloatingActionButton
+          onClick={() => navigate('/reports/new')}
+          icon={<Plus className="h-6 w-6" />}
+        />
+      </div>
     </div>
   );
 }

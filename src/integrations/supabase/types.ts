@@ -16,10 +16,12 @@ export type Database = {
     Tables: {
       clinics: {
         Row: {
+          accent_color: string | null
           address: string | null
           created_at: string
           created_by: string | null
           email: string | null
+          enable_qr_code: boolean | null
           footer_text: string | null
           header_text: string | null
           id: string
@@ -27,12 +29,15 @@ export type Database = {
           name: string
           phone: string | null
           updated_at: string
+          watermark_text: string | null
         }
         Insert: {
+          accent_color?: string | null
           address?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
+          enable_qr_code?: boolean | null
           footer_text?: string | null
           header_text?: string | null
           id?: string
@@ -40,12 +45,15 @@ export type Database = {
           name: string
           phone?: string | null
           updated_at?: string
+          watermark_text?: string | null
         }
         Update: {
+          accent_color?: string | null
           address?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
+          enable_qr_code?: boolean | null
           footer_text?: string | null
           header_text?: string | null
           id?: string
@@ -53,8 +61,44 @@ export type Database = {
           name?: string
           phone?: string | null
           updated_at?: string
+          watermark_text?: string | null
         }
         Relationships: []
+      }
+      custom_templates: {
+        Row: {
+          base_template: string
+          clinic_id: string | null
+          created_at: string
+          customizations: Json
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          base_template: string
+          clinic_id?: string | null
+          created_at?: string
+          customizations?: Json
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          base_template?: string
+          clinic_id?: string | null
+          created_at?: string
+          customizations?: Json
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_templates_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {

@@ -14,6 +14,7 @@ import PatientDetail from "./pages/PatientDetail";
 import AddPatient from "./pages/AddPatient";
 import Settings from "./pages/Settings";
 import ClinicSettings from "./pages/ClinicSettings";
+import TemplateEditor from "./pages/TemplateEditor";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/patients/:id" element={<PatientDetail />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/settings/clinic" element={<ClinicSettings />} />
+              <Route path="/settings/templates" element={<TemplateEditor />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

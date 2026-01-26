@@ -12,8 +12,9 @@ import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { SkeletonForm } from '@/components/ui/skeleton';
 import { LogoUploader } from '@/components/clinic/LogoUploader';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2, FileText } from 'lucide-react';
+import { Building2, Loader2, FileText, Palette, QrCode } from 'lucide-react';
 
 interface ClinicData {
   name: string;
@@ -23,6 +24,9 @@ interface ClinicData {
   header_text: string;
   footer_text: string;
   logo_url: string;
+  watermark_text: string;
+  enable_qr_code: boolean;
+  accent_color: string;
 }
 
 export default function ClinicSettings() {
@@ -40,6 +44,9 @@ export default function ClinicSettings() {
     header_text: '',
     footer_text: '',
     logo_url: '',
+    watermark_text: '',
+    enable_qr_code: false,
+    accent_color: '#00968F',
   });
 
   useEffect(() => {
@@ -64,6 +71,9 @@ export default function ClinicSettings() {
             header_text: data.header_text || '',
             footer_text: data.footer_text || '',
             logo_url: data.logo_url || '',
+            watermark_text: data.watermark_text || '',
+            enable_qr_code: data.enable_qr_code || false,
+            accent_color: data.accent_color || '#00968F',
           });
         }
       } catch (error: any) {
@@ -76,7 +86,7 @@ export default function ClinicSettings() {
     fetchClinicData();
   }, [clinicId, toast]);
 
-  const handleChange = (field: keyof ClinicData, value: string) => {
+  const handleChange = (field: keyof ClinicData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -101,6 +111,9 @@ export default function ClinicSettings() {
           header_text: formData.header_text || null,
           footer_text: formData.footer_text || null,
           logo_url: formData.logo_url || null,
+          watermark_text: formData.watermark_text || null,
+          enable_qr_code: formData.enable_qr_code,
+          accent_color: formData.accent_color || null,
         })
         .eq('id', clinicId);
 
@@ -249,6 +262,77 @@ export default function ClinicSettings() {
                         onChange={(e) => handleChange('footer_text', e.target.value)}
                         placeholder="Text at the bottom of reports"
                         rows={2}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+
+              {/* Advanced PDF Options */}
+              <FadeIn delay={250}>
+                <Card>
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <IconWrapper variant="muted" size="default">
+                        <Palette className="h-5 w-5" />
+                      </IconWrapper>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg">Advanced PDF Options</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                          Enhanced branding for PDF reports
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="watermark_text" className="text-sm">Watermark Text</Label>
+                      <Input
+                        id="watermark_text"
+                        value={formData.watermark_text}
+                        onChange={(e) => handleChange('watermark_text', e.target.value)}
+                        placeholder="e.g., CONFIDENTIAL, DRAFT"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Appears as a diagonal watermark on PDF reports
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="accent_color" className="text-sm">Accent Color</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="accent_color"
+                          type="color"
+                          value={formData.accent_color}
+                          onChange={(e) => handleChange('accent_color', e.target.value)}
+                          className="w-16 h-10 p-1 cursor-pointer"
+                        />
+                        <Input
+                          value={formData.accent_color}
+                          onChange={(e) => handleChange('accent_color', e.target.value)}
+                          placeholder="#00968F"
+                          className="flex-1"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Used for headers, borders, and accents in PDF reports
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm flex items-center gap-2">
+                          <QrCode className="h-4 w-4" />
+                          QR Code on Reports
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Add a QR code linking to the online report view
+                        </p>
+                      </div>
+                      <Switch
+                        checked={formData.enable_qr_code}
+                        onCheckedChange={(checked) => handleChange('enable_qr_code', checked)}
                       />
                     </div>
                   </CardContent>
