@@ -6,13 +6,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateReport, useDeleteReport } from '@/hooks/useReportMutations';
 import { generateReportPDF, downloadPDF, sharePDFViaWhatsApp } from '@/lib/pdf-generator';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,16 +38,30 @@ import {
   Download,
   Share2,
   Trash2,
-  User,
-  Calendar,
-  Clock,
   CheckCircle,
   AlertTriangle,
   Loader2,
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  Check,
+  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { reportTemplates, getReportTypeName } from '@/lib/report-templates';
+
+const calculateAge = (dateOfBirth: string): string => {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return `${age} years`;
+};
 
 export default function ReportView() {
   const { id } = useParams<{ id: string }>();
@@ -138,6 +161,27 @@ export default function ReportView() {
     return 'normal';
   };
 
+  const formatNormalRange = (
+    field: { normalRange?: { min?: number; max?: number; male?: { min?: number; max?: number }; female?: { min?: number; max?: number } } },
+    gender: Gender
+  ): string => {
+    if (!field.normalRange) return '-';
+    let min: number | undefined;
+    let max: number | undefined;
+    if (field.normalRange.male && field.normalRange.female) {
+      const genderRange = gender === 'male' ? field.normalRange.male : field.normalRange.female;
+      min = genderRange.min;
+      max = genderRange.max;
+    } else {
+      min = field.normalRange.min;
+      max = field.normalRange.max;
+    }
+    if (min !== undefined && max !== undefined) return `${min} - ${max}`;
+    if (min !== undefined) return `> ${min}`;
+    if (max !== undefined) return `< ${max}`;
+    return '-';
+  };
+
   if (isLoading) {
     return (
       <div className="page-container">
@@ -145,32 +189,16 @@ export default function ReportView() {
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
           <div className="space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <CardContent className="p-6">
+                <Skeleton className="h-24 w-full mb-4" />
+                <div className="grid gap-4 sm:grid-cols-2">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="space-y-2">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-5 w-24" />
-                    </div>
+                    <Skeleton key={i} className="h-8" />
                   ))}
                 </div>
               </CardContent>
             </Card>
-            {[1, 2].map((i) => (
-              <Card key={i}>
-                <CardHeader className="p-4 sm:p-6"><Skeleton className="h-5 w-28" /></CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {[1, 2, 3, 4, 5, 6].map((j) => (
-                      <Skeleton key={j} className="h-20 rounded-lg" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <Skeleton className="h-64 w-full" />
           </div>
         </main>
       </div>
@@ -193,6 +221,24 @@ export default function ReportView() {
 
   const template = reportTemplates[report.report_type];
   const reportData = report.report_data as Record<string, unknown>;
+
+  // Collect all abnormal values
+  const abnormalValues: { label: string; value: string; range: string }[] = [];
+  template.categories.forEach((category) => {
+    category.fields.forEach((field) => {
+      const value = reportData[field.name];
+      if (value !== undefined && value !== null && value !== '') {
+        const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
+        if (status === 'abnormal') {
+          abnormalValues.push({
+            label: field.label,
+            value: `${value}${field.unit ? ` ${field.unit}` : ''}`,
+            range: formatNormalRange(field, report.patient?.gender || 'other'),
+          });
+        }
+      }
+    });
+  });
 
   return (
     <div className="page-container">
@@ -234,7 +280,7 @@ export default function ReportView() {
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-6">
             {/* Draft Warning */}
             {report.status === 'draft' && (
               <FadeIn>
@@ -255,106 +301,281 @@ export default function ReportView() {
               </FadeIn>
             )}
 
-            {/* Report Details */}
+            {/* Professional Report Card */}
             <FadeIn delay={100}>
-              <Card>
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <CardTitle className="text-base sm:text-lg">Report Details</CardTitle>
-                    <Badge variant={report.status === 'completed' ? 'default' : report.status === 'verified' ? 'secondary' : 'outline'}>
-                      {report.status}
-                    </Badge>
+              <Card className="overflow-hidden print:shadow-none">
+                {/* Clinic Letterhead */}
+                <div className="bg-primary/5 border-b border-border p-4 sm:p-6">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Building2 className="h-6 w-6 text-primary" />
+                      <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+                        {clinic?.name || 'Medical Laboratory'}
+                      </h1>
+                    </div>
+                    {clinic?.header_text && (
+                      <p className="text-sm text-muted-foreground mb-2">{clinic.header_text}</p>
+                    )}
+                    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                      {clinic?.address && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {clinic.address}
+                        </span>
+                      )}
+                      {clinic?.phone && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {clinic.phone}
+                        </span>
+                      )}
+                      {clinic?.email && (
+                        <span className="flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {clinic.email}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">Patient</p>
-                        <p className="text-sm font-medium cursor-pointer hover:text-primary transition-colors truncate" onClick={() => navigate(`/patients/${report.patient_id}`)}>
+                </div>
+
+                {/* Report Title Bar */}
+                <div className="bg-primary text-primary-foreground px-4 sm:px-6 py-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold">{getReportTypeName(report.report_type)}</h2>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span>Report #: {report.report_number}</span>
+                      <Badge 
+                        variant={report.status === 'completed' ? 'secondary' : report.status === 'verified' ? 'default' : 'outline'}
+                        className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30"
+                      >
+                        {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <CardContent className="p-4 sm:p-6">
+                  {/* Patient Information Grid */}
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3">
+                      Patient Information
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg border border-border">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Patient Name</p>
+                        <p 
+                          className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => navigate(`/patients/${report.patient_id}`)}
+                        >
                           {report.patient?.first_name} {report.patient?.last_name}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Age / Gender</p>
+                        <p className="text-sm font-medium">
+                          {calculateAge(report.patient?.date_of_birth || '')} / {report.patient?.gender?.charAt(0).toUpperCase()}{report.patient?.gender?.slice(1)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Patient ID</p>
+                        <p className="text-sm font-medium">{report.patient?.patient_id_number || '-'}</p>
+                      </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Test Date</p>
-                        <p className="text-sm font-medium">{format(new Date(report.test_date), 'MMM d, yyyy')}</p>
+                        <p className="text-sm font-medium">{format(new Date(report.test_date), 'dd MMM yyyy')}</p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Created</p>
-                        <p className="text-sm font-medium">{format(new Date(report.created_at), 'MMM d, yyyy')}</p>
-                      </div>
-                    </div>
-                    {report.referring_doctor && (
-                      <div className="flex items-center gap-3">
-                        <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <div className="min-w-0">
+                      {report.referring_doctor && (
+                        <div className="col-span-2">
                           <p className="text-xs text-muted-foreground">Referring Doctor</p>
-                          <p className="text-sm font-medium truncate">{report.referring_doctor}</p>
+                          <p className="text-sm font-medium">{report.referring_doctor}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Abnormal Values Alert */}
+                  {abnormalValues.length > 0 && (
+                    <div className="mb-6">
+                      <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <AlertTriangle className="h-5 w-5 text-destructive" />
+                          <h3 className="text-sm font-semibold text-destructive">
+                            Abnormal Values Detected ({abnormalValues.length})
+                          </h3>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {abnormalValues.map((item, index) => (
+                            <div key={index} className="flex items-center justify-between text-sm bg-background/50 rounded px-3 py-2">
+                              <span className="font-medium text-destructive">{item.label}</span>
+                              <span className="text-muted-foreground">
+                                <span className="font-semibold text-destructive">{item.value}</span>
+                                <span className="text-xs ml-2">(Ref: {item.range})</span>
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    )}
-                  </div>
-                  {report.clinical_notes && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <p className="text-xs text-muted-foreground mb-1">Clinical Notes</p>
-                      <p className="text-sm">{report.clinical_notes}</p>
                     </div>
                   )}
+
+                  {/* Test Results Tables */}
+                  {template.categories.map((category, catIndex) => {
+                    const categoryFields = category.fields.filter(
+                      (field) => reportData[field.name] !== undefined && reportData[field.name] !== null && reportData[field.name] !== ''
+                    );
+                    if (categoryFields.length === 0) return null;
+
+                    return (
+                      <div key={category.name} className="mb-6 last:mb-0">
+                        <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3 flex items-center gap-2">
+                          <span className="w-1 h-4 bg-primary rounded-full" />
+                          {category.name}
+                        </h3>
+                        
+                        {/* Desktop Table */}
+                        <div className="hidden sm:block rounded-lg border border-border overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-muted/50">
+                                <TableHead className="font-semibold">Test</TableHead>
+                                <TableHead className="font-semibold text-center">Result</TableHead>
+                                <TableHead className="font-semibold text-center">Unit</TableHead>
+                                <TableHead className="font-semibold text-center">Reference Range</TableHead>
+                                <TableHead className="font-semibold text-center w-16">Status</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {categoryFields.map((field, fieldIndex) => {
+                                const value = reportData[field.name];
+                                const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
+                                const isAbnormal = status === 'abnormal';
+                                const normalRange = formatNormalRange(field, report.patient?.gender || 'other');
+
+                                return (
+                                  <TableRow 
+                                    key={field.name}
+                                    className={isAbnormal ? 'bg-destructive/5' : fieldIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
+                                  >
+                                    <TableCell className="font-medium">{field.label}</TableCell>
+                                    <TableCell className={`text-center font-semibold ${isAbnormal ? 'text-destructive' : ''}`}>
+                                      {String(value)}
+                                    </TableCell>
+                                    <TableCell className="text-center text-muted-foreground">
+                                      {field.unit || '-'}
+                                    </TableCell>
+                                    <TableCell className="text-center text-muted-foreground">
+                                      {normalRange}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      {status === 'unknown' ? (
+                                        <span className="text-muted-foreground">-</span>
+                                      ) : isAbnormal ? (
+                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-destructive/10">
+                                          <X className="h-4 w-4 text-destructive" />
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500/10">
+                                          <Check className="h-4 w-4 text-green-600" />
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="sm:hidden space-y-2">
+                          {categoryFields.map((field) => {
+                            const value = reportData[field.name];
+                            const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
+                            const isAbnormal = status === 'abnormal';
+                            const normalRange = formatNormalRange(field, report.patient?.gender || 'other');
+
+                            return (
+                              <div 
+                                key={field.name}
+                                className={`p-3 rounded-lg border ${isAbnormal ? 'border-destructive/50 bg-destructive/5' : 'border-border bg-muted/20'}`}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{field.label}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Ref: {normalRange}
+                                    </p>
+                                  </div>
+                                  <div className="text-right flex items-center gap-2">
+                                    <span className={`text-lg font-bold ${isAbnormal ? 'text-destructive' : ''}`}>
+                                      {String(value)}
+                                    </span>
+                                    {field.unit && (
+                                      <span className="text-xs text-muted-foreground">{field.unit}</span>
+                                    )}
+                                    {status !== 'unknown' && (
+                                      isAbnormal ? (
+                                        <X className="h-4 w-4 text-destructive" />
+                                      ) : (
+                                        <Check className="h-4 w-4 text-green-600" />
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Clinical Notes */}
+                  {report.clinical_notes && (
+                    <>
+                      <Separator className="my-6" />
+                      <div>
+                        <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3 flex items-center gap-2">
+                          <span className="w-1 h-4 bg-primary rounded-full" />
+                          Clinical Notes
+                        </h3>
+                        <p className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-4 border border-border">
+                          {report.clinical_notes}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Footer Section */}
+                  <Separator className="my-6" />
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Lab Technician</p>
+                      <div className="border-b border-dashed border-muted-foreground/50 pb-1 w-48">
+                        <p className="text-sm text-muted-foreground/50">Signature</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Pathologist</p>
+                      <div className="border-b border-dashed border-muted-foreground/50 pb-1 w-48">
+                        <p className="text-sm text-muted-foreground/50">Signature</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Report Generation Info */}
+                  <div className="mt-6 pt-4 border-t border-border text-center">
+                    {clinic?.footer_text && (
+                      <p className="text-xs text-muted-foreground italic mb-2">{clinic.footer_text}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Report generated on {format(new Date(), 'dd MMM yyyy, hh:mm a')}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </FadeIn>
-
-            {/* Test Results */}
-            {template.categories.map((category, catIndex) => {
-              const categoryHasData = category.fields.some(
-                (field) => reportData[field.name] !== undefined && reportData[field.name] !== null && reportData[field.name] !== ''
-              );
-              if (!categoryHasData) return null;
-
-              return (
-                <FadeIn key={category.name} delay={200 + catIndex * 100}>
-                  <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="text-base sm:text-lg text-primary">{category.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 sm:p-6 pt-0">
-                      <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {category.fields.map((field) => {
-                          const value = reportData[field.name];
-                          if (value === undefined || value === null || value === '') return null;
-                          const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
-                          const isAbnormal = status === 'abnormal';
-
-                          return (
-                            <div
-                              key={field.name}
-                              className={`p-3 rounded-lg border transition-all ${
-                                isAbnormal 
-                                  ? 'border-destructive/50 bg-destructive/5' 
-                                  : 'border-border hover:border-primary/30'
-                              }`}
-                            >
-                              <p className="text-xs text-muted-foreground mb-1 truncate">{field.label}</p>
-                              <p className={`text-base sm:text-lg font-semibold ${isAbnormal ? 'text-destructive' : ''}`}>
-                                {String(value)}
-                                {field.unit && <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1">{field.unit}</span>}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </FadeIn>
-              );
-            })}
           </div>
         </main>
       </PageTransition>
