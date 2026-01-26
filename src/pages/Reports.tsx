@@ -37,8 +37,7 @@ export default function Reports() {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
       report.report_number.toLowerCase().includes(searchLower) ||
-      report.patient?.first_name?.toLowerCase().includes(searchLower) ||
-      report.patient?.last_name?.toLowerCase().includes(searchLower) ||
+      report.patient?.full_name?.toLowerCase().includes(searchLower) ||
       report.referring_doctor?.toLowerCase().includes(searchLower);
 
     const matchesStatus = statusFilter === 'all' || report.status === statusFilter;
@@ -175,7 +174,7 @@ export default function Reports() {
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
                             <span className="truncate max-w-[120px] sm:max-w-none">
-                              {report.patient?.first_name} {report.patient?.last_name}
+                              {report.patient?.full_name}
                             </span>
                           </span>
                           <span className="flex items-center gap-1">

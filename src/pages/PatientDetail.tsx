@@ -51,6 +51,7 @@ import {
 import { format } from 'date-fns';
 import type { Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
+import { calculateAgeFromDOB, ageToDateOfBirth } from '@/lib/utils';
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();
@@ -82,8 +83,7 @@ export default function PatientDetail() {
   const handleEdit = () => {
     if (patient) {
       setEditData({
-        first_name: patient.first_name,
-        last_name: patient.last_name,
+        full_name: patient.full_name,
         date_of_birth: patient.date_of_birth,
         gender: patient.gender,
         phone: patient.phone || '',
@@ -162,7 +162,7 @@ export default function PatientDetail() {
   return (
     <div className="page-container">
       <PageHeader
-        title={`${patient.first_name} ${patient.last_name}`}
+        title={patient.full_name}
         subtitle={patient.patient_id_number || 'No ID'}
         icon={<User className="h-5 w-5" />}
         showBack
@@ -185,7 +185,7 @@ export default function PatientDetail() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Patient?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete {patient.first_name} {patient.last_name} and all their reports.
+                      This will permanently delete {patient.full_name} and all their reports.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -214,17 +214,22 @@ export default function PatientDetail() {
                     {isEditing ? (
                       <>
                         <div className="grid gap-4 sm:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label className="text-sm">First Name</Label>
-                            <Input value={editData.first_name || ''} onChange={(e) => setEditData({ ...editData, first_name: e.target.value })} />
+                          <div className="space-y-2 sm:col-span-2">
+                            <Label className="text-sm">Full Name</Label>
+                            <Input value={editData.full_name || ''} onChange={(e) => setEditData({ ...editData, full_name: e.target.value })} />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-sm">Last Name</Label>
-                            <Input value={editData.last_name || ''} onChange={(e) => setEditData({ ...editData, last_name: e.target.value })} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-sm">Date of Birth</Label>
-                            <Input type="date" value={editData.date_of_birth || ''} onChange={(e) => setEditData({ ...editData, date_of_birth: e.target.value })} />
+                            <Label className="text-sm">Age (years)</Label>
+                            <Input 
+                              type="number" 
+                              min="0" 
+                              max="150"
+                              value={editData.date_of_birth ? calculateAgeFromDOB(editData.date_of_birth) : ''} 
+                              onChange={(e) => {
+                                const age = parseInt(e.target.value) || 0;
+                                setEditData({ ...editData, date_of_birth: ageToDateOfBirth(age) });
+                              }} 
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-sm">Gender</Label>

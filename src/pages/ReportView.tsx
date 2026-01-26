@@ -368,7 +368,7 @@ export default function ReportView() {
                           className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
                           onClick={() => navigate(`/patients/${report.patient_id}`)}
                         >
-                          {report.patient?.first_name} {report.patient?.last_name}
+                          {report.patient?.full_name}
                         </p>
                       </div>
                       <div>

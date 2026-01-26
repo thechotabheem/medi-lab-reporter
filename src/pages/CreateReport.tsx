@@ -43,10 +43,10 @@ export default function CreateReport() {
   // Get display name for patient section
   const getPatientDisplayName = () => {
     if (selectedPatient) {
-      return `${selectedPatient.first_name} ${selectedPatient.last_name}`;
+      return selectedPatient.full_name;
     }
     if (newPatientData) {
-      return `${newPatientData.first_name} ${newPatientData.last_name} (new)`;
+      return `${newPatientData.full_name} (new)`;
     }
     return null;
   };
@@ -55,12 +55,13 @@ export default function CreateReport() {
   const getPatientForForm = (): Patient | null => {
     if (selectedPatient) return selectedPatient;
     if (newPatientData) {
+      // Import ageToDateOfBirth for converting age to date_of_birth
+      const { ageToDateOfBirth } = require('@/lib/utils');
       return {
         id: 'new',
         clinic_id: profile?.clinic_id || '',
-        first_name: newPatientData.first_name,
-        last_name: newPatientData.last_name,
-        date_of_birth: newPatientData.date_of_birth,
+        full_name: newPatientData.full_name,
+        date_of_birth: ageToDateOfBirth(newPatientData.age),
         gender: newPatientData.gender,
         phone: newPatientData.phone || null,
         patient_id_number: newPatientData.patient_id_number || null,
@@ -83,13 +84,13 @@ export default function CreateReport() {
 
       // If new patient, create them first
       if (newPatientData && !selectedPatient) {
+        const { ageToDateOfBirth } = require('@/lib/utils');
         const { data: newPatient, error: patientError } = await supabase
           .from('patients')
           .insert({
             clinic_id: profile.clinic_id,
-            first_name: newPatientData.first_name,
-            last_name: newPatientData.last_name,
-            date_of_birth: newPatientData.date_of_birth,
+            full_name: newPatientData.full_name,
+            date_of_birth: ageToDateOfBirth(newPatientData.age),
             gender: newPatientData.gender,
             phone: newPatientData.phone || null,
             patient_id_number: newPatientData.patient_id_number || null,

@@ -63,10 +63,9 @@ export type Database = {
           created_at: string
           date_of_birth: string
           email: string | null
-          first_name: string
+          full_name: string
           gender: Database["public"]["Enums"]["gender"]
           id: string
-          last_name: string
           patient_id_number: string | null
           phone: string | null
           updated_at: string
@@ -77,10 +76,9 @@ export type Database = {
           created_at?: string
           date_of_birth: string
           email?: string | null
-          first_name: string
+          full_name: string
           gender: Database["public"]["Enums"]["gender"]
           id?: string
-          last_name: string
           patient_id_number?: string | null
           phone?: string | null
           updated_at?: string
@@ -91,10 +89,9 @@ export type Database = {
           created_at?: string
           date_of_birth?: string
           email?: string | null
-          first_name?: string
+          full_name?: string
           gender?: Database["public"]["Enums"]["gender"]
           id?: string
-          last_name?: string
           patient_id_number?: string | null
           phone?: string | null
           updated_at?: string

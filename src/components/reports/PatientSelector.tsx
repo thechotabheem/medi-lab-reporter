@@ -13,14 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePatients } from '@/hooks/usePatients';
-import { Search, User, Calendar, Phone, UserPlus } from 'lucide-react';
-import { format } from 'date-fns';
+import { Search, User, Phone, UserPlus } from 'lucide-react';
 import type { Patient, Gender } from '@/types/database';
+import { calculateAgeFromDOB } from '@/lib/utils';
 
 export interface NewPatientData {
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
+  full_name: string;
+  age: number;
   gender: Gender;
   phone?: string;
   patient_id_number?: string;
@@ -44,19 +43,17 @@ export const PatientSelector = ({
   const [activeTab, setActiveTab] = useState<string>(selectedPatient ? 'existing' : 'new');
   
   const [newPatient, setNewPatient] = useState<NewPatientData>({
-    first_name: newPatientData?.first_name || '',
-    last_name: newPatientData?.last_name || '',
-    date_of_birth: newPatientData?.date_of_birth || '',
+    full_name: newPatientData?.full_name || '',
+    age: newPatientData?.age || 0,
     gender: newPatientData?.gender || 'male',
     phone: newPatientData?.phone || '',
     patient_id_number: newPatientData?.patient_id_number || '',
   });
 
   const filteredPatients = patients?.filter((patient) => {
-    const fullName = `${patient.first_name} ${patient.last_name}`.toLowerCase();
     const searchLower = searchTerm.toLowerCase();
     return (
-      fullName.includes(searchLower) ||
+      patient.full_name.toLowerCase().includes(searchLower) ||
       patient.patient_id_number?.toLowerCase().includes(searchLower) ||
       patient.phone?.includes(searchTerm)
     );
@@ -66,8 +63,7 @@ export const PatientSelector = ({
     setActiveTab(tab);
     if (tab === 'new') {
       onSelect(null);
-      // Update parent with current new patient data
-      if (newPatient.first_name && newPatient.last_name && newPatient.date_of_birth && newPatient.gender) {
+      if (newPatient.full_name && newPatient.age > 0 && newPatient.gender) {
         onNewPatientChange?.(newPatient);
       }
     } else {
@@ -75,12 +71,11 @@ export const PatientSelector = ({
     }
   };
 
-  const handleNewPatientChange = (field: keyof NewPatientData, value: string) => {
+  const handleNewPatientChange = (field: keyof NewPatientData, value: string | number) => {
     const updated = { ...newPatient, [field]: value };
     setNewPatient(updated);
     
-    // Only notify parent if required fields are filled
-    if (updated.first_name && updated.last_name && updated.date_of_birth && updated.gender) {
+    if (updated.full_name && updated.age > 0 && updated.gender) {
       onNewPatientChange?.(updated);
     } else {
       onNewPatientChange?.(null);
@@ -92,7 +87,7 @@ export const PatientSelector = ({
     onNewPatientChange?.(null);
   };
 
-  const isNewPatientValid = newPatient.first_name && newPatient.last_name && newPatient.date_of_birth && newPatient.gender;
+  const isNewPatientValid = newPatient.full_name && newPatient.age > 0 && newPatient.gender;
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -109,34 +104,28 @@ export const PatientSelector = ({
 
       <TabsContent value="new" className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="new_first_name" className="text-sm">First Name *</Label>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="new_full_name" className="text-sm">Full Name *</Label>
             <Input
-              id="new_first_name"
-              value={newPatient.first_name}
-              onChange={(e) => handleNewPatientChange('first_name', e.target.value)}
-              placeholder="John"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="new_last_name" className="text-sm">Last Name *</Label>
-            <Input
-              id="new_last_name"
-              value={newPatient.last_name}
-              onChange={(e) => handleNewPatientChange('last_name', e.target.value)}
-              placeholder="Doe"
+              id="new_full_name"
+              value={newPatient.full_name}
+              onChange={(e) => handleNewPatientChange('full_name', e.target.value)}
+              placeholder="John Doe"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="new_dob" className="text-sm">Date of Birth *</Label>
+            <Label htmlFor="new_age" className="text-sm">Age (years) *</Label>
             <Input
-              id="new_dob"
-              type="date"
-              value={newPatient.date_of_birth}
-              onChange={(e) => handleNewPatientChange('date_of_birth', e.target.value)}
+              id="new_age"
+              type="number"
+              min="0"
+              max="150"
+              value={newPatient.age || ''}
+              onChange={(e) => handleNewPatientChange('age', parseInt(e.target.value) || 0)}
+              placeholder="35"
             />
           </div>
           <div className="space-y-2">
@@ -214,54 +203,54 @@ export const PatientSelector = ({
                     <p className="text-sm">Switch to "New Patient" tab to add one</p>
                   </div>
                 ) : (
-                  filteredPatients?.map((patient) => (
-                    <Card
-                      key={patient.id}
-                      className={`cursor-pointer transition-all hover:border-primary ${
-                        selectedPatient?.id === patient.id
-                          ? 'border-primary bg-primary/5'
-                          : ''
-                      }`}
-                      onClick={() => handleSelectExisting(patient)}
-                    >
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm sm:text-base">
-                                {patient.first_name} {patient.last_name}
-                              </p>
-                              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
-                                {patient.patient_id_number && (
-                                  <span>ID: {patient.patient_id_number}</span>
-                                )}
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
-                                  {format(new Date(patient.date_of_birth), 'MMM d, yyyy')}
-                                </span>
-                                {patient.phone && (
-                                  <span className="flex items-center gap-1">
-                                    <Phone className="h-3 w-3" />
-                                    {patient.phone}
-                                  </span>
-                                )}
+                  filteredPatients?.map((patient) => {
+                    const age = calculateAgeFromDOB(patient.date_of_birth);
+                    return (
+                      <Card
+                        key={patient.id}
+                        className={`cursor-pointer transition-all hover:border-primary ${
+                          selectedPatient?.id === patient.id
+                            ? 'border-primary bg-primary/5'
+                            : ''
+                        }`}
+                        onClick={() => handleSelectExisting(patient)}
+                      >
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <User className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm sm:text-base">
+                                  {patient.full_name}
+                                </p>
+                                <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                                  {patient.patient_id_number && (
+                                    <span>ID: {patient.patient_id_number}</span>
+                                  )}
+                                  <span>{age} years • {patient.gender}</span>
+                                  {patient.phone && (
+                                    <span className="flex items-center gap-1">
+                                      <Phone className="h-3 w-3" />
+                                      {patient.phone}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
+                            <Button
+                              variant={selectedPatient?.id === patient.id ? 'default' : 'outline'}
+                              size="sm"
+                              className="text-xs sm:text-sm"
+                            >
+                              {selectedPatient?.id === patient.id ? 'Selected' : 'Select'}
+                            </Button>
                           </div>
-                          <Button
-                            variant={selectedPatient?.id === patient.id ? 'default' : 'outline'}
-                            size="sm"
-                            className="text-xs sm:text-sm"
-                          >
-                            {selectedPatient?.id === patient.id ? 'Selected' : 'Select'}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             </ScrollArea>
