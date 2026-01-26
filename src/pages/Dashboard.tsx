@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClinic } from '@/contexts/ClinicContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
@@ -21,6 +22,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { clinic } = useClinic();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
 
   const clinicName = clinic?.name || 'Medical Lab';
 
@@ -67,11 +77,16 @@ export default function Dashboard() {
             Here's an overview of your lab activity
           </p>
           <p className="text-xs text-muted-foreground/70 mt-2">
-            {new Date().toLocaleDateString('en-US', { 
+            {currentTime.toLocaleDateString('en-US', { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
               day: 'numeric' 
+            })}
+            <span className="mx-2">•</span>
+            {currentTime.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit'
             })}
           </p>
         </div>
