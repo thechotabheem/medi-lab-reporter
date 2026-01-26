@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +11,8 @@ import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { SkeletonForm } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2, FileText, ShieldX } from 'lucide-react';
+import { Building2, Loader2, FileText } from 'lucide-react';
 
 interface ClinicData {
   name: string;
@@ -27,7 +26,7 @@ interface ClinicData {
 
 export default function ClinicSettings() {
   const navigate = useNavigate();
-  const { profile, userRole } = useAuth();
+  const { clinicId, refreshClinic } = useClinic();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,13 +43,13 @@ export default function ClinicSettings() {
 
   useEffect(() => {
     const fetchClinicData = async () => {
-      if (!profile?.clinic_id) return;
+      if (!clinicId) return;
 
       try {
         const { data, error } = await supabase
           .from('clinics')
           .select('*')
-          .eq('id', profile.clinic_id)
+          .eq('id', clinicId)
           .single();
 
         if (error) throw error;
@@ -74,7 +73,7 @@ export default function ClinicSettings() {
     };
 
     fetchClinicData();
-  }, [profile?.clinic_id, toast]);
+  }, [clinicId, toast]);
 
   const handleChange = (field: keyof ClinicData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -83,13 +82,8 @@ export default function ClinicSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!profile?.clinic_id) {
+    if (!clinicId) {
       toast({ title: 'Error', description: 'Clinic information not found.', variant: 'destructive' });
-      return;
-    }
-
-    if (userRole?.role !== 'admin') {
-      toast({ title: 'Permission denied', description: 'Only admins can update settings.', variant: 'destructive' });
       return;
     }
 
@@ -107,10 +101,11 @@ export default function ClinicSettings() {
           footer_text: formData.footer_text || null,
           logo_url: formData.logo_url || null,
         })
-        .eq('id', profile.clinic_id);
+        .eq('id', clinicId);
 
       if (error) throw error;
 
+      await refreshClinic();
       toast({ title: 'Settings saved', description: 'Clinic settings updated successfully.' });
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Failed to save settings.', variant: 'destructive' });
@@ -118,21 +113,6 @@ export default function ClinicSettings() {
       setIsSaving(false);
     }
   };
-
-  // Redirect non-admins
-  if (userRole?.role !== 'admin') {
-    return (
-      <div className="page-container flex items-center justify-center">
-        <EmptyState
-          icon={ShieldX}
-          title="Access Denied"
-          description="Only admins can access clinic settings."
-          actionLabel="Back to Settings"
-          onAction={() => navigate('/settings')}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="page-container">

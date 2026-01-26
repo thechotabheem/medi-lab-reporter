@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { useUpdatePatient, useDeletePatient } from '@/hooks/usePatientMutations';
 import { usePatientReports } from '@/hooks/useReportMutations';
 import { Button } from '@/components/ui/button';
@@ -56,7 +55,6 @@ import { calculateAgeFromDOB, ageToDateOfBirth } from '@/lib/utils';
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { profile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Patient>>({});
 
@@ -75,7 +73,7 @@ export default function PatientDetail() {
       if (error) throw error;
       return data as Patient;
     },
-    enabled: !!id && !!profile?.clinic_id,
+    enabled: !!id,
   });
 
   const { data: reports, isLoading: reportsLoading } = usePatientReports(id);

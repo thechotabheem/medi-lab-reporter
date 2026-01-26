@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
-import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
@@ -12,7 +11,6 @@ import {
   Users, 
   FileText, 
   Settings, 
-  LogOut,
   Plus,
   Activity,
   ClipboardList
@@ -20,14 +18,10 @@ import {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { profile, userRole, signOut } = useAuth();
+  const { clinic } = useClinic();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  const firstName = profile?.full_name?.split(' ')[0] || 'there';
+  const clinicName = clinic?.name || 'Medical Lab';
 
   return (
     <div className="page-container">
@@ -44,27 +38,15 @@ export default function Dashboard() {
               </IconWrapper>
               <div>
                 <h1 className="font-semibold text-sm sm:text-base">MedLab Reporter</h1>
-                <p className="text-2xs sm:text-xs text-muted-foreground capitalize">
-                  {userRole?.role?.replace('_', ' ') || 'User'}
+                <p className="text-2xs sm:text-xs text-muted-foreground">
+                  {clinicName}
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-xs sm:text-sm text-muted-foreground hidden md:block">
-                {profile?.full_name}
-              </span>
               <PWAInstallPrompt />
               <ThemeToggle />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleSignOut}
-                className="text-xs sm:text-sm"
-              >
-                <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Sign Out</span>
-              </Button>
             </div>
           </div>
         </div>
@@ -75,7 +57,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8 animate-fade-in">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Welcome back, <span className="text-gradient-primary">{firstName}!</span>
+            Welcome to <span className="text-gradient-primary">{clinicName}!</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's an overview of your lab activity

@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { PatientSelector, NewPatientData } from '@/components/reports/PatientSelector';
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
-import { useAuth } from '@/contexts/AuthContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 
 export default function CreateReport() {
   const navigate = useNavigate();
-  const { profile, user } = useAuth();
+  const { clinicId } = useClinic();
   const queryClient = useQueryClient();
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -59,7 +59,7 @@ export default function CreateReport() {
       const { ageToDateOfBirth } = require('@/lib/utils');
       return {
         id: 'new',
-        clinic_id: profile?.clinic_id || '',
+        clinic_id: clinicId || '',
         full_name: newPatientData.full_name,
         date_of_birth: ageToDateOfBirth(newPatientData.age),
         gender: newPatientData.gender,
@@ -75,7 +75,7 @@ export default function CreateReport() {
   };
 
   const handleSave = async (status: 'draft' | 'completed') => {
-    if (!profile?.clinic_id || !selectedTemplate) return;
+    if (!clinicId || !selectedTemplate) return;
 
     setIsSaving(true);
 
@@ -88,7 +88,7 @@ export default function CreateReport() {
         const { data: newPatient, error: patientError } = await supabase
           .from('patients')
           .insert({
-            clinic_id: profile.clinic_id,
+            clinic_id: clinicId,
             full_name: newPatientData.full_name,
             date_of_birth: ageToDateOfBirth(newPatientData.age),
             gender: newPatientData.gender,
@@ -116,8 +116,8 @@ export default function CreateReport() {
       const { error: reportError } = await supabase
         .from('reports')
         .insert({
-          clinic_id: profile.clinic_id,
-          created_by: user?.id,
+          clinic_id: clinicId,
+          created_by: null,
           report_number: reportNumber,
           patient_id: patientId,
           report_type: selectedTemplate,
