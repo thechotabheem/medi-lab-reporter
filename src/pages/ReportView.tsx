@@ -307,8 +307,19 @@ export default function ReportView() {
                 {/* Clinic Letterhead */}
                 <div className="bg-primary/5 border-b border-border p-4 sm:p-6">
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Building2 className="h-6 w-6 text-primary" />
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      {clinic?.logo_url ? (
+                        <img 
+                          src={clinic.logo_url} 
+                          alt="Clinic logo" 
+                          className="h-12 w-12 object-contain rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <Building2 className="h-6 w-6 text-primary" />
+                      )}
                       <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                         {clinic?.name || 'Medical Laboratory'}
                       </h1>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { PageHeader } from '@/components/ui/page-header';
 import { PatientSelector, NewPatientData } from '@/components/reports/PatientSelector';
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
+import { DraftBanner } from '@/components/reports/DraftBanner';
+import { useDraftReport, DraftReport } from '@/hooks/useDraftReport';
 import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,6 +23,7 @@ export default function CreateReport() {
   const navigate = useNavigate();
   const { clinicId } = useClinic();
   const queryClient = useQueryClient();
+  const { draft, hasDraft, saveDraft, clearDraft } = useDraftReport();
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [newPatientData, setNewPatientData] = useState<NewPatientData | null>(null);
@@ -32,10 +35,62 @@ export default function CreateReport() {
   });
   const [reportData, setReportData] = useState<Record<string, string | number | boolean | null>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [draftApplied, setDraftApplied] = useState(false);
+
+  // Auto-save on changes (after initial load)
+  useEffect(() => {
+    if (draftApplied || !hasDraft && (selectedPatient || newPatientData || selectedTemplate)) {
+      saveDraft({
+        patient: selectedPatient ? { id: selectedPatient.id, full_name: selectedPatient.full_name } : null,
+        newPatientData: newPatientData || null,
+        selectedTemplate,
+        reportDetails,
+        reportData,
+      });
+    }
+  }, [selectedPatient, newPatientData, selectedTemplate, reportDetails, reportData, draftApplied]);
 
   const handleReportDataChange = useCallback((data: Record<string, string | number | boolean | null>) => {
     setReportData(data);
   }, []);
+
+  const handleResumeDraft = useCallback(() => {
+    if (!draft) return;
+    
+    // Restore draft state
+    if (draft.patient) {
+      // We only have id and name from draft, need to fetch full patient
+      supabase
+        .from('patients')
+        .select('*')
+        .eq('id', draft.patient.id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedPatient(data);
+        });
+    }
+    if (draft.newPatientData) {
+      setNewPatientData(draft.newPatientData);
+    }
+    if (draft.selectedTemplate) {
+      setSelectedTemplate(draft.selectedTemplate);
+    }
+    if (draft.reportDetails) {
+      setReportDetails(draft.reportDetails);
+    }
+    if (draft.reportData) {
+      setReportData(draft.reportData);
+    }
+    
+    setDraftApplied(true);
+    toast.success('Draft restored');
+  }, [draft]);
+
+  const handleDiscardDraft = useCallback(() => {
+    clearDraft();
+    setDraftApplied(true);
+    toast.info('Draft discarded');
+  }, [clearDraft]);
 
   // Can save if we have (existing patient OR valid new patient data) AND a template AND test date
   const canSave = (selectedPatient || newPatientData) && selectedTemplate && reportDetails.test_date;
@@ -130,6 +185,9 @@ export default function CreateReport() {
 
       if (reportError) throw reportError;
 
+      // Clear draft on successful save
+      clearDraft();
+
       queryClient.invalidateQueries({ queryKey: ['reports'] });
       toast.success(newPatientData && !selectedPatient 
         ? 'Patient registered and report created successfully' 
@@ -146,11 +204,23 @@ export default function CreateReport() {
   const patientForForm = getPatientForForm();
   const patientDisplayName = getPatientDisplayName();
 
+  // Show draft banner if there's a draft and we haven't applied or discarded it
+  const showDraftBanner = hasDraft && draft && !draftApplied;
+
   return (
     <div className="page-container pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
       <PageHeader title="Create New Report" subtitle="Fill in all sections to create a report" showBack backPath="/dashboard" />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 space-y-6">
+        {/* Draft Banner */}
+        {showDraftBanner && (
+          <DraftBanner
+            draft={draft}
+            onResume={handleResumeDraft}
+            onDiscard={handleDiscardDraft}
+          />
+        )}
+
         {/* Section 1: Patient Selection */}
         <Card>
           <CardHeader className="p-4 sm:p-6">

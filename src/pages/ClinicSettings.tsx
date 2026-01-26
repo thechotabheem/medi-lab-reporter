@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { SkeletonForm } from '@/components/ui/skeleton';
+import { LogoUploader } from '@/components/clinic/LogoUploader';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Loader2, FileText } from 'lucide-react';
 
@@ -221,17 +222,12 @@ export default function ClinicSettings() {
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="logo_url" className="text-sm">Logo URL</Label>
-                      <Input
-                        id="logo_url"
-                        type="url"
-                        value={formData.logo_url}
-                        onChange={(e) => handleChange('logo_url', e.target.value)}
-                        placeholder="https://example.com/logo.png"
+                      <Label className="text-sm">Clinic Logo</Label>
+                      <LogoUploader
+                        currentLogoUrl={formData.logo_url}
+                        onLogoChange={(url) => handleChange('logo_url', url)}
+                        clinicId={clinicId}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Enter a URL to your clinic logo image
-                      </p>
                     </div>
 
                     <div className="space-y-2">
