@@ -177,6 +177,21 @@
     transform: translateY(-2px);
   }
 
+  /* Card gradient overlay for depth */
+  .card-gradient-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      hsl(162 84% 42% / 0.03) 0%,
+      transparent 50%,
+      hsl(220 15% 0% / 0.15) 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
   /* Interactive elements */
   .interactive {
     @apply transition-all duration-200 ease-out cursor-pointer;

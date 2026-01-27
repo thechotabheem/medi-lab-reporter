@@ -47,13 +47,13 @@ export function StatCard({
         "group transition-all duration-300 ease-out relative overflow-hidden",
         onClick && "cursor-pointer",
         onClick && !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
-        glowEffect && "animate-pulse-glow border-primary/20",
+        glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
         className
       )}
       onClick={handleClick}
     >
       {glowEffect && <Ripple ripples={ripples} />}
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
         <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
@@ -61,7 +61,7 @@ export function StatCard({
           <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         {loading ? (
           <div className="h-8 w-16 skeleton rounded" />
         ) : (
