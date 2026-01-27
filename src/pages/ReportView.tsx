@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useClinic } from '@/contexts/ClinicContext';
 import { useUpdateReport, useDeleteReport } from '@/hooks/useReportMutations';
+import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import { generateReportPDF, downloadPDF, sharePDFViaWhatsApp } from '@/lib/pdf-generator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -52,7 +53,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
-import { reportTemplates, getReportTypeName } from '@/lib/report-templates';
+import { getReportTypeName } from '@/lib/report-templates';
 import '@/styles/print.css';
 
 const calculateAge = (dateOfBirth: string): string => {
@@ -90,6 +91,9 @@ export default function ReportView() {
     enabled: !!id,
   });
 
+  // Get customized template for this report type
+  const { template, isLoading: isLoadingTemplate } = useCustomizedTemplate(report?.report_type || null);
+
   const { data: clinic } = useQuery({
     queryKey: ['clinic', clinicId],
     queryFn: async () => {
@@ -109,7 +113,12 @@ export default function ReportView() {
     if (!report?.patient) return;
     setIsGeneratingPDF(true);
     try {
-      const doc = await generateReportPDF({ report, patient: report.patient, clinic });
+      const doc = await generateReportPDF({ 
+        report, 
+        patient: report.patient, 
+        clinic,
+        customTemplate: template, // Pass customized template
+      });
       downloadPDF(doc, `${report.report_number}.pdf`);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
@@ -122,7 +131,12 @@ export default function ReportView() {
     if (!report?.patient) return;
     setIsGeneratingPDF(true);
     try {
-      const doc = await generateReportPDF({ report, patient: report.patient, clinic });
+      const doc = await generateReportPDF({ 
+        report, 
+        patient: report.patient, 
+        clinic,
+        customTemplate: template, // Pass customized template
+      });
       await sharePDFViaWhatsApp(doc, report.patient.phone || undefined);
     } catch (error) {
       console.error('Failed to share PDF:', error);
@@ -189,7 +203,7 @@ export default function ReportView() {
     return '-';
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingTemplate) {
     return (
       <EnhancedPageLayout>
         <PageHeader title="Loading..." showBack />
@@ -227,26 +241,28 @@ export default function ReportView() {
     );
   }
 
-  const template = reportTemplates[report.report_type];
+  // Use template from hook (already includes customizations)
   const reportData = report.report_data as Record<string, unknown>;
 
-  // Collect all abnormal values
+  // Collect all abnormal values (only if template is available)
   const abnormalValues: { label: string; value: string; range: string }[] = [];
-  template.categories.forEach((category) => {
-    category.fields.forEach((field) => {
-      const value = reportData[field.name];
-      if (value !== undefined && value !== null && value !== '') {
-        const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
-        if (status === 'abnormal') {
-          abnormalValues.push({
-            label: field.label,
-            value: `${value}${field.unit ? ` ${field.unit}` : ''}`,
-            range: formatNormalRange(field, report.patient?.gender || 'other'),
-          });
+  if (template) {
+    template.categories.forEach((category) => {
+      category.fields.forEach((field) => {
+        const value = reportData[field.name];
+        if (value !== undefined && value !== null && value !== '') {
+          const status = getValueStatus(value as number, field, report.patient?.gender || 'other');
+          if (status === 'abnormal') {
+            abnormalValues.push({
+              label: field.label,
+              value: `${value}${field.unit ? ` ${field.unit}` : ''}`,
+              range: formatNormalRange(field, report.patient?.gender || 'other'),
+            });
+          }
         }
-      }
+      });
     });
-  });
+  }
 
   return (
     <EnhancedPageLayout>
@@ -445,7 +461,7 @@ export default function ReportView() {
                   )}
 
                   {/* Test Results Tables */}
-                  {template.categories.map((category, catIndex) => {
+                  {template && template.categories.map((category, catIndex) => {
                     const categoryFields = category.fields.filter(
                       (field) => reportData[field.name] !== undefined && reportData[field.name] !== null && reportData[field.name] !== ''
                     );

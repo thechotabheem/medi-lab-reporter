@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getReportTemplate } from '@/lib/report-templates';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { usePatientHistory, getHistoricalComparison, getTrendIcon } from '@/hooks/usePatientHistory';
 import type { ReportType, Patient, TestField, TestCategory } from '@/types/database';
@@ -27,7 +28,8 @@ export const DynamicReportForm = ({
   onChange,
   initialData = {},
 }: DynamicReportFormProps) => {
-  const template = getReportTemplate(reportType);
+  // Use customized template that merges defaults with clinic customizations
+  const { template, isLoading } = useCustomizedTemplate(reportType);
   const formRef = useRef<HTMLDivElement>(null);
   const { control, watch, setValue, getValues } = useForm({
     defaultValues: initialData,
@@ -109,6 +111,7 @@ export const DynamicReportForm = ({
 
   // Run auto-calculations when form values change
   useEffect(() => {
+    if (!template) return;
     template.categories.forEach((category) => {
       category.fields.forEach((field) => {
         if (field.calculated) {
@@ -123,7 +126,7 @@ export const DynamicReportForm = ({
         }
       });
     });
-  }, [formValues, template.categories, calculateField, setValue, getValues]);
+  }, [formValues, template, calculateField, setValue, getValues]);
 
   // Notify parent of changes
   useEffect(() => {
@@ -296,6 +299,23 @@ export const DynamicReportForm = ({
       </div>
     );
   };
+
+  // Loading state
+  if (isLoading || !template) {
+    return (
+      <div className="space-y-4">
+        <Card className="border rounded-lg p-4">
+          <Skeleton className="h-8 w-48 mb-4" />
+          <div className="space-y-3">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div ref={formRef} className="space-y-4">
