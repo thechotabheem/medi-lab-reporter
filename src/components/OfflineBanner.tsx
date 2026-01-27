@@ -1,11 +1,26 @@
-import { useState } from 'react';
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { WifiOff, RefreshCw, Wifi } from 'lucide-react';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 
 export const OfflineBanner = () => {
   const { isOnline } = useNetworkStatus();
   const [isRetrying, setIsRetrying] = useState(false);
+  const wasOfflineRef = useRef(false);
+
+  useEffect(() => {
+    if (!isOnline) {
+      wasOfflineRef.current = true;
+    } else if (wasOfflineRef.current && isOnline) {
+      toast({
+        title: "Back online",
+        description: "Your internet connection has been restored.",
+        duration: 4000,
+      });
+      wasOfflineRef.current = false;
+    }
+  }, [isOnline]);
 
   const handleRetry = async () => {
     setIsRetrying(true);
