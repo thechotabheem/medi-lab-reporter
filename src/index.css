@@ -518,10 +518,16 @@
     }
   }
 
-  /* Breathe animation - subtle, modern scale effect */
+  /* Breathe animation - subtle scale with synced glow */
   @keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%, 100% { 
+      transform: scale(1);
+      filter: drop-shadow(0 0 4px hsl(162 84% 42% / 0.3));
+    }
+    50% { 
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 12px hsl(162 84% 42% / 0.5));
+    }
   }
 
   .animate-breathe {
