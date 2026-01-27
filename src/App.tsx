@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { SplashScreen } from "@/components/SplashScreen";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
 import Reports from "./pages/Reports";
@@ -21,36 +23,58 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark">
-      <ClinicProvider>
-        <TooltipProvider>
-          <OfflineBanner />
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/install" element={<Install />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/reports/new" element={<CreateReport />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/reports/:id" element={<ReportView />} />
-              <Route path="/patients" element={<Patients />} />
-              <Route path="/patients/new" element={<AddPatient />} />
-              <Route path="/patients/:id" element={<PatientDetail />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/settings/clinic" element={<ClinicSettings />} />
-              <Route path="/settings/templates" element={<TemplateEditor />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ClinicProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  useEffect(() => {
+    // Check if this is a fresh page load (not a hot reload in development)
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      setShowSplash(false);
+      setIsFirstLoad(false);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    sessionStorage.setItem('splashShown', 'true');
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark">
+        <ClinicProvider>
+          <TooltipProvider>
+            {showSplash && isFirstLoad && (
+              <SplashScreen onComplete={handleSplashComplete} />
+            )}
+            <OfflineBanner />
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/install" element={<Install />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/reports/new" element={<CreateReport />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/reports/:id" element={<ReportView />} />
+                <Route path="/patients" element={<Patients />} />
+                <Route path="/patients/new" element={<AddPatient />} />
+                <Route path="/patients/:id" element={<PatientDetail />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/settings/clinic" element={<ClinicSettings />} />
+                <Route path="/settings/templates" element={<TemplateEditor />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ClinicProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
