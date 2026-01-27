@@ -1,174 +1,118 @@
 
-# Add Cursor-Following Glow Effect
+# Offline Indicator Banner Implementation
 
 ## Overview
-Add a subtle, elegant glow effect that follows the cursor position in two places:
-1. **Background**: A diffused ambient glow that follows the cursor across the entire dashboard
-2. **Action Cards**: A localized glow spotlight inside each card that tracks cursor movement
+Add a visual banner that appears when the app loses internet connection, helping users understand why certain features may not work. The banner will automatically appear/disappear based on network status and match the app's teal dark theme design.
 
 ---
 
-## Implementation Approach
+## What Will Be Built
 
-### Part 1: Background Cursor Glow
+### Visual Design
+- A sleek, fixed banner at the top of the screen
+- Uses a warning/amber color scheme that stands out but isn't jarring
+- Shows a WiFi-off icon with "You're offline" message
+- Smooth slide-down animation when appearing
+- Automatically hides when connection is restored
 
-Create a new component that renders a full-page glow effect following the cursor. This will be a fixed-position element with a radial gradient that updates position based on mouse coordinates.
-
-### Part 2: Action Card Internal Glow
-
-Extend the existing `handleMouseMove` logic in ActionCard to also position a glow element inside each card, creating a spotlight effect that follows the cursor within the card bounds.
+### User Experience
+- Banner appears within 1-2 seconds of losing connection
+- Disappears automatically when back online
+- Non-intrusive but clearly visible
+- Works across all pages of the app
 
 ---
 
 ## Implementation Steps
 
-### Step 1: Create Background Cursor Glow Component
-**New File:** `src/components/ui/cursor-glow.tsx`
+### 1. Create Network Status Hook
+A new custom hook that tracks online/offline status using browser APIs.
 
-Create a reusable component that:
-- Tracks global mouse position using `mousemove` event listener
-- Renders a fixed-position radial gradient glow
-- Smoothly animates position changes using CSS transitions
-- Fades in on mount for a polished entrance
+**File:** `src/hooks/useNetworkStatus.ts`
+- Uses `navigator.onLine` for initial state
+- Listens to `online` and `offline` window events
+- Returns simple `isOnline` boolean
+- Properly cleans up event listeners
 
-```tsx
-import { useState, useEffect } from 'react';
+### 2. Create Offline Banner Component
+A reusable component that displays the offline notification.
 
-export function CursorGlow() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(false);
+**File:** `src/components/OfflineBanner.tsx`
+- Uses the new `useNetworkStatus` hook
+- Fixed positioning at the top of the viewport
+- Amber/warning color scheme for visibility
+- WiFi-off icon from lucide-react
+- Slide-down animation for smooth appearance
+- Only renders when offline
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
-    };
+### 3. Add Banner to App Layout
+Integrate the banner into the main App component.
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isVisible]);
+**File:** `src/App.tsx`
+- Import and add `OfflineBanner` component
+- Place it at the top level, visible on all pages
 
-  return (
-    <div
-      className="fixed pointer-events-none z-0 transition-opacity duration-700"
-      style={{
-        left: position.x,
-        top: position.y,
-        transform: 'translate(-50%, -50%)',
-        width: '600px',
-        height: '600px',
-        background: 'radial-gradient(circle, hsl(162 84% 42% / 0.06) 0%, transparent 70%)',
-        opacity: isVisible ? 1 : 0,
-      }}
-    />
-  );
-}
-```
+### 4. Add Animation Styles
+Add the slide-down animation to the CSS.
 
-### Step 2: Add Background Glow to Dashboard
-**File:** `src/pages/Dashboard.tsx`
-
-Import and render the `CursorGlow` component at the top of the page container, behind all other content.
-
-```tsx
-import { CursorGlow } from '@/components/ui/cursor-glow';
-
-// Inside return, right after page-container opens:
-<CursorGlow />
-```
-
-### Step 3: Add Internal Glow to Action Cards
-**File:** `src/components/ui/action-card.tsx`
-
-Extend the existing mouse tracking to also control an internal glow element:
-
-1. Add a new state for the glow position
-2. Calculate glow position relative to card during `handleMouseMove`
-3. Render a positioned glow element inside the card
-4. Fade out glow on mouse leave
-
-```tsx
-// Add new state
-const [glowPosition, setGlowPosition] = useState({ x: 0, y: 0, opacity: 0 });
-
-// In handleMouseMove, add:
-setGlowPosition({ x, y, opacity: 1 });
-
-// In handleMouseLeave, add:
-setGlowPosition(prev => ({ ...prev, opacity: 0 }));
-
-// Add glow element inside Card, before CardHeader:
-<div
-  className="absolute pointer-events-none transition-opacity duration-300"
-  style={{
-    left: glowPosition.x,
-    top: glowPosition.y,
-    transform: 'translate(-50%, -50%)',
-    width: '150px',
-    height: '150px',
-    background: 'radial-gradient(circle, hsl(162 84% 42% / 0.15) 0%, transparent 70%)',
-    opacity: glowPosition.opacity,
-  }}
-/>
-```
-
-### Step 4: Add CSS Support for Cursor Glow
 **File:** `src/index.css`
-
-Add utility class for the cursor glow component:
-
-```css
-/* Cursor-following glow effect */
-.cursor-glow {
-  transition: left 0.15s ease-out, top 0.15s ease-out;
-}
-```
+- Add `slideDown` keyframe animation
+- Add `.animate-slide-down` utility class
 
 ---
 
 ## Technical Details
 
-### Background Glow Specifications
+### Network Status Hook
+```typescript
+// Uses browser's Navigator API
+const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-| Property | Value | Purpose |
-|----------|-------|---------|
-| Size | 600px x 600px | Large enough for soft ambient effect |
-| Gradient | radial, 0-70% | Smooth falloff to transparent |
-| Color | primary at 6% opacity | Subtle teal glow matching theme |
-| Z-index | 0 | Behind all content |
-| Transition | 0.15s ease-out | Smooth cursor tracking |
+useEffect(() => {
+  const handleOnline = () => setIsOnline(true);
+  const handleOffline = () => setIsOnline(false);
+  
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
+  
+  return () => {
+    window.removeEventListener('online', handleOnline);
+    window.removeEventListener('offline', handleOffline);
+  };
+}, []);
+```
 
-### Action Card Glow Specifications
+### Banner Styling
+- Background: Amber/warning tones that work with dark theme
+- Fixed position: `top-0 left-0 right-0 z-50`
+- Padding for comfortable reading
+- Centered content with icon and text
 
-| Property | Value | Purpose |
-|----------|-------|---------|
-| Size | 150px x 150px | Proportional to card size |
-| Gradient | radial, 0-70% | Focused spotlight effect |
-| Color | primary at 15% opacity | More visible within card context |
-| Fade | 300ms | Smooth appearance/disappearance |
-
-### Performance Considerations
-
-- Uses CSS transitions instead of JavaScript animation for GPU acceleration
-- Event listeners are properly cleaned up on unmount
-- State updates are batched where possible
-- `pointer-events: none` ensures glow doesn't interfere with interactions
+### Animation
+```text
+┌─────────────────────────────────────┐
+│ ↓ Slides down from top              │
+├─────────────────────────────────────┤
+│  📵  You're offline                 │
+│      Check your internet connection │
+└─────────────────────────────────────┘
+```
 
 ---
 
-## Files to Modify/Create
+## Files Changed
 
-1. **NEW: `src/components/ui/cursor-glow.tsx`** - Background cursor glow component
-2. **`src/pages/Dashboard.tsx`** - Add CursorGlow component
-3. **`src/components/ui/action-card.tsx`** - Add internal glow tracking and element
-4. **`src/index.css`** - Add cursor-glow utility class
+| File | Action | Description |
+|------|--------|-------------|
+| `src/hooks/useNetworkStatus.ts` | Create | Hook for tracking network status |
+| `src/components/OfflineBanner.tsx` | Create | Banner component |
+| `src/App.tsx` | Modify | Add banner to layout |
+| `src/index.css` | Modify | Add slide animation |
 
 ---
 
-## Visual Result
-
-The final effect creates a cohesive, premium feel:
-- Moving the cursor across the dashboard reveals a soft ambient teal glow in the background
-- Hovering over action cards shows a concentrated spotlight effect that follows the cursor
-- Combined with existing tilt and parallax effects, creates a layered, responsive interface
-- All animations are subtle and performant, enhancing without distracting
+## Benefits
+- **PWA Enhancement:** Complements the existing offline-first PWA configuration
+- **User Clarity:** Users understand why data might not load
+- **Seamless UX:** Auto-appears and auto-hides without user action
+- **Consistent Design:** Matches the app's dark teal aesthetic
