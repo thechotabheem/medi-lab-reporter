@@ -144,7 +144,7 @@ export function StatCard({
           </CardTitle>
           {Icon && (
             <Icon 
-              className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" 
+              className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
               style={iconStyle}
             />
           )}
