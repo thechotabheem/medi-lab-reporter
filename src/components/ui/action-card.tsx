@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconWrapper, type IconWrapperProps } from "@/components/ui/icon-wrapper";
@@ -27,10 +27,20 @@ export function ActionCard({
   glowEffect = false,
 }: ActionCardProps) {
   const { ripples, createRipple, containerRef } = useRipple();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isBouncing, setIsBouncing] = useState(false);
   const tiltRef = useRef<HTMLDivElement>(null);
   const [tiltStyle, setTiltStyle] = useState({ transform: '', transition: '' });
   const [iconStyle, setIconStyle] = useState({ transform: '', transition: '' });
   const [glowPosition, setGlowPosition] = useState({ x: 0, y: 0, opacity: 0 });
+
+  useEffect(() => {
+    // Remove shimmer effect after initial load animation completes
+    const timer = setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!tiltRef.current) return;
@@ -82,6 +92,9 @@ export function ActionCard({
     if (glowEffect) {
       createRipple(e);
     }
+    // Trigger bounce animation
+    setIsBouncing(true);
+    setTimeout(() => setIsBouncing(false), 350);
     onClick?.();
   };
 
@@ -99,6 +112,8 @@ export function ActionCard({
           "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
           !glowEffect && "hover:border-primary/40 hover:shadow-lg",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
+          isInitialLoad && "animate-stat-shimmer",
+          isBouncing && "animate-card-bounce",
           className
         )}
         onClick={handleClick}
