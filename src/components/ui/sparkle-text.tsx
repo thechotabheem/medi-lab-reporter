@@ -54,7 +54,7 @@ const SPARKLE_COLORS = [
 export const SparkleText: React.FC<SparkleTextProps> = ({
   children,
   className,
-  sparkleCount = 8,
+  sparkleCount = 5,
 }) => {
   const sparkles = useMemo(() => {
     return Array.from({ length: sparkleCount }, (_, i) => ({

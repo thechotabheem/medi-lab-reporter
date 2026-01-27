@@ -362,6 +362,18 @@
     50% { background-position: 100% 50%; }
   }
 
+  /* Text entrance animation for rainbow gradient */
+  @keyframes text-fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Animated rainbow text gradient with glow */
   .text-gradient-rainbow {
     background: linear-gradient(
@@ -379,7 +391,11 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: gradient-shift 6s ease infinite, rainbow-glow 6s ease infinite;
+    opacity: 0;
+    animation: 
+      text-fade-in 0.8s ease-out forwards,
+      gradient-shift 6s ease 0.8s infinite, 
+      rainbow-glow 6s ease 0.8s infinite;
     filter: drop-shadow(0 0 8px rgba(255, 0, 255, 0.4)) 
             drop-shadow(0 0 16px rgba(0, 212, 255, 0.3));
   }
