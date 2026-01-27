@@ -9,6 +9,7 @@ import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 import { RecentReportsWidget } from '@/components/dashboard/RecentReportsWidget';
 import { SparkleText } from '@/components/ui/sparkle-text';
+import { CursorGlow } from '@/components/ui/cursor-glow';
 
 import { 
   FlaskConical, 
@@ -46,6 +47,7 @@ export default function Dashboard() {
 
   return (
     <div className="page-container">
+      <CursorGlow />
       {/* Header */}
       <header className="app-header">
         <div className="container mx-auto px-4 py-3 sm:py-4">
