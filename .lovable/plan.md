@@ -1,118 +1,54 @@
 
-# Offline Indicator Banner Implementation
 
-## Overview
-Add a visual banner that appears when the app loses internet connection, helping users understand why certain features may not work. The banner will automatically appear/disappear based on network status and match the app's teal dark theme design.
+# Simplify Header Icon Animation
 
----
+## Problem
+The header icon currently has two overlapping animations:
+- A continuous **pulse** animation on the wrapper (2 seconds)
+- A **floating + rotation** animation on the icon (3 seconds)
 
-## What Will Be Built
+These unsynchronized animations create a chaotic, flickering appearance.
 
-### Visual Design
-- A sleek, fixed banner at the top of the screen
-- Uses a warning/amber color scheme that stands out but isn't jarring
-- Shows a WiFi-off icon with "You're offline" message
-- Smooth slide-down animation when appearing
-- Automatically hides when connection is restored
+## Solution
+Replace both animations with a single, elegant "breathe" effect that's:
+- **Simple**: One smooth animation instead of two conflicting ones
+- **Modern**: Subtle scale change that feels alive without being distracting
+- **Professional**: Minimal movement that maintains focus on the content
 
-### User Experience
-- Banner appears within 1-2 seconds of losing connection
-- Disappears automatically when back online
-- Non-intrusive but clearly visible
-- Works across all pages of the app
+## Changes
 
----
+### 1. Update Dashboard Header Icon
+**File:** `src/pages/Dashboard.tsx`
 
-## Implementation Steps
+Remove both existing animations and apply a single subtle animation:
+- Remove `animate-[pulse_2s_ease-in-out_infinite]` from `IconWrapper`
+- Remove `animate-[float_3s_ease-in-out_infinite]` from `FlaskConical`
+- Add a gentle hover-only scale effect for interactivity
 
-### 1. Create Network Status Hook
-A new custom hook that tracks online/offline status using browser APIs.
-
-**File:** `src/hooks/useNetworkStatus.ts`
-- Uses `navigator.onLine` for initial state
-- Listens to `online` and `offline` window events
-- Returns simple `isOnline` boolean
-- Properly cleans up event listeners
-
-### 2. Create Offline Banner Component
-A reusable component that displays the offline notification.
-
-**File:** `src/components/OfflineBanner.tsx`
-- Uses the new `useNetworkStatus` hook
-- Fixed positioning at the top of the viewport
-- Amber/warning color scheme for visibility
-- WiFi-off icon from lucide-react
-- Slide-down animation for smooth appearance
-- Only renders when offline
-
-### 3. Add Banner to App Layout
-Integrate the banner into the main App component.
-
-**File:** `src/App.tsx`
-- Import and add `OfflineBanner` component
-- Place it at the top level, visible on all pages
-
-### 4. Add Animation Styles
-Add the slide-down animation to the CSS.
-
+### 2. Create Simple Breathe Animation
 **File:** `src/index.css`
-- Add `slideDown` keyframe animation
-- Add `.animate-slide-down` utility class
+
+Add a new subtle "breathe" keyframe:
+- Very slow animation (4+ seconds)
+- Minimal scale change (1.0 to 1.05)
+- Smooth easing for a calm, modern feel
+
+## Visual Result
+- **At rest**: Icon displays with a subtle, slow breathing effect
+- **On hover**: Slightly enhanced glow (already implemented on the title)
+- **Overall**: Clean, professional, and modern without distraction
 
 ---
 
-## Technical Details
+**Technical Details**
 
-### Network Status Hook
-```typescript
-// Uses browser's Navigator API
-const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-useEffect(() => {
-  const handleOnline = () => setIsOnline(true);
-  const handleOffline = () => setIsOnline(false);
-  
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-  
-  return () => {
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
-  };
-}, []);
+The new animation will use:
+```css
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
 ```
 
-### Banner Styling
-- Background: Amber/warning tones that work with dark theme
-- Fixed position: `top-0 left-0 right-0 z-50`
-- Padding for comfortable reading
-- Centered content with icon and text
+Applied with a 4-second duration for a calm, barely-noticeable effect that adds life without being overwhelming.
 
-### Animation
-```text
-┌─────────────────────────────────────┐
-│ ↓ Slides down from top              │
-├─────────────────────────────────────┤
-│  📵  You're offline                 │
-│      Check your internet connection │
-└─────────────────────────────────────┘
-```
-
----
-
-## Files Changed
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/hooks/useNetworkStatus.ts` | Create | Hook for tracking network status |
-| `src/components/OfflineBanner.tsx` | Create | Banner component |
-| `src/App.tsx` | Modify | Add banner to layout |
-| `src/index.css` | Modify | Add slide animation |
-
----
-
-## Benefits
-- **PWA Enhancement:** Complements the existing offline-first PWA configuration
-- **User Clarity:** Users understand why data might not load
-- **Seamless UX:** Auto-appears and auto-hides without user action
-- **Consistent Design:** Matches the app's dark teal aesthetic
