@@ -53,8 +53,8 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4 sm:py-5">
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-3 sm:gap-4">
-              <IconWrapper size="default" glow hoverPulse>
-                <FlaskConical className="h-6 w-6" />
+              <IconWrapper size="default" glow hoverPulse className="animate-[pulse_2s_ease-in-out_infinite]">
+                <FlaskConical className="h-6 w-6 animate-[wiggle_3s_ease-in-out_infinite]" />
               </IconWrapper>
               <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground drop-shadow-[0_0_10px_hsl(210_20%_98%/0.4)] hover:drop-shadow-[0_0_15px_hsl(210_20%_98%/0.6)] transition-all duration-300 cursor-default">
                 MedLab Reporter
