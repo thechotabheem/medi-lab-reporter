@@ -587,4 +587,35 @@
   .animate-slide-down {
     animation: slide-down 0.3s ease-out forwards;
   }
+
+  /* Page transition animations */
+  @keyframes page-enter {
+    0% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes page-exit {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  .animate-page-enter {
+    animation: page-enter 0.3s ease-out forwards;
+  }
+
+  .animate-page-exit {
+    animation: page-exit 0.2s ease-in forwards;
+  }
 }
