@@ -521,10 +521,16 @@
   /* Floating animation for icons */
   @keyframes float {
     0%, 100% {
-      transform: translateY(0);
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-2px) rotate(-3deg);
     }
     50% {
-      transform: translateY(-4px);
+      transform: translateY(-4px) rotate(0deg);
+    }
+    75% {
+      transform: translateY(-2px) rotate(3deg);
     }
   }
 
