@@ -34,6 +34,7 @@ export function StatCard({
 }: StatCardProps) {
   const { ripples, createRipple, containerRef } = useRipple();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isBouncing, setIsBouncing] = useState(false);
   const tiltRef = useRef<HTMLDivElement>(null);
   const [tiltStyle, setTiltStyle] = useState({ transform: '', transition: '' });
   const [iconStyle, setIconStyle] = useState({ transform: '', transition: '' });
@@ -97,6 +98,9 @@ export function StatCard({
     if (glowEffect) {
       createRipple(e);
     }
+    // Trigger bounce animation
+    setIsBouncing(true);
+    setTimeout(() => setIsBouncing(false), 350);
     onClick?.();
   };
 
@@ -116,6 +120,7 @@ export function StatCard({
           onClick && !glowEffect && "hover:border-primary/40",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
           isInitialLoad && "animate-stat-shimmer",
+          isBouncing && "animate-card-bounce",
           className
         )}
         onClick={handleClick}

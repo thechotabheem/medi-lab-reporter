@@ -506,4 +506,24 @@
     pointer-events: none;
     z-index: 1;
   }
+
+  /* Bounce animation on click */
+  @keyframes card-bounce {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(0.96);
+    }
+    70% {
+      transform: scale(1.02);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-card-bounce {
+    animation: card-bounce 0.35s ease-out;
+  }
 }
