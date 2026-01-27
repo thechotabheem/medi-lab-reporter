@@ -35,6 +35,7 @@ export interface TemplateCustomization {
   fields: Record<string, FieldCustomization>;
   customFields?: CustomField[];
   categoryOrder?: string[];
+  fieldOrder?: Record<string, string[]>;
 }
 
 interface CustomTemplateRow {
@@ -192,7 +193,7 @@ export const applyCustomizations = (
 ): ReportTemplate => {
   if (!customizations) return baseTemplate;
 
-  const { fields: fieldCustomizations, customFields, categoryOrder } = customizations;
+  const { fields: fieldCustomizations, customFields, categoryOrder, fieldOrder } = customizations;
 
   // Start with base template categories
   let categories = baseTemplate.categories.map((category) => {
@@ -217,12 +218,46 @@ export const applyCustomizations = (
         };
       });
 
-    // Sort by order if specified
-    fields = fields.sort((a, b) => {
-      const orderA = fieldCustomizations[a.name]?.order ?? 999;
-      const orderB = fieldCustomizations[b.name]?.order ?? 999;
-      return orderA - orderB;
-    });
+    // Add custom fields to this category
+    const customFieldsInCategory = (customFields || [])
+      .filter(cf => cf.categoryName === category.name)
+      .map(cf => ({
+        name: cf.name,
+        label: cf.label,
+        unit: cf.unit,
+        type: cf.type,
+        normalRange: cf.normalRange,
+        options: cf.options,
+      }));
+
+    fields = [...fields, ...customFieldsInCategory];
+
+    // Apply field order if specified for this category
+    const savedOrder = fieldOrder?.[category.name];
+    if (savedOrder && savedOrder.length > 0) {
+      const fieldMap = new Map(fields.map(f => [f.name, f]));
+      const orderedFields: TestField[] = [];
+      
+      // Add fields in saved order
+      savedOrder.forEach(name => {
+        const field = fieldMap.get(name);
+        if (field) {
+          orderedFields.push(field);
+          fieldMap.delete(name);
+        }
+      });
+      
+      // Add any remaining fields not in saved order
+      fieldMap.forEach(field => orderedFields.push(field));
+      fields = orderedFields;
+    } else {
+      // Sort by order property if specified (legacy support)
+      fields = fields.sort((a, b) => {
+        const orderA = fieldCustomizations[a.name]?.order ?? 999;
+        const orderB = fieldCustomizations[b.name]?.order ?? 999;
+        return orderA - orderB;
+      });
+    }
 
     return {
       ...category,
@@ -230,35 +265,47 @@ export const applyCustomizations = (
     };
   });
 
-  // Add custom fields to their categories
+  // Add new custom categories (categories that don't exist in base template)
   if (customFields && customFields.length > 0) {
-    customFields.forEach((customField) => {
-      const categoryIndex = categories.findIndex((c) => c.name === customField.categoryName);
-      if (categoryIndex !== -1) {
-        categories[categoryIndex].fields.push({
-          name: customField.name,
-          label: customField.label,
-          unit: customField.unit,
-          type: customField.type,
-          normalRange: customField.normalRange,
-          options: customField.options,
+    const existingCategoryNames = baseTemplate.categories.map(c => c.name);
+    const newCategoryNames = [...new Set(
+      customFields
+        .filter(f => !existingCategoryNames.includes(f.categoryName))
+        .map(f => f.categoryName)
+    )];
+    
+    newCategoryNames.forEach(categoryName => {
+      const fieldsInCategory = customFields
+        .filter(f => f.categoryName === categoryName)
+        .map(f => ({
+          name: f.name,
+          label: f.label,
+          unit: f.unit,
+          type: f.type,
+          normalRange: f.normalRange,
+          options: f.options,
+        }));
+
+      // Apply field order for new categories too
+      const savedOrder = fieldOrder?.[categoryName];
+      let orderedFields = fieldsInCategory;
+      if (savedOrder && savedOrder.length > 0) {
+        const fieldMap = new Map(fieldsInCategory.map(f => [f.name, f]));
+        orderedFields = [];
+        savedOrder.forEach(name => {
+          const field = fieldMap.get(name);
+          if (field) {
+            orderedFields.push(field);
+            fieldMap.delete(name);
+          }
         });
-      } else {
-        // Create new category for custom field if it doesn't exist
-        categories.push({
-          name: customField.categoryName,
-          fields: [
-            {
-              name: customField.name,
-              label: customField.label,
-              unit: customField.unit,
-              type: customField.type,
-              normalRange: customField.normalRange,
-              options: customField.options,
-            },
-          ],
-        });
+        fieldMap.forEach(field => orderedFields.push(field));
       }
+
+      categories.push({
+        name: categoryName,
+        fields: orderedFields,
+      });
     });
   }
 
