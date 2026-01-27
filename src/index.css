@@ -108,11 +108,13 @@
 @layer base {
   * {
     @apply border-border;
+    cursor: url('/pointer.cur'), auto;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    cursor: url('/pointer.cur'), auto;
   }
 
   /* Improved focus styles */
