@@ -303,4 +303,30 @@
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+
+  /* Rainbow gradient animation keyframes */
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Animated rainbow text gradient */
+  .text-gradient-rainbow {
+    background: linear-gradient(
+      90deg,
+      #FF00FF,
+      #00D4FF,
+      #39FF14,
+      #FFD700,
+      #FF6B00,
+      #FF1493,
+      #8B5CF6,
+      #FF00FF
+    );
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-shift 6s ease infinite;
+  }
 }
