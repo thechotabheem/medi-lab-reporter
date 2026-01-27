@@ -374,4 +374,20 @@
               drop-shadow(0 0 16px rgba(255, 0, 255, 0.3));
     }
   }
+
+  /* Pulsing glow animation for cards */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 15px hsl(162 84% 42% / 0.15),
+                  0 0 30px hsl(162 84% 42% / 0.08);
+    }
+    50% {
+      box-shadow: 0 0 25px hsl(162 84% 42% / 0.3),
+                  0 0 50px hsl(162 84% 42% / 0.15);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
 }

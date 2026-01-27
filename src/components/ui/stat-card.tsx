@@ -15,6 +15,7 @@ interface StatCardProps {
   onClick?: () => void;
   className?: string;
   loading?: boolean;
+  glowEffect?: boolean;
 }
 
 export function StatCard({
@@ -26,12 +27,14 @@ export function StatCard({
   onClick,
   className,
   loading = false,
+  glowEffect = false,
 }: StatCardProps) {
   return (
     <Card
       className={cn(
         "group transition-all duration-300 ease-out",
         onClick && "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
+        glowEffect && "animate-pulse-glow border-primary/20",
         className
       )}
       onClick={onClick}
