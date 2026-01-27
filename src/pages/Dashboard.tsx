@@ -77,11 +77,8 @@ export default function Dashboard() {
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground/80 mt-1">
-            <SparkleText sparkleCount={3}><span className="text-gradient-shimmer font-medium">{clinicName}</span></SparkleText>
-          </p>
-          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-            Here's an overview of your lab activity
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            Here's an overview of your lab activity at <SparkleText sparkleCount={3}><span className="text-gradient-shimmer font-semibold">{clinicName}</span></SparkleText>
           </p>
           <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
             <span>
