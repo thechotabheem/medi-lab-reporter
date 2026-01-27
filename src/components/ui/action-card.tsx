@@ -45,12 +45,16 @@ export function ActionCard({
     const rotateX = ((y - centerY) / centerY) * -6;
     const rotateY = ((x - centerX) / centerX) * 6;
     
+    // Calculate magnetic pull toward cursor (max 4px)
+    const magnetX = ((x - centerX) / centerX) * 4;
+    const magnetY = ((y - centerY) / centerY) * 4;
+    
     // Calculate icon parallax offset (opposite direction, max 8px)
     const iconOffsetX = ((x - centerX) / centerX) * -8;
     const iconOffsetY = ((y - centerY) / centerY) * -8;
     
     setTiltStyle({
-      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate(${magnetX}px, ${magnetY}px) scale3d(1.02, 1.02, 1.02)`,
       transition: 'transform 0.1s ease-out'
     });
     
