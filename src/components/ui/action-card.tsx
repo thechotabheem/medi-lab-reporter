@@ -30,6 +30,7 @@ export function ActionCard({
   const tiltRef = useRef<HTMLDivElement>(null);
   const [tiltStyle, setTiltStyle] = useState({ transform: '', transition: '' });
   const [iconStyle, setIconStyle] = useState({ transform: '', transition: '' });
+  const [glowPosition, setGlowPosition] = useState({ x: 0, y: 0, opacity: 0 });
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!tiltRef.current) return;
@@ -57,6 +58,8 @@ export function ActionCard({
       transform: `translate(${iconOffsetX}px, ${iconOffsetY}px) scale(1.05)`,
       transition: 'transform 0.1s ease-out'
     });
+    
+    setGlowPosition({ x, y, opacity: 1 });
   }, []);
 
   const handleMouseLeave = useCallback(() => {
@@ -68,6 +71,7 @@ export function ActionCard({
       transform: 'translate(0px, 0px) scale(1)',
       transition: 'transform 0.3s ease-out'
     });
+    setGlowPosition(prev => ({ ...prev, opacity: 0 }));
   }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -96,6 +100,18 @@ export function ActionCard({
         onClick={handleClick}
       >
         {glowEffect && <Ripple ripples={ripples} />}
+        <div
+          className="absolute pointer-events-none transition-opacity duration-300 rounded-full"
+          style={{
+            left: glowPosition.x,
+            top: glowPosition.y,
+            transform: 'translate(-50%, -50%)',
+            width: '150px',
+            height: '150px',
+            background: 'radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)',
+            opacity: glowPosition.opacity,
+          }}
+        />
         <CardHeader className="p-4 sm:p-6 h-full flex flex-col relative z-10">
           <IconWrapper
             variant={iconVariant}
