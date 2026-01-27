@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { GripVertical, Eye, EyeOff, Trash2 } from 'lucide-react';
 import type { TestField } from '@/types/database';
 import type { FieldCustomization } from '@/hooks/useCustomTemplates';
+import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 
 interface FieldEditorProps {
   field: TestField;
@@ -11,6 +12,7 @@ interface FieldEditorProps {
   isCustomField?: boolean;
   onUpdate: (fieldName: string, updates: Partial<FieldCustomization>) => void;
   onDelete?: (fieldName: string) => void;
+  dragHandleProps?: SyntheticListenerMap;
 }
 
 export const FieldEditor = ({
@@ -19,6 +21,7 @@ export const FieldEditor = ({
   isCustomField = false,
   onUpdate,
   onDelete,
+  dragHandleProps,
 }: FieldEditorProps) => {
   const isHidden = customization.hidden;
 
@@ -28,7 +31,12 @@ export const FieldEditor = ({
         isHidden ? 'bg-muted/50 opacity-60' : 'bg-background'
       }`}
     >
-      <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab shrink-0" />
+      <div
+        className="cursor-grab active:cursor-grabbing touch-none shrink-0"
+        {...dragHandleProps}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
