@@ -1,123 +1,67 @@
 
 
-# Adding Subtle Gradient Overlay to Dashboard Cards
+# Subtle Sparkle Effect Adjustments
 
 ## Overview
-Add a subtle gradient overlay to the StatCard and ActionCard components to create more visual depth. The gradient will be a semi-transparent overlay that flows from the top-left corner, adding dimension without overpowering the existing glow effects.
+Modify the sparkle effect on the clinic name to be more subtle and refined with smaller particles, slower animation, and sparkles contained within the text boundaries.
 
 ---
 
-## Implementation Approach
+## Current vs. Desired Settings
 
-The gradient overlay will be implemented as a pseudo-element using CSS, applied only when the `glowEffect` prop is enabled. This keeps the effect consistent with the existing interactive styling system.
+| Property | Current | Desired |
+|----------|---------|---------|
+| Particle Size | 10-20px | 5-8px |
+| Animation Duration | 1.2s | 3s |
+| Position Range | -10% to 110% (beyond text) | 0% to 100% (within text) |
+| Stagger Delay | 150ms | 400ms (slower stagger) |
 
 ---
 
 ## Implementation Steps
 
-### Step 1: Add Gradient Overlay CSS Class
-
+### Step 1: Update Sparkle Animation Duration
 **File:** `src/index.css`
 
-Add a new utility class `.card-gradient-overlay` that creates a subtle diagonal gradient using a pseudo-element:
+Change the animation duration from `1.2s` to `3s` for a slower, more elegant effect:
 
 ```css
-/* Card gradient overlay for depth */
-.card-gradient-overlay::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    hsl(162 84% 42% / 0.03) 0%,
-    transparent 50%,
-    hsl(220 15% 0% / 0.15) 100%
-  );
-  pointer-events: none;
-  z-index: 0;
+.animate-sparkle {
+  animation: sparkle 3s ease-in-out infinite;
 }
 ```
 
-This creates:
-- A very subtle teal tint at the top-left (matches the primary color)
-- Transparent in the middle
-- A darker shadow at the bottom-right for depth
+### Step 2: Update SparkleText Component
+**File:** `src/components/ui/sparkle-text.tsx`
 
-### Step 2: Update StatCard Component
-
-**File:** `src/components/ui/stat-card.tsx`
-
-Add the gradient overlay class when `glowEffect` is enabled:
+Modify the sparkle generation parameters:
 
 ```tsx
-className={cn(
-  "group transition-all duration-300 ease-out relative overflow-hidden",
-  onClick && "cursor-pointer",
-  onClick && !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
-  glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
-  className
-)}
-```
-
-Also ensure card content stays above the overlay by adding `relative z-10` to the CardHeader and CardContent:
-
-```tsx
-<CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
-...
-<CardContent className="relative z-10">
-```
-
-### Step 3: Update ActionCard Component
-
-**File:** `src/components/ui/action-card.tsx`
-
-Apply the same changes:
-
-```tsx
-className={cn(
-  "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
-  !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
-  !glowEffect && "active:translate-y-0 active:shadow-md",
-  glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
-  className
-)}
-```
-
-And add `relative z-10` to the CardHeader to keep content above the overlay:
-
-```tsx
-<CardHeader className="p-4 sm:p-6 h-full flex flex-col relative z-10">
+const sparkles = useMemo(() => {
+  return Array.from({ length: sparkleCount }, (_, i) => ({
+    id: i,
+    size: Math.random() * 3 + 5, // 5-8px (smaller)
+    color: SPARKLE_COLORS[i % SPARKLE_COLORS.length],
+    style: {
+      top: `${Math.random() * 100}%`, // Stay within bounds (0-100%)
+      left: `${Math.random() * 100}%`,
+    },
+    delay: i * 400, // Slower stagger for more elegant timing
+  }));
+}, [sparkleCount]);
 ```
 
 ---
 
 ## Technical Details
 
-### Gradient Design Rationale
+### Changes Summary
+1. **Particle Size**: `Math.random() * 3 + 5` generates sizes between 5-8px instead of 10-20px
+2. **Position Bounds**: `Math.random() * 100` keeps sparkles within 0-100% of the text container (no negative offset or overflow)
+3. **Animation Speed**: 3s duration makes each sparkle cycle 2.5x slower
+4. **Stagger Delay**: 400ms between particle starts creates a calmer, more elegant sequence
 
-| Aspect | Value | Reason |
-|--------|-------|--------|
-| Direction | 135deg (diagonal) | Creates natural light source from top-left |
-| Top-left color | Primary at 3% opacity | Subtle teal highlight, matches theme |
-| Middle | Transparent | Allows card content to remain clear |
-| Bottom-right | Dark at 15% opacity | Adds depth, simulates shadow |
-
-### Z-Index Strategy
-- Gradient overlay: `z-index: 0` (pseudo-element)
-- Ripple effect: Already positioned (stays above gradient)
-- Card content: `z-index: 10` (ensures text/icons remain above)
-
-### Why Pseudo-Element?
-Using `::before` keeps the gradient as a separate layer that:
-- Doesn't interfere with click events (`pointer-events: none`)
-- Doesn't affect ripple positioning
-- Can be easily modified or removed without touching component structure
-
----
-
-## Files to Modify
-
-1. **src/index.css** - Add the `.card-gradient-overlay` utility class
-2. **src/components/ui/stat-card.tsx** - Apply overlay class and z-index to content
-3. **src/components/ui/action-card.tsx** - Apply overlay class and z-index to content
+### Files to Modify
+1. **src/index.css** - Update animation duration from 1.2s to 3s
+2. **src/components/ui/sparkle-text.tsx** - Update size calculation and position bounds
 
