@@ -1,67 +1,86 @@
 
-
-# Subtle Sparkle Effect Adjustments
+# Add Gentle Fade-In for Sparkles on Page Load
 
 ## Overview
-Modify the sparkle effect on the clinic name to be more subtle and refined with smaller particles, slower animation, and sparkles contained within the text boundaries.
+Add a fade-in effect so the sparkles gently appear when the page first loads, rather than immediately starting their animation cycle. This creates a more polished entrance effect.
 
 ---
 
-## Current vs. Desired Settings
+## Implementation Approach
 
-| Property | Current | Desired |
-|----------|---------|---------|
-| Particle Size | 10-20px | 5-8px |
-| Animation Duration | 1.2s | 3s |
-| Position Range | -10% to 110% (beyond text) | 0% to 100% (within text) |
-| Stagger Delay | 150ms | 400ms (slower stagger) |
+Use CSS animation chaining to add an initial fade-in before the sparkle animation begins. The fade-in will work in conjunction with each sparkle's existing stagger delay.
 
 ---
 
 ## Implementation Steps
 
-### Step 1: Update Sparkle Animation Duration
+### Step 1: Create Initial Fade-In Animation
 **File:** `src/index.css`
 
-Change the animation duration from `1.2s` to `3s` for a slower, more elegant effect:
+Add a new keyframe animation for the initial fade-in and update the `.animate-sparkle` class to chain both animations:
 
 ```css
+/* Sparkle initial fade-in */
+@keyframes sparkle-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .animate-sparkle {
-  animation: sparkle 3s ease-in-out infinite;
+  opacity: 0;
+  animation: 
+    sparkle-fade-in 0.6s ease-out forwards,
+    sparkle 3s ease-in-out 0.6s infinite;
 }
 ```
 
-### Step 2: Update SparkleText Component
+The key changes:
+- Start with `opacity: 0` so sparkles are hidden initially
+- `sparkle-fade-in` runs for 0.6s with `forwards` to maintain the final state
+- `sparkle` animation starts after a 0.6s delay (after fade-in completes)
+
+### Step 2: Update Animation Delay Logic
 **File:** `src/components/ui/sparkle-text.tsx`
 
-Modify the sparkle generation parameters:
+Update the style to include both the fade-in delay and the existing stagger delay:
 
 ```tsx
-const sparkles = useMemo(() => {
-  return Array.from({ length: sparkleCount }, (_, i) => ({
-    id: i,
-    size: Math.random() * 3 + 5, // 5-8px (smaller)
-    color: SPARKLE_COLORS[i % SPARKLE_COLORS.length],
-    style: {
-      top: `${Math.random() * 100}%`, // Stay within bounds (0-100%)
-      left: `${Math.random() * 100}%`,
-    },
-    delay: i * 400, // Slower stagger for more elegant timing
-  }));
-}, [sparkleCount]);
+<span
+  className="absolute pointer-events-none animate-sparkle"
+  style={{
+    ...style,
+    width: size,
+    height: size,
+    animationDelay: `${delay}ms, ${delay + 600}ms`,
+  }}
+>
 ```
+
+This ensures:
+- First value (`${delay}ms`) applies to `sparkle-fade-in`
+- Second value (`${delay + 600}ms`) applies to `sparkle` animation (adds 600ms for fade-in duration)
 
 ---
 
 ## Technical Details
 
-### Changes Summary
-1. **Particle Size**: `Math.random() * 3 + 5` generates sizes between 5-8px instead of 10-20px
-2. **Position Bounds**: `Math.random() * 100` keeps sparkles within 0-100% of the text container (no negative offset or overflow)
-3. **Animation Speed**: 3s duration makes each sparkle cycle 2.5x slower
-4. **Stagger Delay**: 400ms between particle starts creates a calmer, more elegant sequence
+### Animation Chain Breakdown
+
+| Animation | Duration | Delay | Purpose |
+|-----------|----------|-------|---------|
+| sparkle-fade-in | 0.6s | Staggered per particle | Gentle initial appearance |
+| sparkle | 3s (infinite) | 0.6s after fade-in | Continuous sparkle effect |
+
+### How It Works
+1. Page loads → All sparkles start invisible (`opacity: 0`)
+2. Each sparkle fades in with its own stagger delay (0ms, 400ms, 800ms, etc.)
+3. After each sparkle completes its fade-in, the sparkle animation begins
+4. Result: Sparkles gracefully appear one by one, then continue their twinkling cycle
 
 ### Files to Modify
-1. **src/index.css** - Update animation duration from 1.2s to 3s
-2. **src/components/ui/sparkle-text.tsx** - Update size calculation and position bounds
-
+1. **src/index.css** - Add fade-in keyframes and update animation property
+2. **src/components/ui/sparkle-text.tsx** - Update animation delay to support chained animations
