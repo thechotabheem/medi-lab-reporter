@@ -60,7 +60,7 @@ export default function Dashboard() {
               <div className="text-center">
                 <h1 className="font-semibold text-sm sm:text-base">MedLab Reporter</h1>
               <p className="text-2xs sm:text-xs font-medium">
-                  <SparkleText sparkleCount={5}>
+                  <SparkleText sparkleCount={8}>
                     <span className="text-gradient-rainbow">{clinicName}</span>
                   </SparkleText>
                 </p>
@@ -86,7 +86,7 @@ export default function Dashboard() {
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Here's an overview of your lab activity at <SparkleText sparkleCount={4}><span className="text-gradient-rainbow font-semibold">{clinicName}</span></SparkleText>
+            Here's an overview of your lab activity at <SparkleText sparkleCount={10}><span className="text-gradient-rainbow font-semibold">{clinicName}</span></SparkleText>
           </p>
           <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
             <span>
