@@ -23,7 +23,7 @@ import {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { clinic } = useClinic();
+  const { clinic, isLoading: clinicLoading } = useClinic();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { weather } = useWeather();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -36,7 +36,7 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const clinicName = clinic?.name || 'Medical Lab';
+  const clinicName = clinicLoading ? '' : (clinic?.name || 'Medical Lab');
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
