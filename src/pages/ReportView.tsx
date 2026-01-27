@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import {
   Table,
   TableBody,
@@ -190,11 +191,12 @@ export default function ReportView() {
 
   if (isLoading) {
     return (
-      <div className="page-container">
+      <EnhancedPageLayout>
         <PageHeader title="Loading..." showBack />
+        <HeaderDivider />
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
           <div className="space-y-4 sm:space-y-6">
-            <Card>
+            <Card className="animate-pulse-glow">
               <CardContent className="p-6">
                 <Skeleton className="h-24 w-full mb-4" />
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -207,13 +209,13 @@ export default function ReportView() {
             <Skeleton className="h-64 w-full" />
           </div>
         </main>
-      </div>
+      </EnhancedPageLayout>
     );
   }
 
   if (!report) {
     return (
-      <div className="page-container flex items-center justify-center">
+      <EnhancedPageLayout className="flex items-center justify-center">
         <EmptyState
           icon={FileText}
           title="Report not found"
@@ -221,7 +223,7 @@ export default function ReportView() {
           actionLabel="Back to Reports"
           onAction={() => navigate('/reports')}
         />
-      </div>
+      </EnhancedPageLayout>
     );
   }
 
@@ -247,7 +249,7 @@ export default function ReportView() {
   });
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title={getReportTypeName(report.report_type)}
         subtitle={report.report_number}
@@ -287,6 +289,8 @@ export default function ReportView() {
           </div>
         }
       />
+      
+      <HeaderDivider />
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
@@ -294,7 +298,7 @@ export default function ReportView() {
             {/* Draft Warning */}
             {report.status === 'draft' && (
               <FadeIn>
-                <Card className="border-warning/50 bg-warning/5">
+                <Card className="border-warning/50 bg-warning/5 animate-pulse-glow">
                   <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <IconWrapper variant="warning" size="sm">
@@ -313,7 +317,7 @@ export default function ReportView() {
 
             {/* Professional Report Card */}
             <FadeIn delay={100}>
-              <Card className="overflow-hidden print:shadow-none">
+              <Card className="overflow-hidden print:shadow-none animate-pulse-glow card-gradient-overlay">
                 {/* Clinic Letterhead */}
                 <div className="bg-primary/5 border-b border-border p-4 sm:p-6">
                   <div className="text-center">
@@ -519,7 +523,7 @@ export default function ReportView() {
                             return (
                               <div 
                                 key={field.name}
-                                className={`p-3 rounded-lg border ${isAbnormal ? 'border-destructive/50 bg-destructive/5' : 'border-border bg-muted/20'}`}
+                                className={`p-3 rounded-lg border transition-all duration-300 ${isAbnormal ? 'border-destructive/50 bg-destructive/5' : 'border-border bg-muted/20'}`}
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1 min-w-0">
@@ -600,6 +604,6 @@ export default function ReportView() {
           </div>
         </main>
       </PageTransition>
-    </div>
+    </EnhancedPageLayout>
   );
 }

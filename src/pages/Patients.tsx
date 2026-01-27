@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import {
   Users,
   Search,
   Plus,
   Phone,
   Mail,
-  User,
 } from 'lucide-react';
 import { calculateAgeFromDOB } from '@/lib/utils';
 
@@ -31,7 +31,7 @@ export default function Patients() {
   });
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title="Patients"
         subtitle="Manage patient records"
@@ -39,6 +39,8 @@ export default function Patients() {
         showBack
         backPath="/dashboard"
       />
+      
+      <HeaderDivider />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:py-8">
@@ -63,7 +65,7 @@ export default function Patients() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i}>
+              <Card key={i} className="animate-pulse-glow">
                 <CardHeader className="p-4">
                   <div className="h-5 skeleton w-3/4 mb-2" />
                   <div className="h-4 skeleton w-1/2" />
@@ -94,7 +96,7 @@ export default function Patients() {
               return (
                 <Card
                   key={patient.id}
-                  className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 animate-fade-in-up"
+                  className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:scale-[1.02] animate-fade-in-up animate-pulse-glow card-gradient-overlay"
                   style={{ animationDelay: `${index * 50}ms` }}
                   onClick={() => navigate(`/patients/${patient.id}`)}
                 >
@@ -109,13 +111,13 @@ export default function Patients() {
                   <CardContent className="p-4 pt-2 space-y-1.5 text-xs sm:text-sm text-muted-foreground">
                     {patient.phone && (
                       <div className="flex items-center gap-2">
-                        <Phone className="h-3.5 w-3.5 shrink-0" />
+                        <Phone className="h-3.5 w-3.5 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                         <span className="truncate">{patient.phone}</span>
                       </div>
                     )}
                     {patient.email && (
                       <div className="flex items-center gap-2">
-                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <Mail className="h-3.5 w-3.5 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                         <span className="truncate">{patient.email}</span>
                       </div>
                     )}
@@ -126,6 +128,6 @@ export default function Patients() {
           </div>
         )}
       </main>
-    </div>
+    </EnhancedPageLayout>
   );
 }

@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import {
   Settings as SettingsIcon,
   Building2,
@@ -19,7 +20,7 @@ export default function Settings() {
   const { settings: notificationSettings, updateSetting } = useNotificationSettings();
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title="Settings"
         subtitle="Configure your preferences"
@@ -27,17 +28,19 @@ export default function Settings() {
         showBack
         backPath="/dashboard"
       />
+      
+      <HeaderDivider />
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-3xl">
           <div className="space-y-4 sm:space-y-6">
             {/* Clinic Settings */}
             <FadeIn delay={100}>
-              <Card>
+              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">
-                    <IconWrapper variant="secondary" size="default">
-                      <Building2 className="h-5 w-5" />
+                    <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
+                      <Building2 className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                     </IconWrapper>
                     <div>
                       <CardTitle className="text-base sm:text-lg">Clinic Settings</CardTitle>
@@ -61,11 +64,11 @@ export default function Settings() {
 
             {/* Template Customization */}
             <FadeIn delay={150}>
-              <Card>
+              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">
-                    <IconWrapper variant="default" size="default">
-                      <FileText className="h-5 w-5" />
+                    <IconWrapper variant="default" size="default" className="transition-all duration-300 group-hover:scale-110">
+                      <FileText className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                     </IconWrapper>
                     <div>
                       <CardTitle className="text-base sm:text-lg">Report Templates</CardTitle>
@@ -89,11 +92,11 @@ export default function Settings() {
 
             {/* Notification Settings */}
             <FadeIn delay={200}>
-              <Card>
+              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">
-                    <IconWrapper variant="muted" size="default">
-                      <Bell className="h-5 w-5" />
+                    <IconWrapper variant="muted" size="default" className="transition-all duration-300 group-hover:scale-110">
+                      <Bell className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                     </IconWrapper>
                     <div>
                       <CardTitle className="text-base sm:text-lg">Notifications</CardTitle>
@@ -155,6 +158,6 @@ export default function Settings() {
           </div>
         </main>
       </PageTransition>
-    </div>
+    </EnhancedPageLayout>
   );
 }

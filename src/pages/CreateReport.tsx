@@ -10,6 +10,7 @@ import { PatientSelector, NewPatientData } from '@/components/reports/PatientSel
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
 import { DraftBanner } from '@/components/reports/DraftBanner';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { useDraftReport, DraftReport } from '@/hooks/useDraftReport';
 import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -208,8 +209,10 @@ export default function CreateReport() {
   const showDraftBanner = hasDraft && draft && !draftApplied;
 
   return (
-    <div className="page-container pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
+    <EnhancedPageLayout className="pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
       <PageHeader title="Create New Report" subtitle="Fill in all sections to create a report" showBack backPath="/dashboard" />
+      
+      <HeaderDivider />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 space-y-6">
         {/* Draft Banner */}
@@ -222,7 +225,7 @@ export default function CreateReport() {
         )}
 
         {/* Section 1: Patient Selection */}
-        <Card>
+        <Card className="animate-fade-in-up animate-pulse-glow card-gradient-overlay">
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg">1. Patient</CardTitle>
             <CardDescription className="text-xs sm:text-sm">Add a new patient or select an existing one</CardDescription>
@@ -238,7 +241,7 @@ export default function CreateReport() {
         </Card>
 
         {/* Section 2: Template Selection */}
-        <Card>
+        <Card className="animate-fade-in-up animation-delay-100 animate-pulse-glow card-gradient-overlay">
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg">2. Select Test Type</CardTitle>
             <CardDescription className="text-xs sm:text-sm">Choose the type of report to create</CardDescription>
@@ -249,7 +252,7 @@ export default function CreateReport() {
         </Card>
 
         {/* Section 3: Report Details */}
-        <Card>
+        <Card className="animate-fade-in-up animation-delay-200 animate-pulse-glow card-gradient-overlay">
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg">3. Report Details</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -294,7 +297,7 @@ export default function CreateReport() {
 
         {/* Section 4: Test Results - Only show when patient and template are selected */}
         {selectedTemplate && patientForForm && (
-          <Card>
+          <Card className="animate-fade-in-up animation-delay-300 animate-pulse-glow card-gradient-overlay">
             <CardHeader className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
@@ -349,6 +352,6 @@ export default function CreateReport() {
           </div>
         </div>
       </footer>
-    </div>
+    </EnhancedPageLayout>
   );
 }

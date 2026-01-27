@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { 
   FileText, 
   Settings2, 
@@ -74,7 +75,7 @@ export default function TemplateEditor() {
   };
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title="Template Editor"
         subtitle="Customize report templates"
@@ -82,12 +83,14 @@ export default function TemplateEditor() {
         showBack
         backPath="/settings"
       />
+      
+      <HeaderDivider />
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
           {/* Template Selection */}
           <FadeIn>
-            <Card className="mb-6">
+            <Card className="mb-6 animate-pulse-glow card-gradient-overlay">
               <CardHeader>
                 <CardTitle className="text-base">Select Template</CardTitle>
                 <CardDescription>Choose a template to customize</CardDescription>
@@ -98,7 +101,7 @@ export default function TemplateEditor() {
                     <Button
                       key={type}
                       variant={selectedTemplate === type ? 'default' : 'outline'}
-                      className="justify-start text-left h-auto py-2"
+                      className="justify-start text-left h-auto py-2 transition-all duration-300 hover:scale-[1.02]"
                       onClick={() => setSelectedTemplate(type)}
                     >
                       <FileText className="h-4 w-4 mr-2 shrink-0" />
@@ -113,12 +116,12 @@ export default function TemplateEditor() {
           {/* Template Customization */}
           {template && (
             <FadeIn delay={100}>
-              <Card>
+              <Card className="animate-pulse-glow card-gradient-overlay">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-base flex items-center gap-2">
-                        <IconWrapper size="sm">
+                        <IconWrapper size="sm" className="transition-all duration-300 hover:scale-110">
                           <FileText className="h-4 w-4" />
                         </IconWrapper>
                         {template.name}
@@ -156,7 +159,7 @@ export default function TemplateEditor() {
                               return (
                                 <div
                                   key={field.name}
-                                  className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 hover:border-primary/40 ${
                                     isHidden ? 'bg-muted/50 opacity-60' : 'bg-background'
                                   }`}
                                 >
@@ -251,9 +254,9 @@ export default function TemplateEditor() {
 
           {!selectedTemplate && (
             <FadeIn delay={100}>
-              <Card className="border-dashed">
+              <Card className="border-dashed animate-pulse-glow">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <IconWrapper size="lg" variant="muted" className="mb-4">
+                  <IconWrapper size="lg" variant="muted" className="mb-4 transition-all duration-300 hover:scale-110">
                     <Settings2 className="h-6 w-6" />
                   </IconWrapper>
                   <h3 className="font-medium mb-1">No Template Selected</h3>
@@ -266,6 +269,6 @@ export default function TemplateEditor() {
           )}
         </main>
       </PageTransition>
-    </div>
+    </EnhancedPageLayout>
   );
 }

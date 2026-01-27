@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import {
   Select,
   SelectContent,
@@ -47,7 +48,7 @@ export default function Reports() {
   });
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title="Reports"
         subtitle="View and manage lab reports"
@@ -55,6 +56,8 @@ export default function Reports() {
         showBack
         backPath="/dashboard"
       />
+      
+      <HeaderDivider />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:py-8">
@@ -119,7 +122,7 @@ export default function Reports() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-20 sm:h-24 skeleton rounded-lg" />
+              <div key={i} className="h-20 sm:h-24 skeleton rounded-lg animate-pulse-glow" />
             ))}
           </div>
         ) : filteredReports?.length === 0 ? (
@@ -139,18 +142,18 @@ export default function Reports() {
             {filteredReports?.map((report, index) => (
               <Card
                 key={report.id}
-                className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 animate-fade-in-up"
+                className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:scale-[1.01] animate-fade-in-up animate-pulse-glow card-gradient-overlay"
                 style={{ animationDelay: `${index * 30}ms` }}
                 onClick={() => navigate(`/reports/${report.id}`)}
               >
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <IconWrapper size="lg" className="shrink-0 hidden sm:flex group-hover:scale-105 transition-transform">
-                        <FileText className="h-5 w-5" />
+                      <IconWrapper size="lg" className="shrink-0 hidden sm:flex transition-all duration-300 group-hover:scale-110">
+                        <FileText className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                       </IconWrapper>
                       <IconWrapper size="default" className="shrink-0 flex sm:hidden">
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-4 w-4 transition-all duration-300 group-hover:text-primary" />
                       </IconWrapper>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-0.5 sm:mb-1 flex-wrap">
@@ -172,13 +175,13 @@ export default function Reports() {
                         </div>
                         <div className="flex items-center gap-3 sm:gap-4 text-2xs sm:text-sm text-muted-foreground flex-wrap">
                           <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
+                            <User className="h-3 w-3 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                             <span className="truncate max-w-[120px] sm:max-w-none">
                               {report.patient?.full_name}
                             </span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
+                            <Calendar className="h-3 w-3 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                             {format(new Date(report.test_date), 'MMM d, yyyy')}
                           </span>
                         </div>
@@ -197,6 +200,6 @@ export default function Reports() {
           </div>
         )}
       </main>
-    </div>
+    </EnhancedPageLayout>
   );
 }

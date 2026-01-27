@@ -13,6 +13,7 @@ import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { SkeletonForm } from '@/components/ui/skeleton';
 import { LogoUploader } from '@/components/clinic/LogoUploader';
 import { Switch } from '@/components/ui/switch';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Loader2, FileText, Palette, QrCode } from 'lucide-react';
 
@@ -129,7 +130,7 @@ export default function ClinicSettings() {
   };
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title="Clinic Settings"
         subtitle="Configure branding and details"
@@ -137,11 +138,13 @@ export default function ClinicSettings() {
         showBack
         backPath="/settings"
       />
+      
+      <HeaderDivider />
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl">
           {isLoading ? (
-            <Card>
+            <Card className="animate-pulse-glow">
               <CardHeader className="p-4 sm:p-6">
                 <div className="h-6 w-40 skeleton rounded" />
                 <div className="h-4 w-56 skeleton rounded mt-2" />
@@ -154,11 +157,11 @@ export default function ClinicSettings() {
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Basic Info */}
               <FadeIn delay={100}>
-                <Card>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
-                      <IconWrapper size="default">
-                        <Building2 className="h-5 w-5" />
+                      <IconWrapper size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <Building2 className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                       </IconWrapper>
                       <div>
                         <CardTitle className="text-base sm:text-lg">Basic Information</CardTitle>
@@ -219,11 +222,11 @@ export default function ClinicSettings() {
 
               {/* Report Branding */}
               <FadeIn delay={200}>
-                <Card>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
-                      <IconWrapper variant="secondary" size="default">
-                        <FileText className="h-5 w-5" />
+                      <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <FileText className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                       </IconWrapper>
                       <div>
                         <CardTitle className="text-base sm:text-lg">Report Branding</CardTitle>
@@ -270,11 +273,11 @@ export default function ClinicSettings() {
 
               {/* Advanced PDF Options */}
               <FadeIn delay={250}>
-                <Card>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
-                      <IconWrapper variant="muted" size="default">
-                        <Palette className="h-5 w-5" />
+                      <IconWrapper variant="muted" size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <Palette className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
                       </IconWrapper>
                       <div>
                         <CardTitle className="text-base sm:text-lg">Advanced PDF Options</CardTitle>
@@ -360,6 +363,6 @@ export default function ClinicSettings() {
           )}
         </main>
       </PageTransition>
-    </div>
+    </EnhancedPageLayout>
   );
 }
