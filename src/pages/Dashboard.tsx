@@ -50,26 +50,16 @@ export default function Dashboard() {
       <CursorGlow />
       {/* Header */}
       <header className="app-header">
-        <div className="container mx-auto px-4 py-3 sm:py-4">
+        <div className="container mx-auto px-4 py-4 sm:py-5">
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <IconWrapper size="default" glow hoverPulse className="hidden sm:flex">
-                <FlaskConical className="h-5 w-5" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <IconWrapper size="default" glow hoverPulse>
+                <FlaskConical className="h-6 w-6" />
               </IconWrapper>
-              <IconWrapper size="sm" hoverPulse className="flex sm:hidden">
-                <FlaskConical className="h-4 w-4" />
-              </IconWrapper>
-              <div className="text-center">
-                <h1 className="font-semibold text-sm sm:text-base">MedLab Reporter</h1>
-              <p className="text-2xs sm:text-xs font-medium">
-                  <SparkleText sparkleCount={3}>
-                    <span className="text-gradient-shimmer">{clinicName}</span>
-                  </SparkleText>
-                </p>
-              </div>
+              <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-gradient-primary">
+                MedLab Reporter
+              </h1>
             </div>
-            
-            
           </div>
         </div>
       </header>
