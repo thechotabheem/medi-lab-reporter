@@ -118,41 +118,45 @@ export default function Dashboard() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="animate-fade-in-up animation-delay-100">
-            <StatCard
+          <StatCard
               title="Total Reports"
               value={statsLoading ? '-' : stats?.totalReports || 0}
               subtitle="All time"
               icon={FileText}
               onClick={() => navigate('/reports')}
               loading={statsLoading}
+              glowEffect
             />
           </div>
           <div className="animate-fade-in-up animation-delay-200">
-            <StatCard
+          <StatCard
               title="Patients"
               value={statsLoading ? '-' : stats?.totalPatients || 0}
               subtitle="Registered"
               icon={Users}
               onClick={() => navigate('/patients')}
               loading={statsLoading}
+              glowEffect
             />
           </div>
           <div className="animate-fade-in-up animation-delay-300">
-            <StatCard
+          <StatCard
               title="This Month"
               value={statsLoading ? '-' : stats?.monthlyReports || 0}
               subtitle="Reports created"
               icon={Activity}
               loading={statsLoading}
+              glowEffect
             />
           </div>
           <div className="animate-fade-in-up animation-delay-400">
-            <StatCard
+          <StatCard
               title="Pending"
               value={statsLoading ? '-' : stats?.draftReports || 0}
               subtitle="Draft reports"
               icon={FileText}
               loading={statsLoading}
+              glowEffect
             />
           </div>
         </div>
