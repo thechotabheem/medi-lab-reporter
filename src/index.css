@@ -382,48 +382,35 @@
     }
   }
 
-  /* Animated rainbow text gradient with glow */
-  .text-gradient-rainbow {
+  /* Elegant teal shimmer text gradient */
+  .text-gradient-shimmer {
     background: linear-gradient(
       90deg,
-      #FF00FF,
-      #00D4FF,
-      #39FF14,
-      #FFD700,
-      #FF6B00,
-      #FF1493,
-      #8B5CF6,
-      #FF00FF
+      hsl(162 84% 42%) 0%,
+      hsl(162 84% 55%) 25%,
+      hsl(172 80% 50%) 50%,
+      hsl(162 84% 55%) 75%,
+      hsl(162 84% 42%) 100%
     );
-    background-size: 400% 400%;
+    background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     opacity: 0;
     animation: 
       text-fade-in 0.8s ease-out forwards,
-      gradient-shift 6s ease 0.8s infinite, 
-      rainbow-glow 6s ease 0.8s infinite;
-    filter: drop-shadow(0 0 8px rgba(255, 0, 255, 0.4)) 
-            drop-shadow(0 0 16px rgba(0, 212, 255, 0.3));
+      shimmer-sweep 4s ease-in-out 1.5s infinite;
+    filter: drop-shadow(0 0 6px hsl(162 84% 42% / 0.4));
   }
 
-  @keyframes rainbow-glow {
+  @keyframes shimmer-sweep {
     0%, 100% { 
-      filter: drop-shadow(0 0 8px rgba(255, 0, 255, 0.5)) 
-              drop-shadow(0 0 16px rgba(0, 212, 255, 0.3));
-    }
-    25% { 
-      filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.5)) 
-              drop-shadow(0 0 16px rgba(255, 215, 0, 0.3));
+      background-position: 100% 50%;
+      filter: drop-shadow(0 0 6px hsl(162 84% 42% / 0.4));
     }
     50% { 
-      filter: drop-shadow(0 0 8px rgba(255, 107, 0, 0.5)) 
-              drop-shadow(0 0 16px rgba(255, 20, 147, 0.3));
-    }
-    75% { 
-      filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5)) 
-              drop-shadow(0 0 16px rgba(255, 0, 255, 0.3));
+      background-position: 0% 50%;
+      filter: drop-shadow(0 0 10px hsl(162 84% 52% / 0.5));
     }
   }
 

@@ -41,20 +41,17 @@ interface SparkleTextProps {
   sparkleCount?: number;
 }
 
+// Elegant teal palette for professional sparkles
 const SPARKLE_COLORS = [
-  '#FF00FF', // Magenta
-  '#00D4FF', // Electric Blue
-  '#39FF14', // Lime Green
-  '#FFD700', // Golden Yellow
-  '#FF6B00', // Electric Orange
-  '#FF1493', // Hot Pink
-  '#8B5CF6', // Violet
+  'hsl(162, 84%, 42%)', // Primary teal
+  'hsl(162, 84%, 55%)', // Lighter teal
+  'hsl(172, 80%, 50%)', // Cyan accent
 ];
 
 export const SparkleText: React.FC<SparkleTextProps> = ({
   children,
   className,
-  sparkleCount = 5,
+  sparkleCount = 3, // Reduced for elegance
 }) => {
   const sparkles = useMemo(() => {
     return Array.from({ length: sparkleCount }, (_, i) => ({
