@@ -8,6 +8,7 @@ import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 import { RecentReportsWidget } from '@/components/dashboard/RecentReportsWidget';
+import { SparkleText } from '@/components/ui/sparkle-text';
 
 import { 
   FlaskConical, 
@@ -58,8 +59,10 @@ export default function Dashboard() {
               </IconWrapper>
               <div className="text-center">
                 <h1 className="font-semibold text-sm sm:text-base">MedLab Reporter</h1>
-              <p className="text-2xs sm:text-xs text-gradient-rainbow font-medium">
-                  {clinicName}
+              <p className="text-2xs sm:text-xs font-medium">
+                  <SparkleText sparkleCount={5}>
+                    <span className="text-gradient-rainbow">{clinicName}</span>
+                  </SparkleText>
                 </p>
               </div>
             </div>
@@ -83,7 +86,7 @@ export default function Dashboard() {
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Here's an overview of your lab activity at <span className="text-gradient-rainbow font-semibold">{clinicName}</span>
+            Here's an overview of your lab activity at <SparkleText sparkleCount={4}><span className="text-gradient-rainbow font-semibold">{clinicName}</span></SparkleText>
           </p>
           <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
             <span>
