@@ -1,85 +1,76 @@
 
-# Add Pulsing Glow Effect to Dashboard Stat Cards
+# Unified Glow Effect for All Dashboard Cards
 
-## Overview
-Add an animated pulsing glow effect to the dashboard stat cards that complements the vibrant rainbow clinic name styling. The glow will use the primary teal color and pulse subtly to create visual harmony with the animated elements.
+## Problem Identified
+The "Total Reports" and "Patients" cards have an `onClick` handler that adds `hover:shadow-lg` styling, which overrides the teal glow effect from `.animate-pulse-glow:hover`. The "This Month" and "Pending" cards don't have `onClick`, so they display the correct glow.
 
-## Implementation
+## Solution
+Remove the conflicting `hover:shadow-lg` from the StatCard and ActionCard components when `glowEffect` is enabled, so the CSS-based glow animation takes precedence.
 
-### 1. Add New CSS Animation (src/index.css)
+---
 
-Add a new keyframe animation for the pulsing glow effect and a utility class to apply it:
+## Implementation Steps
 
-```css
-/* Pulsing glow animation for cards */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 15px hsl(162 84% 42% / 0.15),
-                0 0 30px hsl(162 84% 42% / 0.08);
-  }
-  50% {
-    box-shadow: 0 0 25px hsl(162 84% 42% / 0.3),
-                0 0 50px hsl(162 84% 42% / 0.15);
-  }
-}
+### Step 1: Update StatCard Component
+**File:** `src/components/ui/stat-card.tsx`
 
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-```
+Modify the conditional classes so that when `glowEffect` is true, the `hover:shadow-lg` is not applied (since the glow CSS already handles the hover shadow).
 
-### 2. Update StatCard Component (src/components/ui/stat-card.tsx)
-
-Add a new optional `glowEffect` prop to the StatCard component that enables the pulsing glow:
-
+**Change:**
 ```tsx
-interface StatCardProps {
-  // ... existing props
-  glowEffect?: boolean;
-}
+// Current (line 47-50):
+className={cn(
+  "group transition-all duration-300 ease-out relative overflow-hidden",
+  onClick && "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
+  glowEffect && "animate-pulse-glow border-primary/20",
+  className
+)}
 
-export function StatCard({
-  // ... existing props
-  glowEffect = false,
-}: StatCardProps) {
-  return (
-    <Card
-      className={cn(
-        "group transition-all duration-300 ease-out",
-        onClick && "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
-        glowEffect && "animate-pulse-glow border-primary/20",
-        className
-      )}
-      // ...
-    />
-  );
-}
+// Updated:
+className={cn(
+  "group transition-all duration-300 ease-out relative overflow-hidden",
+  onClick && "cursor-pointer",
+  onClick && !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
+  glowEffect && "animate-pulse-glow border-primary/20",
+  className
+)}
 ```
 
-### 3. Enable Glow on Dashboard Stats (src/pages/Dashboard.tsx)
+### Step 2: Update ActionCard Component  
+**File:** `src/components/ui/action-card.tsx`
 
-Add the `glowEffect` prop to each StatCard in the dashboard:
+Apply the same fix to prevent `hover:shadow-lg` from conflicting with the glow effect.
 
+**Change:**
 ```tsx
-<StatCard
-  title="Total Reports"
-  value={...}
-  icon={FileText}
-  glowEffect
-  // ...
-/>
+// Current (line 40-46):
+className={cn(
+  "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
+  "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
+  "active:translate-y-0 active:shadow-md",
+  glowEffect && "animate-pulse-glow border-primary/20",
+  className
+)}
+
+// Updated:
+className={cn(
+  "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
+  !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
+  !glowEffect && "active:translate-y-0 active:shadow-md",
+  glowEffect && "animate-pulse-glow border-primary/20",
+  className
+)}
 ```
 
-## Visual Result
+---
 
-- Each stat card will have a subtle, rhythmic pulsing teal glow
-- The glow intensity oscillates between soft (15px/8% opacity) and bright (25px/30% opacity)
-- 3-second animation cycle for a calm, professional feel
-- Border gets a subtle primary tint to enhance the glowing appearance
-- Complements the rainbow gradient and sparkle effects on the clinic name
+## Technical Details
 
-## Technical Notes
+### Why This Works
+- The `hover:shadow-lg` Tailwind class applies a standard dark shadow on hover
+- The `.animate-pulse-glow:hover` CSS applies a teal-colored glow shadow  
+- Since both target the `box-shadow` property, the Tailwind class wins due to specificity/order
+- By conditionally removing the conflicting Tailwind classes when `glowEffect` is enabled, the CSS-based glow effect takes full control
 
-- The pulsing animation uses the same primary teal color (162 84% 42%) as existing glow effects
-- Animation is smooth with `ease-in-out` timing for natural breathing effect
-- The effect is opt-in via a prop, so it can be reused elsewhere without affecting existing StatCards
+### Result
+All 8 dashboard cards (4 StatCards + 4 ActionCards) will now have the same consistent teal pulsing glow effect with the proper hover intensification and scale effect.
