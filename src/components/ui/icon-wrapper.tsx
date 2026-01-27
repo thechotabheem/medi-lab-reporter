@@ -25,12 +25,17 @@ const iconWrapperVariants = cva(
       glow: {
         true: "shadow-glow-sm",
         false: "",
+      },
+      hoverPulse: {
+        true: "hover:animate-icon-pulse cursor-pointer",
+        false: "",
       }
     },
     defaultVariants: {
       variant: "default",
       size: "default",
       glow: false,
+      hoverPulse: false,
     },
   }
 );
@@ -40,11 +45,11 @@ export interface IconWrapperProps
     VariantProps<typeof iconWrapperVariants> {}
 
 const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
-  ({ className, variant, size, glow, ...props }, ref) => {
+  ({ className, variant, size, glow, hoverPulse, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(iconWrapperVariants({ variant, size, glow, className }))}
+        className={cn(iconWrapperVariants({ variant, size, glow, hoverPulse, className }))}
         {...props}
       />
     );

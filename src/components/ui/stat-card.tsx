@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ripple } from "@/components/ui/ripple";
@@ -32,6 +33,15 @@ export function StatCard({
   glowEffect = false,
 }: StatCardProps) {
   const { ripples, createRipple, containerRef } = useRipple();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    // Remove shimmer effect after initial load animation completes
+    const timer = setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (glowEffect) {
@@ -48,6 +58,7 @@ export function StatCard({
         onClick && "cursor-pointer",
         onClick && !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
         glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
+        isInitialLoad && "animate-stat-shimmer",
         className
       )}
       onClick={handleClick}

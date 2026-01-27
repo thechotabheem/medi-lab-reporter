@@ -51,10 +51,10 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-2 sm:gap-3">
-              <IconWrapper size="default" glow className="hidden sm:flex">
+              <IconWrapper size="default" glow hoverPulse className="hidden sm:flex">
                 <FlaskConical className="h-5 w-5" />
               </IconWrapper>
-              <IconWrapper size="sm" className="flex sm:hidden">
+              <IconWrapper size="sm" hoverPulse className="flex sm:hidden">
                 <FlaskConical className="h-4 w-4" />
               </IconWrapper>
               <div className="text-center">
