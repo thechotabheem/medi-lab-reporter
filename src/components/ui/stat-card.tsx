@@ -45,7 +45,8 @@ export function StatCard({
       ref={containerRef}
       className={cn(
         "group transition-all duration-300 ease-out relative overflow-hidden",
-        onClick && "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
+        onClick && "cursor-pointer",
+        onClick && !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
         glowEffect && "animate-pulse-glow border-primary/20",
         className
       )}
