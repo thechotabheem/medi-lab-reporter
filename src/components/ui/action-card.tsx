@@ -29,6 +29,7 @@ export function ActionCard({
   const { ripples, createRipple, containerRef } = useRipple();
   const tiltRef = useRef<HTMLDivElement>(null);
   const [tiltStyle, setTiltStyle] = useState({ transform: '', transition: '' });
+  const [iconStyle, setIconStyle] = useState({ transform: '', transition: '' });
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!tiltRef.current) return;
@@ -43,8 +44,17 @@ export function ActionCard({
     const rotateX = ((y - centerY) / centerY) * -6;
     const rotateY = ((x - centerX) / centerX) * 6;
     
+    // Calculate icon parallax offset (opposite direction, max 8px)
+    const iconOffsetX = ((x - centerX) / centerX) * -8;
+    const iconOffsetY = ((y - centerY) / centerY) * -8;
+    
     setTiltStyle({
       transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+      transition: 'transform 0.1s ease-out'
+    });
+    
+    setIconStyle({
+      transform: `translate(${iconOffsetX}px, ${iconOffsetY}px) scale(1.05)`,
       transition: 'transform 0.1s ease-out'
     });
   }, []);
@@ -52,6 +62,10 @@ export function ActionCard({
   const handleMouseLeave = useCallback(() => {
     setTiltStyle({
       transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+      transition: 'transform 0.3s ease-out'
+    });
+    setIconStyle({
+      transform: 'translate(0px, 0px) scale(1)',
       transition: 'transform 0.3s ease-out'
     });
   }, []);
@@ -86,7 +100,8 @@ export function ActionCard({
           <IconWrapper
             variant={iconVariant}
             size="lg"
-            className="mb-3 group-hover:scale-105 transition-transform duration-300 shrink-0"
+            className="mb-3 shrink-0"
+            style={iconStyle}
           >
             <Icon className="h-5 w-5" />
           </IconWrapper>
