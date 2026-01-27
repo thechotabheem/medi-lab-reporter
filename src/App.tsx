@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
 import Reports from "./pages/Reports";
@@ -25,6 +26,7 @@ const App = () => (
     <ThemeProvider defaultTheme="dark">
       <ClinicProvider>
         <TooltipProvider>
+          <OfflineBanner />
           <Toaster />
           <Sonner />
           <BrowserRouter>

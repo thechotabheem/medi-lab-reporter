@@ -521,4 +521,20 @@
   .animate-card-bounce {
     animation: card-bounce 0.35s ease-out;
   }
+
+  /* Slide down animation for offline banner */
+  @keyframes slide-down {
+    0% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.3s ease-out forwards;
+  }
 }
