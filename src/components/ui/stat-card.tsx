@@ -1,6 +1,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Ripple } from "@/components/ui/ripple";
+import { useRipple } from "@/hooks/useRipple";
 import { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -29,16 +31,27 @@ export function StatCard({
   loading = false,
   glowEffect = false,
 }: StatCardProps) {
+  const { ripples, createRipple, containerRef } = useRipple();
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (glowEffect) {
+      createRipple(e);
+    }
+    onClick?.();
+  };
+
   return (
     <Card
+      ref={containerRef}
       className={cn(
-        "group transition-all duration-300 ease-out",
+        "group transition-all duration-300 ease-out relative overflow-hidden",
         onClick && "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
         glowEffect && "animate-pulse-glow border-primary/20",
         className
       )}
-      onClick={onClick}
+      onClick={handleClick}
     >
+      {glowEffect && <Ripple ripples={ripples} />}
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
           {title}

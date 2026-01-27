@@ -2,6 +2,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconWrapper, type IconWrapperProps } from "@/components/ui/icon-wrapper";
+import { Ripple } from "@/components/ui/ripple";
+import { useRipple } from "@/hooks/useRipple";
 import { LucideIcon } from "lucide-react";
 
 interface ActionCardProps {
@@ -23,17 +25,28 @@ export function ActionCard({
   className,
   glowEffect = false,
 }: ActionCardProps) {
+  const { ripples, createRipple, containerRef } = useRipple();
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (glowEffect) {
+      createRipple(e);
+    }
+    onClick?.();
+  };
+
   return (
     <Card
+      ref={containerRef}
       className={cn(
-        "group cursor-pointer transition-all duration-300 ease-out h-full",
+        "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
         "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
         "active:translate-y-0 active:shadow-md",
         glowEffect && "animate-pulse-glow border-primary/20",
         className
       )}
-      onClick={onClick}
+      onClick={handleClick}
     >
+      {glowEffect && <Ripple ripples={ripples} />}
       <CardHeader className="p-4 sm:p-6 h-full flex flex-col">
         <IconWrapper
           variant={iconVariant}
