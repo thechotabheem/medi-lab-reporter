@@ -164,39 +164,43 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <div className="animate-fade-in-up animation-delay-200">
-            <ActionCard
+          <ActionCard
               title="New Report"
               description="Create a new lab report for a patient"
               icon={Plus}
               iconVariant="default"
               onClick={() => navigate('/reports/new')}
+              glowEffect
             />
           </div>
           <div className="animate-fade-in-up animation-delay-300">
-            <ActionCard
+          <ActionCard
               title="View Reports"
               description="Browse and manage all lab reports"
               icon={ClipboardList}
               iconVariant="default"
               onClick={() => navigate('/reports')}
+              glowEffect
             />
           </div>
           <div className="animate-fade-in-up animation-delay-400">
-            <ActionCard
+          <ActionCard
               title="Patients"
               description="Manage patient records and history"
               icon={Users}
               iconVariant="secondary"
               onClick={() => navigate('/patients')}
+              glowEffect
             />
           </div>
           <div className="animate-fade-in-up animation-delay-500">
-            <ActionCard
+          <ActionCard
               title="Settings"
               description="Configure clinic branding and preferences"
               icon={Settings}
               iconVariant="muted"
               onClick={() => navigate('/settings')}
+              glowEffect
             />
           </div>
         </div>

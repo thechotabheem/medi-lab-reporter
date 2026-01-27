@@ -11,6 +11,7 @@ interface ActionCardProps {
   iconVariant?: IconWrapperProps["variant"];
   onClick?: () => void;
   className?: string;
+  glowEffect?: boolean;
 }
 
 export function ActionCard({
@@ -20,6 +21,7 @@ export function ActionCard({
   iconVariant = "default",
   onClick,
   className,
+  glowEffect = false,
 }: ActionCardProps) {
   return (
     <Card
@@ -27,6 +29,7 @@ export function ActionCard({
         "group cursor-pointer transition-all duration-300 ease-out h-full",
         "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
         "active:translate-y-0 active:shadow-md",
+        glowEffect && "animate-pulse-glow border-primary/20",
         className
       )}
       onClick={onClick}
