@@ -83,7 +83,7 @@ export default function Dashboard() {
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Here's an overview of your lab activity
+            Here's an overview of your lab activity at <span className="text-foreground font-medium">{clinicName}</span>
           </p>
           <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
             <span>
