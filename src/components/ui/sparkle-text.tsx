@@ -59,13 +59,13 @@ export const SparkleText: React.FC<SparkleTextProps> = ({
   const sparkles = useMemo(() => {
     return Array.from({ length: sparkleCount }, (_, i) => ({
       id: i,
-      size: Math.random() * 10 + 10, // 10-20px (larger)
+      size: Math.random() * 3 + 5, // 5-8px (smaller)
       color: SPARKLE_COLORS[i % SPARKLE_COLORS.length],
       style: {
-        top: `${Math.random() * 120 - 10}%`, // Extend beyond bounds
-        left: `${Math.random() * 120 - 10}%`,
+        top: `${Math.random() * 100}%`, // Stay within bounds
+        left: `${Math.random() * 100}%`,
       },
-      delay: i * 150, // Faster stagger
+      delay: i * 400, // Slower stagger
     }));
   }, [sparkleCount]);
 

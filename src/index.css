@@ -340,7 +340,7 @@
   }
 
   .animate-sparkle {
-    animation: sparkle 1.2s ease-in-out infinite;
+    animation: sparkle 3s ease-in-out infinite;
   }
 
   /* Rainbow gradient animation keyframes */
