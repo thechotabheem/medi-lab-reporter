@@ -58,7 +58,7 @@ export default function Dashboard() {
               </IconWrapper>
               <div className="text-center">
                 <h1 className="font-semibold text-sm sm:text-base">MedLab Reporter</h1>
-                <p className="text-2xs sm:text-xs text-muted-foreground">
+              <p className="text-2xs sm:text-xs text-gradient-rainbow font-medium">
                   {clinicName}
                 </p>
               </div>
