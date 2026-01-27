@@ -378,12 +378,12 @@
   /* Pulsing glow animation for cards */
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 15px hsl(162 84% 42% / 0.15),
-                  0 0 30px hsl(162 84% 42% / 0.08);
+      box-shadow: 0 0 10px hsl(162 84% 42% / 0.08),
+                  0 0 20px hsl(162 84% 42% / 0.04);
     }
     50% {
-      box-shadow: 0 0 25px hsl(162 84% 42% / 0.3),
-                  0 0 50px hsl(162 84% 42% / 0.15);
+      box-shadow: 0 0 15px hsl(162 84% 42% / 0.15),
+                  0 0 30px hsl(162 84% 42% / 0.08);
     }
   }
 
