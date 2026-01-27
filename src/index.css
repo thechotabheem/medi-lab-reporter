@@ -518,6 +518,20 @@
     }
   }
 
+  /* Floating animation for icons */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
   /* Wiggle animation for icons */
   @keyframes wiggle {
     0%, 100% {
