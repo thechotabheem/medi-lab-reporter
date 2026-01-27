@@ -137,6 +137,7 @@ export default function Dashboard() {
               value={statsLoading ? '-' : stats?.monthlyReports || 0}
               subtitle="Reports created"
               icon={Activity}
+              onClick={() => navigate('/reports')}
               loading={statsLoading}
               glowEffect
             />
@@ -147,6 +148,7 @@ export default function Dashboard() {
               value={statsLoading ? '-' : stats?.draftReports || 0}
               subtitle="Draft reports"
               icon={FileText}
+              onClick={() => navigate('/reports?status=draft')}
               loading={statsLoading}
               glowEffect
             />
