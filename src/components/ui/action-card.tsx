@@ -39,8 +39,8 @@ export function ActionCard({
       ref={containerRef}
       className={cn(
         "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
-        "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
-        "active:translate-y-0 active:shadow-md",
+        !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
+        !glowEffect && "active:translate-y-0 active:shadow-md",
         glowEffect && "animate-pulse-glow border-primary/20",
         className
       )}
