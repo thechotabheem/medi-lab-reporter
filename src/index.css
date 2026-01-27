@@ -111,6 +111,20 @@
     cursor: url('/pointer.cur'), auto;
   }
 
+  /* Pointer cursor for interactive elements */
+  a,
+  button,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  select,
+  label[for],
+  .cursor-pointer,
+  .interactive {
+    cursor: url('/pointer.cur'), pointer;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
