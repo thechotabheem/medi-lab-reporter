@@ -389,7 +389,7 @@
 
   .animate-pulse-glow {
     animation: pulse-glow 5s ease-in-out infinite;
-    transition: box-shadow 0.3s ease-out, transform 0.3s ease-out;
+    transition: box-shadow 0.3s ease-out, transform 0.15s ease-out;
   }
 
   .animate-pulse-glow:hover {
@@ -397,5 +397,11 @@
     box-shadow: 0 0 20px hsl(162 84% 42% / 0.25),
                 0 0 40px hsl(162 84% 42% / 0.12);
     transform: scale(1.02);
+  }
+
+  .animate-pulse-glow:active {
+    transform: scale(0.98);
+    box-shadow: 0 0 10px hsl(162 84% 42% / 0.2),
+                0 0 20px hsl(162 84% 42% / 0.1);
   }
 }
