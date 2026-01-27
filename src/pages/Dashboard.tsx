@@ -80,7 +80,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            {getGreeting()}! Welcome to <span className="text-gradient-primary">{clinicName}</span>
+            {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's an overview of your lab activity
