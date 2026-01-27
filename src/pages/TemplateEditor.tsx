@@ -1,41 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
+import { Skeleton } from '@/components/ui/skeleton';
+import { FieldEditor } from '@/components/template-editor/FieldEditor';
+import { AddFieldDialog } from '@/components/template-editor/AddFieldDialog';
 import { 
   FileText, 
   Settings2, 
-  GripVertical, 
-  Eye, 
-  EyeOff,
   Save,
   RotateCcw,
   AlertCircle,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import { reportTemplates, activeReportTypes, getReportTypeName } from '@/lib/report-templates';
+import { 
+  useCustomTemplate, 
+  useSaveCustomTemplate, 
+  useDeleteCustomTemplate,
+  type TemplateCustomization,
+  type FieldCustomization,
+  type CustomField,
+} from '@/hooks/useCustomTemplates';
 import type { ReportType, TestField } from '@/types/database';
+import type { Json } from '@/integrations/supabase/types';
 
-interface FieldCustomization {
-  hidden?: boolean;
-  customLabel?: string;
-  customNormalRange?: {
-    min?: number;
-    max?: number;
+// Helper to safely parse customizations from JSON
+const parseCustomizations = (json: Json | null | undefined): TemplateCustomization => {
+  if (!json || typeof json !== 'object' || Array.isArray(json)) {
+    return { fields: {} };
+  }
+  const obj = json as Record<string, unknown>;
+  return {
+    fields: (obj.fields as Record<string, FieldCustomization>) || {},
+    customFields: (obj.customFields as CustomField[]) || [],
+    categoryOrder: (obj.categoryOrder as string[]) || [],
   };
-}
-
-interface TemplateCustomization {
-  fields: Record<string, FieldCustomization>;
-}
+};
 
 export default function TemplateEditor() {
   const navigate = useNavigate();
@@ -43,7 +51,34 @@ export default function TemplateEditor() {
   const [customizations, setCustomizations] = useState<TemplateCustomization>({ fields: {} });
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Fetch existing customization
+  const { data: existingCustomization, isLoading: isLoadingTemplate } = useCustomTemplate(selectedTemplate);
+  const { mutate: saveTemplate, isPending: isSaving } = useSaveCustomTemplate();
+  const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteCustomTemplate();
+
   const template = selectedTemplate ? reportTemplates[selectedTemplate] : null;
+
+  // Load existing customizations when template changes
+  useEffect(() => {
+    if (existingCustomization) {
+      setCustomizations(parseCustomizations(existingCustomization.customizations));
+      setHasChanges(false);
+    } else if (selectedTemplate) {
+      setCustomizations({ fields: {}, customFields: [], categoryOrder: [] });
+      setHasChanges(false);
+    }
+  }, [existingCustomization, selectedTemplate]);
+
+  // Get all category names for the add field dialog
+  const categoryNames = useMemo(() => {
+    if (!template) return [];
+    const names = template.categories.map(c => c.name);
+    // Add any custom category names
+    const customCategoryNames = customizations.customFields
+      ?.map(f => f.categoryName)
+      .filter(name => !names.includes(name)) || [];
+    return [...names, ...customCategoryNames];
+  }, [template, customizations.customFields]);
 
   const handleFieldCustomization = (fieldName: string, updates: Partial<FieldCustomization>) => {
     setCustomizations(prev => ({
@@ -59,19 +94,77 @@ export default function TemplateEditor() {
     setHasChanges(true);
   };
 
+  const handleAddCustomField = (field: CustomField) => {
+    setCustomizations(prev => ({
+      ...prev,
+      customFields: [...(prev.customFields || []), field],
+    }));
+    setHasChanges(true);
+  };
+
+  const handleDeleteCustomField = (fieldName: string) => {
+    setCustomizations(prev => ({
+      ...prev,
+      customFields: (prev.customFields || []).filter(f => f.name !== fieldName),
+    }));
+    setHasChanges(true);
+  };
+
   const handleReset = () => {
-    setCustomizations({ fields: {} });
-    setHasChanges(false);
+    if (!selectedTemplate) return;
+    deleteTemplate(selectedTemplate, {
+      onSuccess: () => {
+        setCustomizations({ fields: {}, customFields: [], categoryOrder: [] });
+        setHasChanges(false);
+      },
+    });
   };
 
   const handleSave = () => {
-    // TODO: Save to database when custom_templates table is ready
-    console.log('Saving customizations:', customizations);
-    setHasChanges(false);
+    if (!selectedTemplate) return;
+    saveTemplate(
+      { reportType: selectedTemplate, customizations },
+      { onSuccess: () => setHasChanges(false) }
+    );
   };
 
   const getFieldCustomization = (fieldName: string): FieldCustomization => {
     return customizations.fields[fieldName] || {};
+  };
+
+  // Check if a field is a custom field
+  const isCustomField = (fieldName: string): boolean => {
+    return (customizations.customFields || []).some(f => f.name === fieldName);
+  };
+
+  // Get custom fields for a category
+  const getCustomFieldsForCategory = (categoryName: string): TestField[] => {
+    return (customizations.customFields || [])
+      .filter(f => f.categoryName === categoryName)
+      .map(f => ({
+        name: f.name,
+        label: f.label,
+        unit: f.unit,
+        type: f.type,
+        normalRange: f.normalRange,
+        options: f.options,
+      }));
+  };
+
+  // Get custom fields that belong to new categories
+  const getNewCategories = (): { name: string; fields: TestField[] }[] => {
+    if (!template) return [];
+    const existingCategoryNames = template.categories.map(c => c.name);
+    const newCategoryNames = [...new Set(
+      (customizations.customFields || [])
+        .filter(f => !existingCategoryNames.includes(f.categoryName))
+        .map(f => f.categoryName)
+    )];
+    
+    return newCategoryNames.map(name => ({
+      name,
+      fields: getCustomFieldsForCategory(name),
+    }));
   };
 
   return (
@@ -113,12 +206,29 @@ export default function TemplateEditor() {
             </Card>
           </FadeIn>
 
-          {/* Template Customization */}
-          {template && (
+          {/* Loading State */}
+          {selectedTemplate && isLoadingTemplate && (
             <FadeIn delay={100}>
               <Card className="animate-pulse-glow card-gradient-overlay">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-64 mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </CardContent>
+              </Card>
+            </FadeIn>
+          )}
+
+          {/* Template Customization */}
+          {template && !isLoadingTemplate && (
+            <FadeIn delay={100}>
+              <Card className="animate-pulse-glow card-gradient-overlay">
+                <CardHeader>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <CardTitle className="text-base flex items-center gap-2">
                         <IconWrapper size="sm" className="transition-all duration-300 hover:scale-110">
@@ -127,109 +237,96 @@ export default function TemplateEditor() {
                         {template.name}
                       </CardTitle>
                       <CardDescription>
-                        Customize fields, labels, and normal ranges
+                        Customize fields, labels, units, and normal ranges
                       </CardDescription>
                     </div>
-                    {hasChanges && (
-                      <Badge variant="outline" className="text-warning border-warning">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        Unsaved changes
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {existingCustomization && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Check className="h-3 w-3 mr-1" />
+                          Customized
+                        </Badge>
+                      )}
+                      {hasChanges && (
+                        <Badge variant="outline" className="text-warning border-warning">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Unsaved changes
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
+                  {/* Add Custom Field Button */}
+                  <div className="mb-4">
+                    <AddFieldDialog
+                      categories={categoryNames}
+                      onAdd={handleAddCustomField}
+                    />
+                  </div>
+
                   <Accordion type="multiple" defaultValue={template.categories.map(c => c.name)}>
-                    {template.categories.map((category) => (
+                    {/* Existing categories */}
+                    {template.categories.map((category) => {
+                      const customFieldsInCategory = getCustomFieldsForCategory(category.name);
+                      const allFields = [...category.fields, ...customFieldsInCategory];
+
+                      return (
+                        <AccordionItem key={category.name} value={category.name}>
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{category.name}</span>
+                              <Badge variant="secondary" className="text-xs">
+                                {allFields.length} fields
+                              </Badge>
+                              {customFieldsInCategory.length > 0 && (
+                                <Badge variant="outline" className="text-xs text-primary border-primary">
+                                  +{customFieldsInCategory.length} custom
+                                </Badge>
+                              )}
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-3">
+                              {allFields.map((field) => (
+                                <FieldEditor
+                                  key={field.name}
+                                  field={field}
+                                  customization={getFieldCustomization(field.name)}
+                                  isCustomField={isCustomField(field.name)}
+                                  onUpdate={handleFieldCustomization}
+                                  onDelete={isCustomField(field.name) ? handleDeleteCustomField : undefined}
+                                />
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+
+                    {/* New custom categories */}
+                    {getNewCategories().map((category) => (
                       <AccordionItem key={category.name} value={category.name}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{category.name}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {category.fields.length} fields
+                            <Badge variant="outline" className="text-xs text-primary border-primary">
+                              {category.fields.length} custom
                             </Badge>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="space-y-3">
-                            {category.fields.map((field) => {
-                              const customization = getFieldCustomization(field.name);
-                              const isHidden = customization.hidden;
-
-                              return (
-                                <div
-                                  key={field.name}
-                                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 hover:border-primary/40 ${
-                                    isHidden ? 'bg-muted/50 opacity-60' : 'bg-background'
-                                  }`}
-                                >
-                                  <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                                  
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <Input
-                                        value={customization.customLabel || field.label}
-                                        onChange={(e) => handleFieldCustomization(field.name, { customLabel: e.target.value })}
-                                        className="h-8 text-sm font-medium"
-                                        disabled={isHidden}
-                                      />
-                                      {field.calculated && (
-                                        <Badge variant="secondary" className="text-xs shrink-0">Auto</Badge>
-                                      )}
-                                    </div>
-                                    
-                                    {field.type === 'number' && field.normalRange && (
-                                      <div className="flex items-center gap-2 text-xs">
-                                        <span className="text-muted-foreground">Range:</span>
-                                        <Input
-                                          type="number"
-                                          placeholder="Min"
-                                          value={customization.customNormalRange?.min ?? field.normalRange.min ?? ''}
-                                          onChange={(e) => handleFieldCustomization(field.name, {
-                                            customNormalRange: {
-                                              ...customization.customNormalRange,
-                                              min: e.target.value ? parseFloat(e.target.value) : undefined,
-                                            },
-                                          })}
-                                          className="h-6 w-16 text-xs"
-                                          disabled={isHidden}
-                                        />
-                                        <span className="text-muted-foreground">-</span>
-                                        <Input
-                                          type="number"
-                                          placeholder="Max"
-                                          value={customization.customNormalRange?.max ?? field.normalRange.max ?? ''}
-                                          onChange={(e) => handleFieldCustomization(field.name, {
-                                            customNormalRange: {
-                                              ...customization.customNormalRange,
-                                              max: e.target.value ? parseFloat(e.target.value) : undefined,
-                                            },
-                                          })}
-                                          className="h-6 w-16 text-xs"
-                                          disabled={isHidden}
-                                        />
-                                        {field.unit && (
-                                          <span className="text-muted-foreground">{field.unit}</span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 shrink-0"
-                                    onClick={() => handleFieldCustomization(field.name, { hidden: !isHidden })}
-                                  >
-                                    {isHidden ? (
-                                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                    ) : (
-                                      <Eye className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </div>
-                              );
-                            })}
+                            {category.fields.map((field) => (
+                              <FieldEditor
+                                key={field.name}
+                                field={field}
+                                customization={getFieldCustomization(field.name)}
+                                isCustomField={true}
+                                onUpdate={handleFieldCustomization}
+                                onDelete={handleDeleteCustomField}
+                              />
+                            ))}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -238,12 +335,28 @@ export default function TemplateEditor() {
 
                   {/* Actions */}
                   <div className="flex gap-3 mt-6 pt-4 border-t">
-                    <Button variant="outline" onClick={handleReset} disabled={!hasChanges}>
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                      Reset
+                    <Button 
+                      variant="outline" 
+                      onClick={handleReset} 
+                      disabled={(!hasChanges && !existingCustomization) || isDeleting}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                      )}
+                      Reset to Default
                     </Button>
-                    <Button onClick={handleSave} disabled={!hasChanges} className="flex-1 sm:flex-none">
-                      <Save className="h-4 w-4 mr-2" />
+                    <Button 
+                      onClick={handleSave} 
+                      disabled={!hasChanges || isSaving} 
+                      className="flex-1 sm:flex-none"
+                    >
+                      {isSaving ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
+                      )}
                       Save Changes
                     </Button>
                   </div>

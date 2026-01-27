@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
-import type { Report, Patient, Clinic, Gender } from '@/types/database';
+import type { Report, Patient, Clinic, Gender, ReportTemplate } from '@/types/database';
 import { reportTemplates, getReportTypeName } from './report-templates';
 
 interface ClinicWithBranding {
@@ -22,6 +22,7 @@ interface GeneratePDFOptions {
   patient: Patient;
   clinic?: ClinicWithBranding | null;
   reportUrl?: string; // URL for QR code
+  customTemplate?: ReportTemplate | null; // Custom template with customizations applied
 }
 
 // Helper to parse hex color to RGB
@@ -145,7 +146,7 @@ const loadImageAsBase64 = async (url: string): Promise<string | null> => {
   }
 };
 
-export const generateReportPDF = async ({ report, patient, clinic, reportUrl }: GeneratePDFOptions): Promise<jsPDF> => {
+export const generateReportPDF = async ({ report, patient, clinic, reportUrl, customTemplate }: GeneratePDFOptions): Promise<jsPDF> => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -382,7 +383,8 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl }: 
 
   // ============ ABNORMAL VALUES SUMMARY ============
   
-  const template = reportTemplates[report.report_type];
+  // Use custom template if provided, otherwise fall back to default
+  const template = customTemplate || reportTemplates[report.report_type];
   const reportData = report.report_data as Record<string, unknown>;
   
   // Collect abnormal values
