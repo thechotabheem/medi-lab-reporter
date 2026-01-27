@@ -56,7 +56,7 @@ export default function Dashboard() {
             <IconWrapper size="default" glow hoverPulse className="animate-breathe">
                 <FlaskConical className="h-6 w-6" />
               </IconWrapper>
-              <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground drop-shadow-[0_0_10px_hsl(210_20%_98%/0.4)] hover:drop-shadow-[0_0_15px_hsl(210_20%_98%/0.6)] transition-all duration-300 cursor-default">
+              <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground animate-breathe cursor-default">
                 MedLab Reporter
               </h1>
             </div>
