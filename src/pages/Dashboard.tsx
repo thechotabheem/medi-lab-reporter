@@ -182,7 +182,7 @@ export default function Dashboard() {
               title="Patients"
               description="Manage patient records and history"
               icon={Users}
-              iconVariant="secondary"
+              iconVariant="default"
               onClick={() => navigate('/patients')}
               glowEffect
             />
@@ -192,7 +192,7 @@ export default function Dashboard() {
               title="Settings"
               description="Configure clinic branding and preferences"
               icon={Settings}
-              iconVariant="muted"
+              iconVariant="default"
               onClick={() => navigate('/settings')}
               glowEffect
             />
