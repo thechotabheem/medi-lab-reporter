@@ -518,6 +518,23 @@
     }
   }
 
+  /* Wiggle animation for icons */
+  @keyframes wiggle {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-8deg);
+    }
+    75% {
+      transform: rotate(8deg);
+    }
+  }
+
+  .animate-wiggle {
+    animation: wiggle 3s ease-in-out infinite;
+  }
+
   .animate-card-bounce {
     animation: card-bounce 0.35s ease-out;
   }
