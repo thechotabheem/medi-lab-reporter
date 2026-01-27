@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const iconWrapperVariants = cva(
-  "inline-flex items-center justify-center rounded-xl transition-all duration-200",
+  "inline-flex items-center justify-center rounded-xl transition-all duration-300",
   {
     variants: {
       variant: {
@@ -15,6 +15,7 @@ const iconWrapperVariants = cva(
         destructive: "bg-destructive/10 text-destructive",
         ghost: "bg-transparent text-foreground",
         gradient: "gradient-primary text-primary-foreground",
+        interactive: "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
       },
       size: {
         sm: "h-8 w-8",
