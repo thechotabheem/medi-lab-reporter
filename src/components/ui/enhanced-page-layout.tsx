@@ -1,0 +1,33 @@
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { CursorGlow } from "@/components/ui/cursor-glow";
+
+interface EnhancedPageLayoutProps {
+  children: React.ReactNode;
+  className?: string;
+  showCursorGlow?: boolean;
+  showDivider?: boolean;
+}
+
+export function EnhancedPageLayout({
+  children,
+  className,
+  showCursorGlow = true,
+  showDivider = true,
+}: EnhancedPageLayoutProps) {
+  return (
+    <div className={cn("page-container", className)}>
+      {showCursorGlow && <CursorGlow />}
+      {children}
+    </div>
+  );
+}
+
+export function HeaderDivider() {
+  return (
+    <div className="relative">
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="absolute inset-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
+    </div>
+  );
+}

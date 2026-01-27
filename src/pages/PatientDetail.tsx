@@ -15,6 +15,7 @@ import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { Skeleton, SkeletonList, SkeletonForm } from '@/components/ui/skeleton';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import {
   Select,
   SelectContent,
@@ -107,12 +108,13 @@ export default function PatientDetail() {
 
   if (isLoading) {
     return (
-      <div className="page-container">
+      <EnhancedPageLayout>
         <PageHeader title="Loading..." showBack backPath="/patients" />
+        <HeaderDivider />
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              <Card>
+              <Card className="animate-pulse-glow">
                 <CardHeader className="p-4 sm:p-6">
                   <Skeleton className="h-6 w-40" />
                   <Skeleton className="h-4 w-32 mt-2" />
@@ -121,7 +123,7 @@ export default function PatientDetail() {
                   <SkeletonForm />
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="animate-pulse-glow">
                 <CardHeader className="p-4 sm:p-6">
                   <Skeleton className="h-6 w-32" />
                 </CardHeader>
@@ -131,7 +133,7 @@ export default function PatientDetail() {
               </Card>
             </div>
             <div className="space-y-4 sm:space-y-6">
-              <Card>
+              <Card className="animate-pulse-glow">
                 <CardContent className="p-4 sm:p-6 space-y-3">
                   <Skeleton className="h-10 w-full" />
                 </CardContent>
@@ -139,13 +141,13 @@ export default function PatientDetail() {
             </div>
           </div>
         </main>
-      </div>
+      </EnhancedPageLayout>
     );
   }
 
   if (!patient) {
     return (
-      <div className="page-container flex items-center justify-center">
+      <EnhancedPageLayout className="flex items-center justify-center">
         <EmptyState
           icon={User}
           title="Patient not found"
@@ -153,12 +155,12 @@ export default function PatientDetail() {
           actionLabel="Back to Patients"
           onAction={() => navigate('/patients')}
         />
-      </div>
+      </EnhancedPageLayout>
     );
   }
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title={patient.full_name}
         subtitle={patient.patient_id_number || 'No ID'}
@@ -196,6 +198,8 @@ export default function PatientDetail() {
           )
         }
       />
+      
+      <HeaderDivider />
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
@@ -203,7 +207,7 @@ export default function PatientDetail() {
             {/* Patient Info */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <FadeIn delay={100}>
-                <Card>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle className="text-base sm:text-lg">Patient Information</CardTitle>
                     <CardDescription className="text-xs sm:text-sm">Personal and contact details</CardDescription>
@@ -270,14 +274,14 @@ export default function PatientDetail() {
                     ) : (
                       <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                         <div className="flex items-center gap-3">
-                          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Calendar className="h-4 w-4 text-muted-foreground shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                           <div className="min-w-0">
                             <p className="text-xs text-muted-foreground">Date of Birth</p>
                             <p className="text-sm font-medium">{format(new Date(patient.date_of_birth), 'MMMM d, yyyy')}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <User className="h-4 w-4 text-muted-foreground shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                           <div>
                             <p className="text-xs text-muted-foreground">Gender</p>
                             <p className="text-sm font-medium capitalize">{patient.gender}</p>
@@ -285,7 +289,7 @@ export default function PatientDetail() {
                         </div>
                         {patient.phone && (
                           <div className="flex items-center gap-3">
-                            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <Phone className="h-4 w-4 text-muted-foreground shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground">Phone</p>
                               <p className="text-sm font-medium truncate">{patient.phone}</p>
@@ -294,7 +298,7 @@ export default function PatientDetail() {
                         )}
                         {patient.email && (
                           <div className="flex items-center gap-3">
-                            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <Mail className="h-4 w-4 text-muted-foreground shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground">Email</p>
                               <p className="text-sm font-medium truncate">{patient.email}</p>
@@ -303,7 +307,7 @@ export default function PatientDetail() {
                         )}
                         {patient.address && (
                           <div className="flex items-start gap-3 sm:col-span-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                             <div>
                               <p className="text-xs text-muted-foreground">Address</p>
                               <p className="text-sm font-medium">{patient.address}</p>
@@ -318,7 +322,7 @@ export default function PatientDetail() {
 
               {/* Reports History */}
               <FadeIn delay={200}>
-                <Card>
+                <Card className="animate-pulse-glow card-gradient-overlay">
                   <CardHeader className="p-4 sm:p-6 flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-base sm:text-lg">Report History</CardTitle>
@@ -344,13 +348,13 @@ export default function PatientDetail() {
                         {reports?.map((report, index) => (
                           <div
                             key={report.id}
-                            className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/40 transition-all duration-200 cursor-pointer group animate-fade-in-up"
+                            className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/40 transition-all duration-300 cursor-pointer group animate-fade-in-up hover:scale-[1.01]"
                             style={{ animationDelay: `${index * 50}ms` }}
                             onClick={() => navigate(`/reports/${report.id}`)}
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              <IconWrapper size="default" className="shrink-0 group-hover:scale-105 transition-transform">
-                                <FileText className="h-4 w-4" />
+                              <IconWrapper size="default" className="shrink-0 transition-all duration-300 group-hover:scale-110">
+                                <FileText className="h-4 w-4 transition-all duration-300 group-hover:text-primary" />
                               </IconWrapper>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium group-hover:text-primary transition-colors truncate">
@@ -381,7 +385,7 @@ export default function PatientDetail() {
             {/* Sidebar */}
             <div className="space-y-4 sm:space-y-6">
               <FadeIn delay={300}>
-                <Card>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle className="text-sm sm:text-base">Quick Actions</CardTitle>
                   </CardHeader>
@@ -395,7 +399,7 @@ export default function PatientDetail() {
               </FadeIn>
 
               <FadeIn delay={400}>
-                <Card>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle className="text-sm sm:text-base">Statistics</CardTitle>
                   </CardHeader>
@@ -419,6 +423,6 @@ export default function PatientDetail() {
           </div>
         </main>
       </PageTransition>
-    </div>
+    </EnhancedPageLayout>
   );
 }

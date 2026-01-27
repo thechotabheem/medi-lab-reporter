@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from '@/components/ui/page-header';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import {
   Select,
   SelectContent,
@@ -88,7 +89,7 @@ export default function AddPatient() {
   };
 
   return (
-    <div className="page-container">
+    <EnhancedPageLayout>
       <PageHeader
         title="Add Patient"
         subtitle="Register a new patient"
@@ -96,11 +97,13 @@ export default function AddPatient() {
         showBack
         backPath="/patients"
       />
+      
+      <HeaderDivider />
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl">
           <FadeIn delay={100}>
-            <Card>
+            <Card className="animate-pulse-glow card-gradient-overlay">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="text-base sm:text-lg">Patient Information</CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
@@ -219,6 +222,6 @@ export default function AddPatient() {
           </FadeIn>
         </main>
       </PageTransition>
-    </div>
+    </EnhancedPageLayout>
   );
 }
