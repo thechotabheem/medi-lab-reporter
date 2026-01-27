@@ -16,7 +16,7 @@ const Sparkle: React.FC<SparkleProps> = ({ size, color, style, delay }) => {
         ...style,
         width: size,
         height: size,
-        animationDelay: `${delay}ms`,
+        animationDelay: `${delay}ms, ${delay + 600}ms`,
       }}
     >
       <svg
