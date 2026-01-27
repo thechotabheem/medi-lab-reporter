@@ -21,12 +21,13 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion } from '@/components/ui/accordion';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SortableFieldEditor } from '@/components/template-editor/SortableFieldEditor';
+import { SortableCategoryEditor } from '@/components/template-editor/SortableCategoryEditor';
 import { AddFieldDialog } from '@/components/template-editor/AddFieldDialog';
 import { CloneTemplateDialog } from '@/components/template-editor/CloneTemplateDialog';
+import { TemplatePreviewDialog } from '@/components/template-editor/TemplatePreviewDialog';
 import { 
   FileText, 
   Settings2, 
@@ -182,6 +183,37 @@ export default function TemplateEditor() {
     }
   }, []);
 
+  // Handle drag end for category reordering
+  const handleCategoryDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const allCategoryNames = getSortedCategoriesInner();
+      const oldIndex = allCategoryNames.findIndex((name) => name === active.id);
+      const newIndex = allCategoryNames.findIndex((name) => name === over.id);
+      
+      const newOrder = arrayMove(allCategoryNames, oldIndex, newIndex);
+      
+      setCustomizations((prev) => ({
+        ...prev,
+        categoryOrder: newOrder,
+      }));
+      setHasChanges(true);
+    }
+  }, []);
+
+  // Helper to get all category names in order
+  const getSortedCategoriesInner = useCallback((): string[] => {
+    if (!template) return [];
+    const baseCategoryNames = template.categories.map(c => c.name);
+    const newCategoryNames = [...new Set(
+      (customizations.customFields || [])
+        .filter(f => !baseCategoryNames.includes(f.categoryName))
+        .map(f => f.categoryName)
+    )];
+    return [...baseCategoryNames, ...newCategoryNames];
+  }, [template, customizations.customFields]);
+
   // Clone customizations from another template
   const handleCloneTemplate = useCallback((sourceTemplate: ReportType) => {
     const sourceCustomization = allCustomTemplates?.find(
@@ -200,9 +232,10 @@ export default function TemplateEditor() {
     setCustomizations((prev) => ({
       ...prev,
       fields: { ...sourceData.fields },
-      // Keep existing custom fields and field order
+      // Keep existing custom fields, field order, and category order
       customFields: prev.customFields || [],
       fieldOrder: prev.fieldOrder || {},
+      categoryOrder: prev.categoryOrder || [],
     }));
     
     setHasChanges(true);
@@ -232,21 +265,44 @@ export default function TemplateEditor() {
       }));
   };
 
-  // Get custom fields that belong to new categories
-  const getNewCategories = (): { name: string; fields: TestField[] }[] => {
+  // Get all categories sorted by saved order
+  const getSortedCategories = useMemo((): { name: string; fields: TestField[] }[] => {
     if (!template) return [];
-    const existingCategoryNames = template.categories.map(c => c.name);
+    
+    // Combine base template categories with new custom categories
+    const baseCategoryNames = template.categories.map(c => c.name);
     const newCategoryNames = [...new Set(
       (customizations.customFields || [])
-        .filter(f => !existingCategoryNames.includes(f.categoryName))
+        .filter(f => !baseCategoryNames.includes(f.categoryName))
         .map(f => f.categoryName)
     )];
     
-    return newCategoryNames.map(name => ({
-      name,
-      fields: getCustomFieldsForCategory(name),
-    }));
-  };
+    const allCategories = [
+      ...template.categories.map(c => ({ name: c.name, fields: c.fields })),
+      ...newCategoryNames.map(name => ({ name, fields: getCustomFieldsForCategory(name) })),
+    ];
+    
+    // Apply saved category order
+    const savedOrder = customizations.categoryOrder;
+    if (savedOrder && savedOrder.length > 0) {
+      const categoryMap = new Map(allCategories.map(c => [c.name, c]));
+      const orderedCategories: { name: string; fields: TestField[] }[] = [];
+      
+      savedOrder.forEach(name => {
+        const category = categoryMap.get(name);
+        if (category) {
+          orderedCategories.push(category);
+          categoryMap.delete(name);
+        }
+      });
+      
+      // Add any remaining categories not in saved order
+      categoryMap.forEach(category => orderedCategories.push(category));
+      return orderedCategories;
+    }
+    
+    return allCategories;
+  }, [template, customizations.categoryOrder, customizations.customFields]);
 
   // Sort fields based on saved field order
   const getSortedFields = useCallback((categoryName: string, fields: TestField[]): TestField[] => {
@@ -370,10 +426,16 @@ export default function TemplateEditor() {
                       onAdd={handleAddCustomField}
                     />
                     {selectedTemplate && (
-                      <CloneTemplateDialog
-                        currentTemplate={selectedTemplate}
-                        onClone={handleCloneTemplate}
-                      />
+                      <>
+                        <CloneTemplateDialog
+                          currentTemplate={selectedTemplate}
+                          onClone={handleCloneTemplate}
+                        />
+                        <TemplatePreviewDialog
+                          reportType={selectedTemplate}
+                          customizations={customizations}
+                        />
+                      </>
                     )}
                     <div className="flex-1" />
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -382,100 +444,42 @@ export default function TemplateEditor() {
                     </div>
                   </div>
 
-                  <Accordion type="multiple" defaultValue={template.categories.map(c => c.name)}>
-                    {/* Existing categories */}
-                    {template.categories.map((category) => {
-                      const customFieldsInCategory = getCustomFieldsForCategory(category.name);
-                      const allFields = [...category.fields, ...customFieldsInCategory];
-                      const sortedFields = getSortedFields(category.name, allFields);
+                  {/* Category drag-and-drop context */}
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleCategoryDragEnd}
+                  >
+                    <SortableContext
+                      items={getSortedCategories.map(c => c.name)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <Accordion type="multiple" defaultValue={template.categories.map(c => c.name)}>
+                        {getSortedCategories.map((category) => {
+                          const isNew = !template.categories.some(c => c.name === category.name);
+                          const customFieldsInCategory = getCustomFieldsForCategory(category.name);
+                          const baseFields = template.categories.find(c => c.name === category.name)?.fields || [];
+                          const allFields = [...baseFields, ...customFieldsInCategory];
+                          const sortedFields = getSortedFields(category.name, allFields.length > 0 ? allFields : category.fields);
 
-                      return (
-                        <AccordionItem key={category.name} value={category.name}>
-                          <AccordionTrigger className="hover:no-underline">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{category.name}</span>
-                              <Badge variant="secondary" className="text-xs">
-                                {allFields.length} fields
-                              </Badge>
-                              {customFieldsInCategory.length > 0 && (
-                                <Badge variant="outline" className="text-xs text-primary border-primary">
-                                  +{customFieldsInCategory.length} custom
-                                </Badge>
-                              )}
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <DndContext
-                              sensors={sensors}
-                              collisionDetection={closestCenter}
-                              onDragEnd={(event) => handleDragEnd(event, category.name, sortedFields)}
-                            >
-                              <SortableContext
-                                items={sortedFields.map(f => f.name)}
-                                strategy={verticalListSortingStrategy}
-                              >
-                                <div className="space-y-3">
-                                  {sortedFields.map((field) => (
-                                    <SortableFieldEditor
-                                      key={field.name}
-                                      field={field}
-                                      customization={getFieldCustomization(field.name)}
-                                      isCustomField={isCustomField(field.name)}
-                                      onUpdate={handleFieldCustomization}
-                                      onDelete={isCustomField(field.name) ? handleDeleteCustomField : undefined}
-                                    />
-                                  ))}
-                                </div>
-                              </SortableContext>
-                            </DndContext>
-                          </AccordionContent>
-                        </AccordionItem>
-                      );
-                    })}
-
-                    {/* New custom categories */}
-                    {getNewCategories().map((category) => {
-                      const sortedFields = getSortedFields(category.name, category.fields);
-                      
-                      return (
-                        <AccordionItem key={category.name} value={category.name}>
-                          <AccordionTrigger className="hover:no-underline">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{category.name}</span>
-                              <Badge variant="outline" className="text-xs text-primary border-primary">
-                                {category.fields.length} custom
-                              </Badge>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <DndContext
-                              sensors={sensors}
-                              collisionDetection={closestCenter}
-                              onDragEnd={(event) => handleDragEnd(event, category.name, sortedFields)}
-                            >
-                              <SortableContext
-                                items={sortedFields.map(f => f.name)}
-                                strategy={verticalListSortingStrategy}
-                              >
-                                <div className="space-y-3">
-                                  {sortedFields.map((field) => (
-                                    <SortableFieldEditor
-                                      key={field.name}
-                                      field={field}
-                                      customization={getFieldCustomization(field.name)}
-                                      isCustomField={true}
-                                      onUpdate={handleFieldCustomization}
-                                      onDelete={handleDeleteCustomField}
-                                    />
-                                  ))}
-                                </div>
-                              </SortableContext>
-                            </DndContext>
-                          </AccordionContent>
-                        </AccordionItem>
-                      );
-                    })}
-                  </Accordion>
+                          return (
+                            <SortableCategoryEditor
+                              key={category.name}
+                              categoryName={category.name}
+                              fields={sortedFields}
+                              customFieldCount={customFieldsInCategory.length}
+                              isNewCategory={isNew}
+                              getFieldCustomization={getFieldCustomization}
+                              isCustomField={isCustomField}
+                              onFieldUpdate={handleFieldCustomization}
+                              onFieldDelete={handleDeleteCustomField}
+                              onFieldDragEnd={handleDragEnd}
+                            />
+                          );
+                        })}
+                      </Accordion>
+                    </SortableContext>
+                  </DndContext>
 
                   {/* Actions */}
                   <div className="flex gap-3 mt-6 pt-4 border-t">
