@@ -41,13 +41,13 @@ export function ActionCard({
         "group cursor-pointer transition-all duration-300 ease-out h-full relative overflow-hidden",
         !glowEffect && "hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
         !glowEffect && "active:translate-y-0 active:shadow-md",
-        glowEffect && "animate-pulse-glow border-primary/20",
+        glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
         className
       )}
       onClick={handleClick}
     >
       {glowEffect && <Ripple ripples={ripples} />}
-      <CardHeader className="p-4 sm:p-6 h-full flex flex-col">
+      <CardHeader className="p-4 sm:p-6 h-full flex flex-col relative z-10">
         <IconWrapper
           variant={iconVariant}
           size="lg"
