@@ -339,8 +339,21 @@
     }
   }
 
+  /* Sparkle initial fade-in */
+  @keyframes sparkle-fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
   .animate-sparkle {
-    animation: sparkle 3s ease-in-out infinite;
+    opacity: 0;
+    animation: 
+      sparkle-fade-in 0.6s ease-out forwards,
+      sparkle 3s ease-in-out 0.6s infinite;
   }
 
   /* Rainbow gradient animation keyframes */
