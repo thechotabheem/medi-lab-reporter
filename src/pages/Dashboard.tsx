@@ -162,7 +162,7 @@ export default function Dashboard() {
               title="New Report"
               description="Create a new lab report for a patient"
               icon={Plus}
-              iconVariant="default"
+              iconVariant="interactive"
               onClick={() => navigate('/reports/new')}
               glowEffect
             />
@@ -172,7 +172,7 @@ export default function Dashboard() {
               title="View Reports"
               description="Browse and manage all lab reports"
               icon={ClipboardList}
-              iconVariant="default"
+              iconVariant="interactive"
               onClick={() => navigate('/reports')}
               glowEffect
             />
@@ -182,7 +182,7 @@ export default function Dashboard() {
               title="Patients"
               description="Manage patient records and history"
               icon={Users}
-              iconVariant="default"
+              iconVariant="interactive"
               onClick={() => navigate('/patients')}
               glowEffect
             />
@@ -192,7 +192,7 @@ export default function Dashboard() {
               title="Settings"
               description="Configure clinic branding and preferences"
               icon={Settings}
-              iconVariant="default"
+              iconVariant="interactive"
               onClick={() => navigate('/settings')}
               glowEffect
             />
