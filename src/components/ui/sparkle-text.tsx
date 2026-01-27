@@ -54,18 +54,18 @@ const SPARKLE_COLORS = [
 export const SparkleText: React.FC<SparkleTextProps> = ({
   children,
   className,
-  sparkleCount = 6,
+  sparkleCount = 8,
 }) => {
   const sparkles = useMemo(() => {
     return Array.from({ length: sparkleCount }, (_, i) => ({
       id: i,
-      size: Math.random() * 8 + 6, // 6-14px
+      size: Math.random() * 10 + 10, // 10-20px (larger)
       color: SPARKLE_COLORS[i % SPARKLE_COLORS.length],
       style: {
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 120 - 10}%`, // Extend beyond bounds
+        left: `${Math.random() * 120 - 10}%`,
       },
-      delay: i * 400, // Staggered delay
+      delay: i * 150, // Faster stagger
     }));
   }, [sparkleCount]);
 
