@@ -255,12 +255,15 @@
 }
 
 @layer utilities {
-  /* Animation delays */
+  /* Animation delays for staggered entrance */
   .animation-delay-100 { animation-delay: 100ms; }
   .animation-delay-200 { animation-delay: 200ms; }
   .animation-delay-300 { animation-delay: 300ms; }
   .animation-delay-400 { animation-delay: 400ms; }
   .animation-delay-500 { animation-delay: 500ms; }
+  .animation-delay-600 { animation-delay: 600ms; }
+  .animation-delay-700 { animation-delay: 700ms; }
+  .animation-delay-800 { animation-delay: 800ms; }
 
   /* Fade in animation */
   .animate-fade-in {
@@ -283,12 +286,17 @@
   @keyframes fadeInUp {
     from { 
       opacity: 0; 
-      transform: translateY(10px); 
+      transform: translateY(20px); 
     }
     to { 
       opacity: 1; 
       transform: translateY(0); 
     }
+  }
+
+  .animate-fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out forwards;
   }
 
   @keyframes scaleIn {
