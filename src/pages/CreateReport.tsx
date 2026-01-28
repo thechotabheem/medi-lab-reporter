@@ -16,6 +16,7 @@ import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
+import { ageToDateOfBirth } from '@/lib/utils';
 import type { Patient, ReportType } from '@/types/database';
 import { Check, Save } from 'lucide-react';
 import { toast } from 'sonner';
@@ -111,8 +112,6 @@ export default function CreateReport() {
   const getPatientForForm = (): Patient | null => {
     if (selectedPatient) return selectedPatient;
     if (newPatientData) {
-      // Import ageToDateOfBirth for converting age to date_of_birth
-      const { ageToDateOfBirth } = require('@/lib/utils');
       return {
         id: 'new',
         clinic_id: clinicId || '',
@@ -140,7 +139,6 @@ export default function CreateReport() {
 
       // If new patient, create them first
       if (newPatientData && !selectedPatient) {
-        const { ageToDateOfBirth } = require('@/lib/utils');
         const { data: newPatient, error: patientError } = await supabase
           .from('patients')
           .insert({
