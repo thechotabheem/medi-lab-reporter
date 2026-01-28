@@ -11,6 +11,7 @@ import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
 import { DraftBanner } from '@/components/reports/DraftBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
+import { SuccessAnimation } from '@/components/ui/success-animation';
 import { useDraftReport, DraftReport } from '@/hooks/useDraftReport';
 import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +38,8 @@ export default function CreateReport() {
   });
   const [reportData, setReportData] = useState<Record<string, string | number | boolean | null>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', subtitle: '' });
   const [draftApplied, setDraftApplied] = useState(false);
 
   // Auto-save on changes (after initial load)
@@ -188,17 +191,29 @@ export default function CreateReport() {
       clearDraft();
 
       queryClient.invalidateQueries({ queryKey: ['reports'] });
-      toast.success(newPatientData && !selectedPatient 
-        ? 'Patient registered and report created successfully' 
-        : 'Report created successfully'
-      );
-      navigate('/dashboard');
+      
+      // Show success animation
+      const isNewPatient = newPatientData && !selectedPatient;
+      setSuccessMessage({
+        title: status === 'completed' ? 'Report Complete!' : 'Draft Saved!',
+        subtitle: isNewPatient 
+          ? 'Patient registered and report created successfully'
+          : status === 'completed' 
+            ? 'Your report has been saved and is ready for review'
+            : 'Your progress has been saved',
+      });
+      setShowSuccess(true);
     } catch (error: any) {
       toast.error('Failed to save: ' + error.message);
     } finally {
       setIsSaving(false);
     }
   };
+
+  const handleSuccessComplete = useCallback(() => {
+    setShowSuccess(false);
+    navigate('/dashboard');
+  }, [navigate]);
 
   const patientForForm = getPatientForForm();
   const patientDisplayName = getPatientDisplayName();
@@ -207,10 +222,19 @@ export default function CreateReport() {
   const showDraftBanner = hasDraft && draft && !draftApplied;
 
   return (
-    <EnhancedPageLayout className="pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
-      <PageHeader title="Create New Report" subtitle="Fill in all sections to create a report" showBack backPath="/dashboard" />
-      
-      <HeaderDivider />
+    <>
+      {/* Success Animation */}
+      <SuccessAnimation
+        isVisible={showSuccess}
+        onComplete={handleSuccessComplete}
+        message={successMessage.title}
+        submessage={successMessage.subtitle}
+      />
+
+      <EnhancedPageLayout className="pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
+        <PageHeader title="Create New Report" subtitle="Fill in all sections to create a report" showBack backPath="/dashboard" />
+        
+        <HeaderDivider />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 space-y-6">
         {/* Draft Banner */}
@@ -223,12 +247,12 @@ export default function CreateReport() {
         )}
 
         {/* Section 1: Patient Selection */}
-        <Card className="animate-fade-in-up animate-pulse-glow card-gradient-overlay">
-          <CardHeader className="p-4 sm:p-6">
+        <Card className="relative animate-fade-in-up animate-pulse-glow card-gradient-overlay">
+          <CardHeader className="p-4 sm:p-6 relative z-10">
             <CardTitle className="text-base sm:text-lg">1. Patient</CardTitle>
             <CardDescription className="text-xs sm:text-sm">Add a new patient or select an existing one</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
+          <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
             <PatientSelector 
               onSelect={setSelectedPatient} 
               selectedPatient={selectedPatient}
@@ -239,19 +263,19 @@ export default function CreateReport() {
         </Card>
 
         {/* Section 2: Template Selection */}
-        <Card className="animate-fade-in-up animation-delay-100 animate-pulse-glow card-gradient-overlay">
-          <CardHeader className="p-4 sm:p-6">
+        <Card className="relative animate-fade-in-up animation-delay-100 animate-pulse-glow card-gradient-overlay">
+          <CardHeader className="p-4 sm:p-6 relative z-10">
             <CardTitle className="text-base sm:text-lg">2. Select Test Type</CardTitle>
             <CardDescription className="text-xs sm:text-sm">Choose the type of report to create</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
+          <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
             <TemplateSelector onSelect={setSelectedTemplate} selectedType={selectedTemplate} />
           </CardContent>
         </Card>
 
         {/* Section 3: Report Details */}
-        <Card className="animate-fade-in-up animation-delay-200 animate-pulse-glow card-gradient-overlay">
-          <CardHeader className="p-4 sm:p-6">
+        <Card className="relative animate-fade-in-up animation-delay-200 animate-pulse-glow card-gradient-overlay">
+          <CardHeader className="p-4 sm:p-6 relative z-10">
             <CardTitle className="text-base sm:text-lg">3. Report Details</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               {selectedTemplate && patientDisplayName
@@ -259,7 +283,7 @@ export default function CreateReport() {
                 : 'Add additional information'}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
+          <CardContent className="p-4 sm:p-6 pt-0 space-y-4 relative z-10">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="test_date" className="text-sm">Test Date *</Label>
@@ -295,8 +319,8 @@ export default function CreateReport() {
 
         {/* Section 4: Test Results - Only show when patient and template are selected */}
         {selectedTemplate && patientForForm && (
-          <Card className="animate-fade-in-up animation-delay-300 animate-pulse-glow card-gradient-overlay">
-            <CardHeader className="p-4 sm:p-6">
+          <Card className="relative animate-fade-in-up animation-delay-300 animate-pulse-glow card-gradient-overlay">
+            <CardHeader className="p-4 sm:p-6 relative z-10">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                   <CardTitle className="text-base sm:text-lg">4. Enter Test Results</CardTitle>
@@ -307,7 +331,7 @@ export default function CreateReport() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0">
+            <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
               <DynamicReportForm
                 reportType={selectedTemplate}
                 patient={patientForForm}
@@ -350,6 +374,7 @@ export default function CreateReport() {
           </div>
         </div>
       </footer>
-    </EnhancedPageLayout>
+      </EnhancedPageLayout>
+    </>
   );
 }
