@@ -17,11 +17,22 @@ interface HistoricalValue {
   percentChange: number | null;
 }
 
+// UUID v4 pattern for validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const isValidUUID = (id: string | null | undefined): boolean => {
+  if (!id) return false;
+  return UUID_REGEX.test(id);
+};
+
 export const usePatientHistory = ({ patientId, reportType, limit = 5 }: PatientHistoryOptions) => {
+  // Only run query if patientId is a valid UUID (prevents 400 errors for "new" or invalid IDs)
+  const hasValidPatientId = isValidUUID(patientId);
+
   return useQuery({
     queryKey: ['patient-history', patientId, reportType, limit],
     queryFn: async () => {
-      if (!patientId) return [];
+      if (!hasValidPatientId) return [];
 
       let query = supabase
         .from('reports')
@@ -40,7 +51,7 @@ export const usePatientHistory = ({ patientId, reportType, limit = 5 }: PatientH
       if (error) throw error;
       return data as Pick<Report, 'id' | 'report_type' | 'report_data' | 'test_date' | 'created_at'>[];
     },
-    enabled: !!patientId,
+    enabled: hasValidPatientId,
   });
 };
 
