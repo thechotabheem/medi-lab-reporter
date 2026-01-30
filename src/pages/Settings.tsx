@@ -13,7 +13,9 @@ import {
   Building2,
   Bell,
   FileText,
+  AlertTriangle,
 } from 'lucide-react';
+import { ResetDataDialog } from '@/components/settings/ResetDataDialog';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -152,6 +154,28 @@ export default function Settings() {
                       onCheckedChange={(checked) => updateSetting('newPatients', checked)}
                     />
                   </div>
+                </CardContent>
+              </Card>
+            </FadeIn>
+
+            {/* Danger Zone - Reset Data */}
+            <FadeIn delay={250}>
+              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-destructive/40 hover:shadow-lg border-destructive/20">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3">
+                    <IconWrapper variant="destructive" size="default" className="transition-all duration-300 group-hover:scale-110">
+                      <AlertTriangle className="h-5 w-5 transition-all duration-300 group-hover:text-destructive" />
+                    </IconWrapper>
+                    <div>
+                      <CardTitle className="text-base sm:text-lg text-destructive">Danger Zone</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        Reset all data (patients, reports)
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <ResetDataDialog />
                 </CardContent>
               </Card>
             </FadeIn>
