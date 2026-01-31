@@ -11,6 +11,7 @@ import AddPatient from "@/pages/AddPatient";
 import Settings from "@/pages/Settings";
 import ClinicSettings from "@/pages/ClinicSettings";
 import TemplateEditor from "@/pages/TemplateEditor";
+import Documentation from "@/pages/Documentation";
 import Install from "@/pages/Install";
 import NotFound from "@/pages/NotFound";
 
@@ -103,6 +104,7 @@ export function AnimatedRoutes() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/clinic" element={<ClinicSettings />} />
         <Route path="/settings/templates" element={<TemplateEditor />} />
+        <Route path="/documentation" element={<Documentation />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
