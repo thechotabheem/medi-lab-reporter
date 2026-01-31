@@ -1,62 +1,135 @@
 
-Goal
-- “Reset the full app” in the way you requested: clear all database data related to patients and reports so you can start fresh, while keeping clinic settings intact.
+# PRD Documentation PDF Generator
 
-What we will delete (database)
-- Patients (all rows in `patients` for the default clinic)
-- Reports (all rows in `reports` for the default clinic)
-- Report images (all rows in `report_images` for reports that belong to the default clinic)
+## Overview
+Create a new page and PDF generator function that produces a comprehensive, printable Product Requirements Document for MedLab Reporter. The PDF will serve as offline technical reference documentation.
 
-What we will keep (database)
-- Clinic configuration (`clinics` row, including name/logo/branding)
-- Custom templates (`custom_templates`) so you don’t lose your template edits
+## What Will Be Created
 
-Why we’ll implement this as a “Reset” action (instead of asking you to run SQL)
-- In this project, the safest and most reliable way is to add a built-in “Reset Data” action inside the app that calls a backend function to perform the deletions in the correct order and returns success/failure.
+### New Files
+1. **`src/lib/prd-pdf-generator.ts`** - PDF generation logic for PRD documentation
+2. **`src/pages/Documentation.tsx`** - Documentation page with download button
 
-Safety (important since the app is open-access)
-- Add a “Danger Zone” section in Settings that:
-  - Requires typing a confirmation phrase like: DELETE ALL DATA
-  - Requires a “Reset Code” (stored securely as a backend secret, not in the frontend)
-  - Shows exactly what will be deleted and what will remain
+### Modified Files
+1. **`src/App.tsx`** - Add route for `/documentation`
 
-Implementation steps
-1) Backend function: “reset-clinic-data”
-   - Create a backend function that:
-     - Verifies the provided reset code matches a backend secret (e.g., `ADMIN_RESET_CODE`)
-     - Deletes data in a safe order:
-       1) Delete `report_images` for affected reports
-       2) Delete `reports` for the clinic
-       3) Delete `patients` for the clinic
-     - Returns a JSON response with deleted counts (patients/reports/images) and a timestamp
-   - Use a transaction-like approach (best-effort rollback where possible) and clear error messages so we can diagnose failures.
+## PDF Document Structure
 
-2) Add a Reset Data UI in Settings
-   - Add a “Reset Data” card/button (Settings page) that opens a confirmation dialog.
-   - Dialog fields:
-     - Reset code input
-     - Confirmation phrase input (must match exactly)
-   - On submit:
-     - Call the backend function
-     - Show a success toast with what was deleted
-     - Clear any cached queries (patients/reports) so the dashboard updates immediately
-     - Navigate back to Dashboard
+The PRD PDF will contain the following sections:
 
-3) Optional “local reset” (helps if things feel stuck)
-   - Add an optional secondary action in the same dialog:
-     - “Clear Draft + Reload”
-   - This clears the saved draft report in localStorage and reloads the page, without touching the database.
+### Cover Page
+- Title: "MedLab Reporter - Product Requirements Document"
+- Version number and generation date
+- Clinic branding (logo, name) if available
 
-Verification (end-to-end)
-1) Open the app → Dashboard shows current counts.
-2) Go to Settings → Danger Zone → Reset Data.
-3) Enter Reset Code + type DELETE ALL DATA → confirm.
-4) After success:
-   - Dashboard shows 0 patients, 0 reports
-   - Patients list is empty
-   - Reports list is empty
-5) Create a new patient + create a new report to confirm normal usage works again.
+### Table of Contents
+- Clickable navigation to all sections
 
-Notes / assumptions
-- This reset is targeted to the single global/default clinic used by the app.
-- If you also want to delete Custom Templates, we can add a second checkbox in the reset dialog (off by default) to optionally wipe those too.
+### Section 1: Executive Summary
+- Application overview and purpose
+- Target users (lab technicians, pathologists)
+- Key value propositions
+
+### Section 2: Technology Stack
+- Frontend: React 18, Vite, TailwindCSS, TypeScript
+- Backend: Lovable Cloud (Supabase)
+- PDF Generation: jsPDF, jspdf-autotable
+- PWA: vite-plugin-pwa
+
+### Section 3: Core Modules
+- Dashboard with stats and quick actions
+- Patient Management (CRUD operations)
+- Report Management (create, view, export)
+- Template Editor (field customization)
+- Settings (clinic branding, notifications)
+
+### Section 4: Supported Test Types (17 Types)
+A detailed table for each test type showing:
+- Test name and code
+- All fields with units
+- Normal ranges (gender-specific where applicable)
+- Calculated fields with formulas
+
+```text
+Test Types to Document:
++------------------+--------------------------------+
+| Code             | Name                           |
++------------------+--------------------------------+
+| cbc              | Complete Blood Count           |
+| lft              | Liver Function Test            |
+| rft              | Renal Function Test            |
+| lipid_profile    | Lipid Profile                  |
+| esr              | ESR                            |
+| bsr              | Blood Sugar Random             |
+| bsf              | Blood Sugar Fasting            |
+| serum_calcium    | Serum Calcium                  |
+| mp               | Malaria Parasites              |
+| typhoid          | Typhoid (IgM + IgG)            |
+| hcv              | Hepatitis C Virus              |
+| hbsag            | Hepatitis B Surface Antigen    |
+| hiv              | HIV                            |
+| vdrl             | VDRL                           |
+| h_pylori         | Helicobacter Pylori            |
+| blood_group      | Blood Group                    |
+| ra_factor        | R.A Factor                     |
++------------------+--------------------------------+
+```
+
+### Section 5: Database Schema
+- clinics table structure
+- patients table structure
+- reports table structure
+- report_images table structure
+- custom_templates table structure
+- Relationships diagram
+
+### Section 6: Auto-Calculation Formulas
+- BUN = urea * 0.467
+- Indirect Bilirubin = Total Bilirubin - Direct Bilirubin
+- Globulin = Total Protein - Albumin
+- A/G Ratio = Albumin / Globulin
+- VLDL = Triglycerides / 5
+- LDL = TC - HDL - (TG/5)
+- TC/HDL Ratio, LDL/HDL Ratio
+
+### Section 7: UI/UX Specifications
+- Color scheme (primary teal: #009688)
+- Typography and spacing
+- Component library (shadcn/ui)
+- Responsive breakpoints
+- Animation patterns
+
+### Section 8: PDF Report Layout
+- Letterhead specifications
+- Patient info block layout
+- Results table format
+- Signature section
+- Watermark and footer
+
+### Section 9: Security Model
+- Open-access model (no authentication required)
+- RLS policies overview
+- Admin reset code protection
+
+---
+
+## Technical Implementation
+
+### PDF Generation Approach
+Following the existing pattern in `pdf-generator.ts`:
+- Use jsPDF for document creation
+- Use autoTable for structured tables
+- Multi-page support with headers/footers
+- Page numbering with "Page X of Y"
+- Professional styling matching app theme
+
+### Documentation Page UI
+Simple page with:
+- Page header with icon
+- Description of what the PDF contains
+- "Download PRD PDF" button
+- Loading state during generation
+- Success toast after download
+
+### Route Configuration
+Add `/documentation` route in App.tsx routing configuration
