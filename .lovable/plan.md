@@ -1,137 +1,108 @@
 
-# Enhance Header Visual Appeal
+# Add Custom Emerald Green Scrollbar
 
 ## Overview
 
-Transform the header from a simple sticky bar into a premium, visually striking component that matches the polished aesthetic of the dashboard. This enhancement will apply to both the main Dashboard header and the `PageHeader` component used across all other pages.
+Transform the scrollbar across the entire application from the current muted gray to a beautiful emerald/teal green that matches the app's primary color palette. This will create visual consistency with the premium medical aesthetic.
 
 ## Current State
 
-The current `.app-header` style is minimal:
+The existing scrollbar uses muted gray colors:
 ```css
-.app-header {
-  @apply sticky top-0 z-40 border-b border-border/60 bg-card/95 backdrop-blur-xl;
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
 }
 ```
 
-## Proposed Enhancements
+## Proposed Design
 
-| Enhancement | Description |
-|------------|-------------|
-| Gradient border | Animated gradient bottom border instead of solid line |
-| Inner glow | Subtle teal glow emanating from the top edge |
-| Glass morphism upgrade | Enhanced frosted glass effect with subtle color tint |
-| Animated accent | Gentle shimmer animation across the header |
+| Element | Current | New (Emerald Green) |
+|---------|---------|---------------------|
+| Track | `bg-background` (dark) | `bg-background` with subtle teal tint |
+| Thumb | `bg-muted` (gray) | Teal gradient with glow effect |
+| Thumb hover | `bg-muted-foreground/50` | Brighter teal with enhanced glow |
 
 ## Technical Changes
 
 ### File: `src/index.css`
 
-Update the `.app-header` class with enhanced visual effects:
+Update the global scrollbar styles in the `@layer base` section:
 
 ```css
-/* Header styles - Enhanced */
-.app-header {
-  @apply sticky top-0 z-40 backdrop-blur-xl;
+/* Custom emerald/teal scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(220 15% 6%);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    hsl(var(--card) / 0.98) 0%,
-    hsl(var(--card) / 0.92) 100%
+    hsl(162 84% 35%) 0%,
+    hsl(162 84% 42%) 50%,
+    hsl(162 84% 35%) 100%
   );
-  border-bottom: 1px solid transparent;
-  background-clip: padding-box;
-  position: relative;
+  border-radius: 5px;
+  border: 2px solid hsl(220 15% 6%);
+  box-shadow: 0 0 8px hsl(162 84% 42% / 0.3);
 }
 
-/* Animated gradient border */
-.app-header::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    hsl(162 84% 42% / 0.3) 20%,
-    hsl(162 84% 42% / 0.6) 50%,
-    hsl(162 84% 42% / 0.3) 80%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: header-border-shimmer 6s ease-in-out infinite;
-}
-
-/* Subtle inner glow from top */
-.app-header::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
+::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    hsl(162 84% 42% / 0.06) 0%,
-    transparent 60%
+    hsl(162 84% 42%) 0%,
+    hsl(162 84% 52%) 50%,
+    hsl(162 84% 42%) 100%
   );
-  pointer-events: none;
-  z-index: -1;
+  box-shadow: 0 0 12px hsl(162 84% 42% / 0.5);
 }
 
-@keyframes header-border-shimmer {
-  0%, 100% {
-    background-position: 200% 0;
-  }
-  50% {
-    background-position: -200% 0;
-  }
+/* Firefox scrollbar support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(162 84% 42%) hsl(220 15% 6%);
 }
 ```
 
-### File: `src/components/ui/page-header.tsx`
+### File: `src/components/ui/scroll-area.tsx`
 
-Enhance the PageHeader component with subtle animations:
-
-- Add fade-in animation to the header content
-- Apply breathe animation to the icon wrapper for consistency with Dashboard
-- Add hover effect to the back button with glow
+Update the ScrollBar component's thumb to use the teal color:
 
 ```tsx
-<IconWrapper 
-  size="default" 
-  glow 
-  className="shrink-0 hidden sm:flex animate-breathe"
->
+<ScrollAreaPrimitive.ScrollAreaThumb 
+  className="relative flex-1 rounded-full bg-primary/80 hover:bg-primary transition-colors shadow-[0_0_8px_hsl(162_84%_42%/0.3)]" 
+/>
 ```
 
-## Visual Comparison
+## Visual Preview
 
 ```text
-BEFORE (flat):
-┌────────────────────────────────────────────┐
-│  ← icon  Title                     Actions │
-├────────────────────────────────────────────┤  ← solid border
-│                                            │
+BEFORE (gray):
+┃░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░┃▓▓▓▓
+                                           ^^^^
+                                        gray thumb
 
-AFTER (premium):
-┌────────────────────────────────────────────┐
-│  ← icon  Title                     Actions │  ← subtle teal glow from top
-╞═══════════════════════════════════════════╡  ← animated gradient border
-│                                            │
+AFTER (emerald):
+┃░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░┃████ ✨
+                                           ^^^^
+                                     teal gradient + glow
 ```
 
 ## Summary of Changes
 
 | File | Change |
 |------|--------|
-| `src/index.css` | Enhanced `.app-header` with gradient background, animated border, and inner glow |
-| `src/components/ui/page-header.tsx` | Add breathe animation to icon, improve hover states |
+| `src/index.css` | Update webkit scrollbar styles with teal gradient, glow effect, and Firefox support |
+| `src/components/ui/scroll-area.tsx` | Update ScrollBar thumb to use primary teal color with glow |
 
 ## Benefits
 
-1. **Cohesive Design** - Header now matches the premium aesthetic of cards and background
-2. **Animated Polish** - Subtle shimmer on border adds life without distraction
-3. **Depth Perception** - Inner glow creates visual separation from content
-4. **Consistency** - Both Dashboard and PageHeader share the same enhanced styling
+1. **Brand Consistency** - Scrollbar now matches the teal accent color used throughout the app
+2. **Premium Feel** - Gradient and glow effects elevate the perceived quality
+3. **Cross-Browser Support** - Firefox scrollbar fallback ensures consistency
+4. **Subtle Enhancement** - Visible improvement without being distracting
