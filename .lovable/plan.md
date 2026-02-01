@@ -1,96 +1,118 @@
 
-# Remove Category Headings & Convert to List Layout
+# Add Subtle Gradient & Pattern Background to Dashboard
 
-## Current State
+## Overview
 
-The TemplateSelector component currently:
-- Groups tests into 3 categories with headings ("Value Based Tests", "Screening Tests (Negative/Positive)", "Blood Group & Typing")
-- Uses a responsive grid layout with cards for each test type
-- Cards have icon, name, and field count
+Enhance the dashboard with a layered background system that adds visual depth while maintaining the premium dark medical aesthetic. The design will combine subtle gradients with a geometric dot/grid pattern for added texture.
 
-## Proposed Changes
+## Design Approach
 
-Convert to a simple flat list layout without category headings:
+Create a multi-layered background effect:
+1. **Base gradient** - Radial gradient emanating from top center with subtle teal tint
+2. **Dot grid pattern** - Very subtle repeating dot pattern using CSS for texture
+3. **Vignette overlay** - Subtle darkening at edges for depth
+
+This approach keeps the background subtle enough not to compete with content while adding visual sophistication.
+
+## Technical Implementation
 
 | File | Change |
 |------|--------|
-| `src/components/reports/TemplateSelector.tsx` | Remove category grouping, flatten to single list, change from grid cards to list rows |
+| `src/index.css` | Add new background pattern CSS classes |
+| `src/pages/Dashboard.tsx` | Apply new background classes to page container |
 
-## New Layout Design
+### New CSS Classes (in `src/index.css`)
 
-Each test type will be a horizontal list item with:
-- Icon on the left
-- Test name in the middle
-- Field count on the right
-- Checkmark indicator when selected
+```css
+/* Dashboard gradient background */
+.dashboard-bg {
+  position: relative;
+  background: 
+    /* Radial gradient from top */
+    radial-gradient(
+      ellipse 80% 50% at 50% -20%,
+      hsl(162 84% 42% / 0.08) 0%,
+      transparent 50%
+    ),
+    /* Base background */
+    hsl(var(--background));
+}
 
+/* Subtle dot pattern overlay */
+.dashboard-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at center,
+    hsl(var(--primary) / 0.03) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Vignette overlay for depth */
+.dashboard-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    hsl(220 15% 2% / 0.4) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
 ```
-┌────────────────────────────────────────────────┐
-│ 🧪  Complete Blood Count (CBC)      15 fields ✓│
-├────────────────────────────────────────────────┤
-│ 🧪  Liver Function Test (LFT)       11 fields  │
-├────────────────────────────────────────────────┤
-│ 🧪  Renal Function Test (RFT)        8 fields  │
-└────────────────────────────────────────────────┘
-```
 
-## Technical Details
+### Dashboard.tsx Updates
 
-### Before (Grid with Categories)
+Replace the current `page-container` class with the enhanced version:
+
 ```tsx
-<div className="space-y-8">
-  {categoryLabels.map((category) => (
-    <div>
-      <h3>{category.label}</h3>  {/* REMOVE */}
-      <div className="grid grid-cols-2 ...">  {/* CHANGE TO LIST */}
-        {category.types.map((type) => (
-          <Card>...</Card>
-        ))}
-      </div>
-    </div>
-  ))}
-</div>
+// Before
+<div className="page-container">
+
+// After
+<div className="page-container dashboard-bg">
 ```
 
-### After (Flat List)
+Ensure content remains above the background layers by adding relative positioning:
+
 ```tsx
-// Flatten all types into single array
-const allTestTypes: ReportType[] = [
-  'cbc', 'lft', 'rft', 'lipid_profile', 'esr', 'bsr', 'bsf', 'serum_calcium',
-  'mp', 'typhoid', 'hcv', 'hbsag', 'hiv', 'vdrl', 'h_pylori',
-  'blood_group', 'ra_factor'
-];
-
-<div className="space-y-2">
-  {allTestTypes.map((type) => (
-    <div 
-      key={type}
-      onClick={() => onSelect(type)}
-      className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer
-                 hover:border-primary hover:bg-primary/5
-                 {selected ? 'border-primary bg-primary/5 ring-2 ring-primary' : ''}"
-    >
-      <div className="p-2 rounded-lg bg-muted">{icon}</div>
-      <span className="flex-1 font-medium">{template.name}</span>
-      <span className="text-sm text-muted-foreground">{fieldCount} fields</span>
-      {selected && <Badge>✓</Badge>}
-    </div>
-  ))}
-</div>
+<main className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
 ```
 
-## Visual Comparison
+## Visual Effect
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Layout | Grid of cards | Vertical list |
-| Headings | 3 category headings | No headings |
-| Test items | Cards with stacked content | Horizontal rows |
-| Spacing | Large gaps between groups | Compact uniform spacing |
+```
+┌─────────────────────────────────────────────┐
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  ← Dot grid (very subtle)
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│  ░░░░ ╭────────────────────────╮ ░░░░░░░░░  │
+│  ░░░░ │   Teal radial glow    │ ░░░░░░░░░  │  ← Gradient from top
+│  ░░░░ ╰────────────────────────╯ ░░░░░░░░░  │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓  │  ← Vignette at edges
+└─────────────────────────────────────────────┘
+```
+
+## Key Design Decisions
+
+1. **Opacity levels** - All effects use very low opacity (3-8%) to remain subtle
+2. **Fixed positioning** - Pattern and vignette use `position: fixed` so they don't scroll
+3. **Z-index layering** - Background elements at z-0, content at z-10+
+4. **Teal accent** - Gradient uses the primary teal color for brand consistency
+5. **Dot grid size** - 24px spacing for a refined, not busy pattern
 
 ## Benefits
 
-1. **Simpler navigation** - All tests visible in one scrollable list
-2. **Faster selection** - No need to scan multiple grid sections
-3. **More compact** - Takes less vertical space
-4. **Mobile-friendly** - List items work better on narrow screens
+- Adds visual depth without being distracting
+- Reinforces the premium medical lab aesthetic
+- Works harmoniously with existing CursorGlow effect
+- Subtle movement/texture makes the UI feel more alive
+- Maintains excellent readability and contrast
