@@ -306,9 +306,10 @@
     min-height: 0;
   }
 
-  /* Dashboard gradient background */
+  /* Dashboard gradient background - isolated stacking context */
   .dashboard-bg {
     position: relative;
+    isolation: isolate; /* Create isolated stacking context */
     background: 
       radial-gradient(
         ellipse 80% 50% at 50% -20%,
@@ -316,6 +317,8 @@
         transparent 60%
       ),
       hsl(var(--background));
+    min-height: 100vh;
+    min-height: 100dvh; /* Use dynamic viewport height for mobile */
   }
 
   /* Animated shimmer overlay */
