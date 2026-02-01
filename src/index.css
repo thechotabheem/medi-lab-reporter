@@ -327,9 +327,63 @@
     z-index: 0;
   }
 
-  /* Header styles */
+  /* Header styles - Enhanced */
   .app-header {
-    @apply sticky top-0 z-40 border-b border-border/60 bg-card/95 backdrop-blur-xl;
+    @apply sticky top-0 z-40 backdrop-blur-xl;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.98) 0%,
+      hsl(var(--card) / 0.92) 100%
+    );
+    border-bottom: 1px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+  }
+
+  /* Animated gradient border */
+  .app-header::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(162 84% 42% / 0.3) 20%,
+      hsl(162 84% 42% / 0.6) 50%,
+      hsl(162 84% 42% / 0.3) 80%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: header-border-shimmer 6s ease-in-out infinite;
+  }
+
+  /* Subtle inner glow from top */
+  .app-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      hsl(162 84% 42% / 0.06) 0%,
+      transparent 60%
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  @keyframes header-border-shimmer {
+    0%, 100% {
+      background-position: 200% 0;
+    }
+    50% {
+      background-position: -200% 0;
+    }
   }
 
   /* Footer styles */
