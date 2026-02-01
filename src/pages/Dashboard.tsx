@@ -71,9 +71,9 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
         {/* Welcome Section */}
-        <div className="mb-6 sm:mb-8 animate-fade-in text-center">
+        <div className="mb-4 sm:mb-8 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
@@ -108,7 +108,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <div className="animate-fade-in-up animation-delay-100">
           <StatCard
               title="Total Reports"
@@ -156,7 +156,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-4 sm:mb-8">
           <div className="animate-fade-in-up animation-delay-200">
           <ActionCard
               title="New Report"

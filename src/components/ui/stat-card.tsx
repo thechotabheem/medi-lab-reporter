@@ -138,8 +138,8 @@ export function StatCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
-          <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6">
+          <CardTitle className="text-[11px] sm:text-sm font-medium text-muted-foreground">
             {title}
           </CardTitle>
           {Icon && (
@@ -149,16 +149,16 @@ export function StatCard({
             />
           )}
         </CardHeader>
-        <CardContent className="relative z-10">
+        <CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0">
           {loading ? (
-            <div className="h-8 w-16 skeleton rounded" />
+            <div className="h-6 sm:h-8 w-12 sm:w-16 skeleton rounded" />
           ) : (
-            <div className="text-xl sm:text-2xl font-bold tracking-tight">
+            <div className="text-lg sm:text-2xl font-bold tracking-tight">
               {value}
             </div>
           )}
           {subtitle && (
-            <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{subtitle}</p>
           )}
           {trend && (
             <p
