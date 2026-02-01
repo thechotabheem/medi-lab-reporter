@@ -199,10 +199,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Reports Widget */}
-        <div className="animate-fade-in-up animation-delay-600">
-          <RecentReportsWidget />
-        </div>
       </main>
 
       {/* Mobile FAB */}
