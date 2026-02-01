@@ -265,8 +265,8 @@
     background: 
       radial-gradient(
         ellipse 80% 50% at 50% -20%,
-        hsl(162 84% 42% / 0.08) 0%,
-        transparent 50%
+        hsl(162 84% 42% / 0.15) 0%,
+        transparent 60%
       ),
       hsl(var(--background));
   }
@@ -278,10 +278,10 @@
     inset: 0;
     background-image: radial-gradient(
       circle at center,
-      hsl(var(--primary) / 0.03) 1px,
-      transparent 1px
+      hsl(var(--primary) / 0.08) 2px,
+      transparent 2px
     );
-    background-size: 24px 24px;
+    background-size: 32px 32px;
     pointer-events: none;
     z-index: 0;
   }
@@ -293,8 +293,8 @@
     inset: 0;
     background: radial-gradient(
       ellipse at center,
-      transparent 40%,
-      hsl(220 15% 2% / 0.4) 100%
+      transparent 30%,
+      hsl(220 15% 2% / 0.6) 100%
     );
     pointer-events: none;
     z-index: 0;
