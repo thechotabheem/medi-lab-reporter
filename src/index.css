@@ -259,6 +259,47 @@
     @apply min-h-screen bg-background;
   }
 
+  /* Dashboard gradient background */
+  .dashboard-bg {
+    position: relative;
+    background: 
+      radial-gradient(
+        ellipse 80% 50% at 50% -20%,
+        hsl(162 84% 42% / 0.08) 0%,
+        transparent 50%
+      ),
+      hsl(var(--background));
+  }
+
+  /* Subtle dot pattern overlay */
+  .dashboard-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(
+      circle at center,
+      hsl(var(--primary) / 0.03) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Vignette overlay for depth */
+  .dashboard-bg::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 40%,
+      hsl(220 15% 2% / 0.4) 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
   /* Header styles */
   .app-header {
     @apply sticky top-0 z-40 border-b border-border/60 bg-card/95 backdrop-blur-xl;
