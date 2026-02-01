@@ -278,6 +278,25 @@
   /* Page container */
   .page-container {
     @apply min-h-screen bg-background;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Full viewport height main content */
+  .main-fill-screen {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .main-fill-screen > * {
+    flex-shrink: 0;
+  }
+
+  .grow-to-fill {
+    flex: 1;
+    min-height: 0;
   }
 
   /* Dashboard gradient background */

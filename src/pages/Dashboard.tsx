@@ -70,10 +70,10 @@ export default function Dashboard() {
         <div className="absolute inset-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
       </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
-        {/* Welcome Section */}
-        <div className="mb-4 sm:mb-8 animate-fade-in text-center">
+      {/* Main Content - Fills remaining height */}
+      <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative z-10">
+        {/* Welcome Section - Compact */}
+        <div className="mb-3 sm:mb-4 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
@@ -107,8 +107,8 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
+        {/* Quick Stats - Fixed size */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
           <div className="animate-fade-in-up animation-delay-100">
           <StatCard
               title="Total Reports"
@@ -155,8 +155,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-4 sm:mb-8">
+        {/* Quick Actions - Grows to fill remaining space */}
+        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 content-start">
           <div className="animate-fade-in-up animation-delay-200">
           <ActionCard
               title="New Report"
