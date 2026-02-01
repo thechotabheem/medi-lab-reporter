@@ -141,7 +141,7 @@
     scroll-behavior: smooth;
   }
 
-  /* Custom emerald/teal scrollbar */
+  /* Custom emerald/teal scrollbar - Enhanced glow */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -155,29 +155,29 @@
   ::-webkit-scrollbar-thumb {
     background: linear-gradient(
       180deg,
-      hsl(162 84% 35%) 0%,
-      hsl(162 84% 42%) 50%,
-      hsl(162 84% 35%) 100%
+      hsl(162 84% 45%) 0%,
+      hsl(162 84% 55%) 50%,
+      hsl(162 84% 45%) 100%
     );
     border-radius: 5px;
     border: 2px solid hsl(220 15% 6%);
-    box-shadow: 0 0 8px hsl(162 84% 42% / 0.3);
+    box-shadow: 0 0 12px hsl(162 84% 50% / 0.5), 0 0 20px hsl(162 84% 50% / 0.25);
   }
 
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(
       180deg,
-      hsl(162 84% 42%) 0%,
-      hsl(162 84% 52%) 50%,
-      hsl(162 84% 42%) 100%
+      hsl(162 84% 52%) 0%,
+      hsl(162 84% 62%) 50%,
+      hsl(162 84% 52%) 100%
     );
-    box-shadow: 0 0 12px hsl(162 84% 42% / 0.5);
+    box-shadow: 0 0 16px hsl(162 84% 55% / 0.7), 0 0 28px hsl(162 84% 55% / 0.4);
   }
 
   /* Firefox scrollbar support */
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(162 84% 42%) hsl(220 15% 6%);
+    scrollbar-color: hsl(162 84% 50%) hsl(220 15% 6%);
   }
 }
 
