@@ -1,115 +1,137 @@
 
-# Enhance Dashboard Background Visibility
+# Enhance Header Visual Appeal
 
-## Current Issue
+## Overview
 
-The background effects are too subtle to be clearly visible. Current opacity values are very low:
-- Radial gradient: **8%** opacity
-- Dot pattern: **3%** opacity  
-- Vignette: **40%** opacity (but color is very dark)
+Transform the header from a simple sticky bar into a premium, visually striking component that matches the polished aesthetic of the dashboard. This enhancement will apply to both the main Dashboard header and the `PageHeader` component used across all other pages.
 
-## Proposed Changes
+## Current State
 
-Increase the visibility of all three background layers while maintaining the professional aesthetic:
-
-| File | Change |
-|------|--------|
-| `src/index.css` | Increase opacity values for gradient, dot pattern, and vignette |
-
-### Updated Values
-
-| Effect | Before | After | Change |
-|--------|--------|-------|--------|
-| Radial gradient | 8% opacity | **15%** opacity | +7% |
-| Dot pattern | 3% opacity, 1px dots | **8%** opacity, **2px** dots | Larger & brighter |
-| Vignette | 40% opacity | **60%** opacity | +20% |
-
-### CSS Changes
-
+The current `.app-header` style is minimal:
 ```css
-/* Dashboard gradient background - BEFORE */
-.dashboard-bg {
-  background: 
-    radial-gradient(
-      ellipse 80% 50% at 50% -20%,
-      hsl(162 84% 42% / 0.08) 0%,  /* 8% opacity */
-      transparent 50%
-    ),
-    hsl(var(--background));
-}
-
-/* Dashboard gradient background - AFTER */
-.dashboard-bg {
-  background: 
-    radial-gradient(
-      ellipse 80% 50% at 50% -20%,
-      hsl(162 84% 42% / 0.15) 0%,  /* 15% opacity - more visible teal glow */
-      transparent 60%              /* Extended gradient reach */
-    ),
-    hsl(var(--background));
+.app-header {
+  @apply sticky top-0 z-40 border-b border-border/60 bg-card/95 backdrop-blur-xl;
 }
 ```
 
+## Proposed Enhancements
+
+| Enhancement | Description |
+|------------|-------------|
+| Gradient border | Animated gradient bottom border instead of solid line |
+| Inner glow | Subtle teal glow emanating from the top edge |
+| Glass morphism upgrade | Enhanced frosted glass effect with subtle color tint |
+| Animated accent | Gentle shimmer animation across the header |
+
+## Technical Changes
+
+### File: `src/index.css`
+
+Update the `.app-header` class with enhanced visual effects:
+
 ```css
-/* Dot pattern - BEFORE */
-.dashboard-bg::before {
-  background-image: radial-gradient(
-    circle at center,
-    hsl(var(--primary) / 0.03) 1px,  /* 3% opacity, 1px dots */
-    transparent 1px
+/* Header styles - Enhanced */
+.app-header {
+  @apply sticky top-0 z-40 backdrop-blur-xl;
+  background: linear-gradient(
+    180deg,
+    hsl(var(--card) / 0.98) 0%,
+    hsl(var(--card) / 0.92) 100%
   );
-  background-size: 24px 24px;
+  border-bottom: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
 }
 
-/* Dot pattern - AFTER */
-.dashboard-bg::before {
-  background-image: radial-gradient(
-    circle at center,
-    hsl(var(--primary) / 0.08) 2px,  /* 8% opacity, 2px dots */
-    transparent 2px
+/* Animated gradient border */
+.app-header::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(162 84% 42% / 0.3) 20%,
+    hsl(162 84% 42% / 0.6) 50%,
+    hsl(162 84% 42% / 0.3) 80%,
+    transparent 100%
   );
-  background-size: 32px 32px;  /* Slightly larger grid */
+  background-size: 200% 100%;
+  animation: header-border-shimmer 6s ease-in-out infinite;
+}
+
+/* Subtle inner glow from top */
+.app-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    hsl(162 84% 42% / 0.06) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes header-border-shimmer {
+  0%, 100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -200% 0;
+  }
 }
 ```
 
-```css
-/* Vignette - BEFORE */
-.dashboard-bg::after {
-  background: radial-gradient(
-    ellipse at center,
-    transparent 40%,
-    hsl(220 15% 2% / 0.4) 100%  /* 40% opacity */
-  );
-}
+### File: `src/components/ui/page-header.tsx`
 
-/* Vignette - AFTER */
-.dashboard-bg::after {
-  background: radial-gradient(
-    ellipse at center,
-    transparent 30%,             /* Starts closer to center */
-    hsl(220 15% 2% / 0.6) 100%   /* 60% opacity - more pronounced edges */
-  );
-}
+Enhance the PageHeader component with subtle animations:
+
+- Add fade-in animation to the header content
+- Apply breathe animation to the icon wrapper for consistency with Dashboard
+- Add hover effect to the back button with glow
+
+```tsx
+<IconWrapper 
+  size="default" 
+  glow 
+  className="shrink-0 hidden sm:flex animate-breathe"
+>
 ```
 
 ## Visual Comparison
 
+```text
+BEFORE (flat):
+┌────────────────────────────────────────────┐
+│  ← icon  Title                     Actions │
+├────────────────────────────────────────────┤  ← solid border
+│                                            │
+
+AFTER (premium):
+┌────────────────────────────────────────────┐
+│  ← icon  Title                     Actions │  ← subtle teal glow from top
+╞═══════════════════════════════════════════╡  ← animated gradient border
+│                                            │
 ```
-BEFORE (subtle):                    AFTER (visible):
-┌─────────────────────┐            ┌─────────────────────┐
-│  . . . . . . . . .  │            │  •  •  •  •  •  •   │  ← Larger, brighter dots
-│  . . . . . . . . .  │            │  •  •  •  •  •  •   │
-│  .   ╭─────╮  . . . │            │  •  ╭═════╮  •  •   │  ← Visible teal glow
-│  .   │ glow│  . . . │            │  •  ║GLOW ║  •  •   │
-│  .   ╰─────╯  . . . │            │  •  ╰═════╯  •  •   │
-│  . . . . . . . . .  │            │  •  •  •  •  •  •   │
-│░ . . . . . . . . ░  │            │▓▓ •  •  •  •  • ▓▓  │  ← Stronger vignette
-└─────────────────────┘            └─────────────────────┘
-```
+
+## Summary of Changes
+
+| File | Change |
+|------|--------|
+| `src/index.css` | Enhanced `.app-header` with gradient background, animated border, and inner glow |
+| `src/components/ui/page-header.tsx` | Add breathe animation to icon, improve hover states |
 
 ## Benefits
 
-1. **Gradient** - Teal glow from top now clearly visible, reinforcing brand color
-2. **Dot pattern** - Grid texture now noticeable without being distracting
-3. **Vignette** - Edges create clear depth and focus toward center content
-4. **Balance** - Still subtle enough to not compete with dashboard content
+1. **Cohesive Design** - Header now matches the premium aesthetic of cards and background
+2. **Animated Polish** - Subtle shimmer on border adds life without distraction
+3. **Depth Perception** - Inner glow creates visual separation from content
+4. **Consistency** - Both Dashboard and PageHeader share the same enhanced styling
