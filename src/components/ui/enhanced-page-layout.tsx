@@ -16,9 +16,11 @@ export function EnhancedPageLayout({
   showDivider = true,
 }: EnhancedPageLayoutProps) {
   return (
-    <div className={cn("page-container", className)}>
+    <div className={cn("page-container dashboard-bg", className)}>
       {showCursorGlow && <CursorGlow />}
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 }
