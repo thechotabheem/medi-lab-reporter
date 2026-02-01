@@ -49,7 +49,7 @@ export function PageHeader({
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             )}
-            <IconWrapper size="default" className="shrink-0 hidden sm:flex">
+            <IconWrapper size="default" glow className="shrink-0 hidden sm:flex animate-breathe">
               {icon || <FlaskConical className="h-5 w-5" />}
             </IconWrapper>
             <div className="min-w-0">
