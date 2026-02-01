@@ -47,13 +47,15 @@ export default function Dashboard() {
 
   return (
     <div className="page-container dashboard-bg">
+      {/* Animated shimmer overlay */}
+      <div className="dashboard-bg-shimmer" />
       <CursorGlow />
       {/* Header */}
       <header className="app-header">
-        <div className="container mx-auto px-4 py-4 sm:py-5">
+        <div className="px-4 py-4 sm:py-5">
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-3 sm:gap-4">
-            <IconWrapper size="default" glow hoverPulse className="animate-breathe">
+              <IconWrapper size="default" glow hoverPulse className="animate-breathe">
                 <FlaskConical className="h-6 w-6" />
               </IconWrapper>
               <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground animate-breathe animation-delay-2000 cursor-default">
@@ -156,9 +158,9 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions - Grows to fill remaining space */}
-        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 content-start">
-          <div className="animate-fade-in-up animation-delay-200">
-          <ActionCard
+        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 grid-rows-2 lg:grid-rows-1 gap-2 sm:gap-4 items-stretch">
+          <div className="animate-fade-in-up animation-delay-200 h-full">
+            <ActionCard
               title="New Report"
               description="Create a new lab report for a patient"
               icon={Plus}
@@ -167,8 +169,8 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-300">
-          <ActionCard
+          <div className="animate-fade-in-up animation-delay-300 h-full">
+            <ActionCard
               title="View Reports"
               description="Browse and manage all lab reports"
               icon={ClipboardList}
@@ -177,8 +179,8 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-400">
-          <ActionCard
+          <div className="animate-fade-in-up animation-delay-400 h-full">
+            <ActionCard
               title="Patients"
               description="Manage patient records and history"
               icon={Users}
@@ -187,8 +189,8 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-500">
-          <ActionCard
+          <div className="animate-fade-in-up animation-delay-500 h-full">
+            <ActionCard
               title="Settings"
               description="Configure clinic branding and preferences"
               icon={Settings}
