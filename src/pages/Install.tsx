@@ -57,7 +57,7 @@ const Install = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background dashboard-bg">
         <div className="container mx-auto px-4 py-8 pb-safe max-w-2xl">
           <PageHeader
             title="Install MediLab"
