@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
+import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => {
               <SplashScreen onComplete={handleSplashComplete} />
             )}
             <OfflineBanner />
+            <ServiceWorkerUpdate />
             <Toaster />
             <Sonner />
             <BrowserRouter>

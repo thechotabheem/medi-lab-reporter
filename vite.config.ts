@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["favicon.ico", "icon.svg"],
       manifest: {
         name: "Lab Reporter - Zia Clinic",
@@ -42,6 +42,10 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,json}"],
+        // Force new service worker to activate immediately
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         // Enable navigation fallback for SPA routing
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/rest/],
