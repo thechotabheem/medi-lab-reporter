@@ -1,31 +1,54 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function CursorGlow() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(false);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const rafId = useRef<number | null>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
+    // Respect reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      // Cancel any pending frame to avoid stacking
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+
+      rafId.current = requestAnimationFrame(() => {
+        if (glowRef.current) {
+          // Use CSS custom properties to move the gradient center
+          // This cannot create overflow because the element is always inset:0
+          glowRef.current.style.setProperty('--cursor-x', `${e.clientX}px`);
+          glowRef.current.style.setProperty('--cursor-y', `${e.clientY}px`);
+          glowRef.current.style.opacity = '1';
+        }
+      });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isVisible]);
+    // Use pointermove for mouse + pen support
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+    };
+  }, []);
 
   return (
     <div
-      className="fixed pointer-events-none z-0 transition-opacity duration-700"
+      ref={glowRef}
+      className="fixed inset-0 pointer-events-none z-0"
       style={{
-        left: position.x,
-        top: position.y,
-        transform: 'translate(-50%, -50%)',
-        width: '600px',
-        height: '600px',
-        background: 'radial-gradient(circle, hsl(var(--primary) / 0.06) 0%, transparent 70%)',
-        opacity: isVisible ? 1 : 0,
-        transition: 'left 0.15s ease-out, top 0.15s ease-out, opacity 0.7s ease-out',
+        // The glow is created by a radial gradient centered on CSS variables
+        // Element size is always exactly the viewport (inset:0), so no overflow possible
+        background: 'radial-gradient(circle 300px at var(--cursor-x, 50%) var(--cursor-y, 50%), hsl(162 84% 42% / 0.06), transparent 70%)',
+        opacity: 0,
+        transition: 'opacity 0.5s ease-out',
+        contain: 'paint', // Extra safety to prevent layout contribution
+        willChange: 'background',
       }}
     />
   );

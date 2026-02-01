@@ -6,10 +6,8 @@ import { useWeather } from '@/hooks/useWeather';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-import { FloatingActionButton } from '@/components/ui/floating-action-button';
-import { RecentReportsWidget } from '@/components/dashboard/RecentReportsWidget';
 import { SparkleText } from '@/components/ui/sparkle-text';
-import { CursorGlow } from '@/components/ui/cursor-glow';
+import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 
 import { 
   FlaskConical, 
@@ -46,10 +44,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="page-container dashboard-bg">
-      {/* Animated shimmer overlay */}
-      <div className="dashboard-bg-shimmer" />
-      <CursorGlow />
+    <EnhancedPageLayout>
       {/* Header */}
       <header className="app-header">
         <div className="px-4 py-4 sm:py-5">
@@ -66,11 +61,7 @@ export default function Dashboard() {
         </div>
       </header>
       
-      {/* Decorative Divider with Glow */}
-      <div className="relative">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        <div className="absolute inset-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
-      </div>
+      <HeaderDivider />
 
       {/* Main Content - Fills remaining height */}
       <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative z-10">
@@ -203,6 +194,6 @@ export default function Dashboard() {
 
       </main>
 
-    </div>
+    </EnhancedPageLayout>
   );
 }
