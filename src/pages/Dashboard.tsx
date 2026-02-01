@@ -46,7 +46,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container dashboard-bg">
       <CursorGlow />
       {/* Header */}
       <header className="app-header">
@@ -71,7 +71,7 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 sm:py-8">
+      <main className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
