@@ -201,13 +201,6 @@ export default function Dashboard() {
 
       </main>
 
-      {/* Mobile FAB */}
-      <div className="sm:hidden">
-        <FloatingActionButton
-          onClick={() => navigate('/reports/new')}
-          icon={<Plus className="h-6 w-6" />}
-        />
-      </div>
     </div>
   );
 }
