@@ -311,11 +311,6 @@
     }
   }
 
-  .animate-fade-in-up {
-    opacity: 0;
-    animation: fadeInUp 0.5s ease-out forwards;
-  }
-
   @keyframes scaleIn {
     from { 
       opacity: 0; 
