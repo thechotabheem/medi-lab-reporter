@@ -149,7 +149,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions - Grows to fill remaining space */}
-        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 grid-rows-2 lg:grid-rows-1 gap-2 sm:gap-4 items-stretch">
+        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4">
           <div className="animate-fade-in-up animation-delay-200 h-full">
             <ActionCard
               title="New Report"
