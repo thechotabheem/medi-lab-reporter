@@ -20,7 +20,7 @@ export function EnhancedPageLayout({
       {/* Animated shimmer overlay */}
       <div className="dashboard-bg-shimmer" />
       {showCursorGlow && <CursorGlow />}
-      <div className="relative z-10">
+      <div className="relative z-10 flex-1 flex flex-col">
         {children}
       </div>
     </div>
