@@ -104,11 +104,12 @@ export function ActionCard({
       style={tiltStyle}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      className="h-full"
     >
       <Card
         ref={containerRef}
         className={cn(
-          "group cursor-pointer transition-all duration-300 ease-out relative overflow-hidden",
+          "group cursor-pointer transition-all duration-300 ease-out relative overflow-hidden h-full",
           !glowEffect && "hover:border-primary/40 hover:shadow-lg",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
           isInitialLoad && "animate-stat-shimmer",

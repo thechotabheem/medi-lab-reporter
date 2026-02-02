@@ -148,9 +148,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Actions - Content-sized cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-          <div className="animate-fade-in-up animation-delay-200">
+        {/* Quick Actions - Equal height cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4">
+          <div className="animate-fade-in-up animation-delay-200 h-full">
             <ActionCard
               title="New Report"
               description="Create a new lab report for a patient"
@@ -160,7 +160,7 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-300">
+          <div className="animate-fade-in-up animation-delay-300 h-full">
             <ActionCard
               title="View Reports"
               description="Browse and manage all lab reports"
@@ -170,7 +170,7 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-400">
+          <div className="animate-fade-in-up animation-delay-400 h-full">
             <ActionCard
               title="Patients"
               description="Manage patient records and history"
@@ -180,7 +180,7 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-500">
+          <div className="animate-fade-in-up animation-delay-500 h-full">
             <ActionCard
               title="Settings"
               description="Configure clinic branding and preferences"
