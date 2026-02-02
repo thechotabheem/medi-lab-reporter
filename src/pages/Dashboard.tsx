@@ -100,10 +100,10 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Stats - Fixed size */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
-          <div className="animate-fade-in-up animation-delay-100">
-          <StatCard
+        {/* Quick Stats - Equal height cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 mb-3 sm:mb-4">
+          <div className="animate-fade-in-up animation-delay-100 h-full">
+            <StatCard
               title="Total Reports"
               value={statsLoading ? '-' : stats?.totalReports || 0}
               subtitle="All time"
@@ -113,8 +113,8 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-200">
-          <StatCard
+          <div className="animate-fade-in-up animation-delay-200 h-full">
+            <StatCard
               title="Patients"
               value={statsLoading ? '-' : stats?.totalPatients || 0}
               subtitle="Registered"
@@ -124,8 +124,8 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-300">
-          <StatCard
+          <div className="animate-fade-in-up animation-delay-300 h-full">
+            <StatCard
               title="This Month"
               value={statsLoading ? '-' : stats?.monthlyReports || 0}
               subtitle="Reports created"
@@ -135,8 +135,8 @@ export default function Dashboard() {
               glowEffect
             />
           </div>
-          <div className="animate-fade-in-up animation-delay-400">
-          <StatCard
+          <div className="animate-fade-in-up animation-delay-400 h-full">
+            <StatCard
               title="Pending"
               value={statsLoading ? '-' : stats?.draftReports || 0}
               subtitle="Draft reports"
