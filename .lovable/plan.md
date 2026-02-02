@@ -1,107 +1,115 @@
 
-# Fix Dashboard Card Sizing - Remove Excessive Padding
+# Make Dashboard Cards Same Height - Equal Row Heights
 
-## Problem Analysis
+## Problem
 
-The action cards have excessive internal padding because:
-
-1. **Grid container uses `flex-1 auto-rows-fr`** - This makes the action cards grid stretch to fill ALL remaining vertical space
-2. **Cards use `h-full`** - This makes each card fill the stretched grid cell completely
-3. **Result**: Cards grow much larger than their content, creating huge empty space at the bottom of each card
-
-Your screenshot clearly shows the action cards are almost 2-3x taller than the stat cards above them, with most of that height being empty space.
+On mobile/tablet where cards stack into 2x2 grids, each row sizes to its own content height. This means if one card has longer text, its row is taller than the other row, creating inconsistent card heights within the same grid section.
 
 ## Solution
 
-Change the dashboard layout so:
-1. **Remove `flex-1` from the action cards grid** - Cards should size to their content, not fill remaining space
-2. **Use consistent card sizing** - Both stat cards and action cards will be content-sized
-3. **Center the content vertically** if there's remaining viewport space (optional aesthetic improvement)
+Use CSS Grid's `auto-rows-fr` (fractional unit) which makes ALL rows equal height - specifically, each row will match the height of the tallest card in the entire grid. Combined with `h-full` on the cards themselves, all cards will stretch to fill their grid cell.
 
 ## Technical Changes
 
 ### File: `src/pages/Dashboard.tsx`
 
-#### Change 1: Remove flex-1 from action cards container
+#### Change 1: Add height equalization to action cards grid
 
-**Current (line 152):**
-```tsx
-<div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4">
-```
-
-**Change to:**
+**Line 152 - Current:**
 ```tsx
 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
 ```
 
-This removes:
-- `flex-1` - no longer forces the container to fill remaining height
-- `auto-rows-fr` - rows will now size to content (auto height)
-
-#### Change 2: Remove h-full from action card wrappers
-
-**Current (lines 153, 163, 173, 183):**
+**Change to:**
 ```tsx
-<div className="animate-fade-in-up animation-delay-XXX h-full">
+<div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4">
 ```
 
-**Change to:**
+#### Change 2: Add `h-full` to action card wrappers so they stretch
+
+**Lines 153, 163, 173, 183 - Current:**
 ```tsx
 <div className="animate-fade-in-up animation-delay-XXX">
 ```
 
+**Change to:**
+```tsx
+<div className="animate-fade-in-up animation-delay-XXX h-full">
+```
+
 ### File: `src/components/ui/action-card.tsx`
 
-#### Change 3: Remove h-full from the card wrapper and internal Card
+#### Change 3: Add `h-full` to outer wrapper and Card component
 
-**Current (lines 107, 112):**
+**Line 102-107 - Current:**
 ```tsx
-<div ... className="h-full">
-  <Card ... className="... h-full ...">
+<div
+  ref={tiltRef}
+  style={tiltStyle}
+  onMouseMove={handleMouseMove}
+  onMouseLeave={handleMouseLeave}
+>
 ```
 
 **Change to:**
 ```tsx
-<div ...>
-  <Card ... className="...">  // remove h-full
+<div
+  ref={tiltRef}
+  style={tiltStyle}
+  onMouseMove={handleMouseMove}
+  onMouseLeave={handleMouseLeave}
+  className="h-full"
+>
 ```
 
-The action cards will now fit their content naturally, matching the stat cards' behavior.
+**Line 108-118 - Add `h-full` to Card:**
+```tsx
+<Card
+  ref={containerRef}
+  className={cn(
+    "group cursor-pointer transition-all duration-300 ease-out relative overflow-hidden h-full",
+    // ... rest of classes
+  )}
+>
+```
 
-## Visual Result
+## How It Works
 
 ```
-BEFORE:
-┌─ Stats (content-sized) ──────────────────────────┐
-│ [Total Reports] [Patients] [This Month] [Pending]│
-└──────────────────────────────────────────────────┘
-┌─ Actions (stretched to fill viewport) ───────────┐
-│ [New Report]   [View Reports] [Patients] [Settings]│
+auto-rows-fr means:
+┌─ Grid Container ─────────────────────────────────┐
+│  Row 1: [Card A] [Card B]  ← Both 5rem tall      │
+│  Row 2: [Card C] [Card D]  ← Both 5rem tall      │
 │                                                  │
-│      (huge empty space inside cards)             │
-│                                                  │
+│  All rows are equal height (tallest card wins)   │
 └──────────────────────────────────────────────────┘
 
-AFTER:
-┌─ Stats (content-sized) ──────────────────────────┐
-│ [Total Reports] [Patients] [This Month] [Pending]│
-└──────────────────────────────────────────────────┘
-┌─ Actions (content-sized, same visual weight) ────┐
-│ [New Report]   [View Reports] [Patients] [Settings]│
-└──────────────────────────────────────────────────┘
-     (remaining space is natural page margin)
+Without h-full on cards:
+┌─────────────────┐  ┌─────────────────┐
+│ Content         │  │ Content         │
+│                 │  │ More content    │
+│ (empty space)   │  │ Even more       │
+└─────────────────┘  └─────────────────┘
+
+With h-full on cards:
+┌─────────────────┐  ┌─────────────────┐
+│ Content         │  │ Content         │
+│                 │  │ More content    │
+│ (card fills)    │  │ Even more       │
+└─────────────────┘  └─────────────────┘
 ```
 
 ## Files to Change
 
 | File | Change |
 |------|--------|
-| `src/pages/Dashboard.tsx` | Remove `flex-1 auto-rows-fr` from actions grid, remove `h-full` from wrappers |
-| `src/components/ui/action-card.tsx` | Remove `h-full` from outer wrapper and Card |
+| `src/pages/Dashboard.tsx` | Add `auto-rows-fr` to action grid, add `h-full` to wrappers |
+| `src/components/ui/action-card.tsx` | Add `h-full` to outer div and Card |
 
 ## Expected Result
 
-- Action cards size naturally to their content
-- Both stat cards and action cards have similar visual proportions
-- No more excessive empty padding inside the action cards
-- Dashboard looks balanced and intentional
+- All action cards in the same grid will have identical heights
+- On mobile (2x2 grid): both rows will be the same height
+- On desktop (1x4 grid): single row, all cards same height
+- Content stays properly aligned, no text clipping or deformation
+- Cards stretch to fill their grid cell but content remains at the top
