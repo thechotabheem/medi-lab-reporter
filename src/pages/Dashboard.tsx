@@ -64,7 +64,7 @@ export default function Dashboard() {
       <HeaderDivider />
 
       {/* Main Content - Fills remaining height */}
-      <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative z-10">
+      <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[2%] relative z-10">
         {/* Welcome Section - Compact */}
         <div className="mb-3 sm:mb-4 animate-fade-in text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
@@ -100,95 +100,98 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Stats - Equal height cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 mb-3 sm:mb-4">
-          <div className="animate-fade-in-up animation-delay-100 h-full">
-            <StatCard
-              title="Total Reports"
-              value={statsLoading ? '-' : stats?.totalReports || 0}
-              subtitle="All time"
-              icon={FileText}
-              onClick={() => navigate('/reports')}
-              loading={statsLoading}
-              glowEffect
-            />
+        {/* Card grids container - fills remaining viewport */}
+        <div className="flex-1 flex flex-col gap-2 sm:gap-4 min-h-0">
+          {/* Quick Stats - Equal height cards */}
+          <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 min-h-0">
+            <div className="animate-fade-in-up animation-delay-100 h-full">
+              <StatCard
+                title="Total Reports"
+                value={statsLoading ? '-' : stats?.totalReports || 0}
+                subtitle="All time"
+                icon={FileText}
+                onClick={() => navigate('/reports')}
+                loading={statsLoading}
+                glowEffect
+              />
+            </div>
+            <div className="animate-fade-in-up animation-delay-200 h-full">
+              <StatCard
+                title="Patients"
+                value={statsLoading ? '-' : stats?.totalPatients || 0}
+                subtitle="Registered"
+                icon={Users}
+                onClick={() => navigate('/patients')}
+                loading={statsLoading}
+                glowEffect
+              />
+            </div>
+            <div className="animate-fade-in-up animation-delay-300 h-full">
+              <StatCard
+                title="This Month"
+                value={statsLoading ? '-' : stats?.monthlyReports || 0}
+                subtitle="Reports created"
+                icon={Activity}
+                onClick={() => navigate('/reports')}
+                loading={statsLoading}
+                glowEffect
+              />
+            </div>
+            <div className="animate-fade-in-up animation-delay-400 h-full">
+              <StatCard
+                title="Pending"
+                value={statsLoading ? '-' : stats?.draftReports || 0}
+                subtitle="Draft reports"
+                icon={FileText}
+                onClick={() => navigate('/reports?status=draft')}
+                loading={statsLoading}
+                glowEffect
+              />
+            </div>
           </div>
-          <div className="animate-fade-in-up animation-delay-200 h-full">
-            <StatCard
-              title="Patients"
-              value={statsLoading ? '-' : stats?.totalPatients || 0}
-              subtitle="Registered"
-              icon={Users}
-              onClick={() => navigate('/patients')}
-              loading={statsLoading}
-              glowEffect
-            />
-          </div>
-          <div className="animate-fade-in-up animation-delay-300 h-full">
-            <StatCard
-              title="This Month"
-              value={statsLoading ? '-' : stats?.monthlyReports || 0}
-              subtitle="Reports created"
-              icon={Activity}
-              onClick={() => navigate('/reports')}
-              loading={statsLoading}
-              glowEffect
-            />
-          </div>
-          <div className="animate-fade-in-up animation-delay-400 h-full">
-            <StatCard
-              title="Pending"
-              value={statsLoading ? '-' : stats?.draftReports || 0}
-              subtitle="Draft reports"
-              icon={FileText}
-              onClick={() => navigate('/reports?status=draft')}
-              loading={statsLoading}
-              glowEffect
-            />
-          </div>
-        </div>
 
-        {/* Quick Actions - Equal height cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4">
-          <div className="animate-fade-in-up animation-delay-200 h-full">
-            <ActionCard
-              title="New Report"
-              description="Create a new lab report for a patient"
-              icon={Plus}
-              iconVariant="interactive"
-              onClick={() => navigate('/reports/new')}
-              glowEffect
-            />
-          </div>
-          <div className="animate-fade-in-up animation-delay-300 h-full">
-            <ActionCard
-              title="View Reports"
-              description="Browse and manage all lab reports"
-              icon={ClipboardList}
-              iconVariant="interactive"
-              onClick={() => navigate('/reports')}
-              glowEffect
-            />
-          </div>
-          <div className="animate-fade-in-up animation-delay-400 h-full">
-            <ActionCard
-              title="Patients"
-              description="Manage patient records and history"
-              icon={Users}
-              iconVariant="interactive"
-              onClick={() => navigate('/patients')}
-              glowEffect
-            />
-          </div>
-          <div className="animate-fade-in-up animation-delay-500 h-full">
-            <ActionCard
-              title="Settings"
-              description="Configure clinic branding and preferences"
-              icon={Settings}
-              iconVariant="interactive"
-              onClick={() => navigate('/settings')}
-              glowEffect
-            />
+          {/* Quick Actions - Equal height cards */}
+          <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 min-h-0">
+            <div className="animate-fade-in-up animation-delay-200 h-full">
+              <ActionCard
+                title="New Report"
+                description="Create a new lab report for a patient"
+                icon={Plus}
+                iconVariant="interactive"
+                onClick={() => navigate('/reports/new')}
+                glowEffect
+              />
+            </div>
+            <div className="animate-fade-in-up animation-delay-300 h-full">
+              <ActionCard
+                title="View Reports"
+                description="Browse and manage all lab reports"
+                icon={ClipboardList}
+                iconVariant="interactive"
+                onClick={() => navigate('/reports')}
+                glowEffect
+              />
+            </div>
+            <div className="animate-fade-in-up animation-delay-400 h-full">
+              <ActionCard
+                title="Patients"
+                description="Manage patient records and history"
+                icon={Users}
+                iconVariant="interactive"
+                onClick={() => navigate('/patients')}
+                glowEffect
+              />
+            </div>
+            <div className="animate-fade-in-up animation-delay-500 h-full">
+              <ActionCard
+                title="Settings"
+                description="Configure clinic branding and preferences"
+                icon={Settings}
+                iconVariant="interactive"
+                onClick={() => navigate('/settings')}
+                glowEffect
+              />
+            </div>
           </div>
         </div>
 
