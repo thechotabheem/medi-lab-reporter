@@ -138,27 +138,27 @@ export function StatCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="flex flex-row items-center justify-between pb-[5%] space-y-0 relative z-10 px-[8%] pt-[8%]">
-          <CardTitle className="text-[clamp(0.65rem,1.5vw+0.5vh,1rem)] font-medium text-muted-foreground">
+        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6">
+          <CardTitle className="text-[11px] sm:text-sm font-medium text-muted-foreground">
             {title}
           </CardTitle>
           {Icon && (
             <Icon 
-              className="h-[clamp(1rem,2vw+1vh,2rem)] w-[clamp(1rem,2vw+1vh,2rem)] text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
+              className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
               style={iconStyle}
             />
           )}
         </CardHeader>
-        <CardContent className="relative z-10 px-[8%] pb-[8%] pt-0 flex-1 flex flex-col justify-center">
+        <CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0">
           {loading ? (
-            <div className="h-[clamp(1.5rem,3vw+2vh,3rem)] w-[clamp(3rem,6vw,5rem)] skeleton rounded" />
+            <div className="h-6 sm:h-8 w-12 sm:w-16 skeleton rounded" />
           ) : (
-            <div className="text-[clamp(1.25rem,3vw+2vh,3.5rem)] font-bold tracking-tight leading-none">
+            <div className="text-lg sm:text-2xl font-bold tracking-tight">
               {value}
             </div>
           )}
           {subtitle && (
-            <p className="text-[clamp(0.6rem,1vw+0.5vh,0.875rem)] text-muted-foreground mt-[3%]">{subtitle}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{subtitle}</p>
           )}
           {trend && (
             <p
