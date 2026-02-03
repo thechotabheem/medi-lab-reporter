@@ -109,7 +109,7 @@ export function ActionCard({
       <Card
         ref={containerRef}
         className={cn(
-          "group cursor-pointer transition-all duration-300 ease-out relative overflow-hidden h-full",
+          "group cursor-pointer transition-all duration-300 ease-out relative overflow-hidden h-full flex flex-col",
           !glowEffect && "hover:border-primary/40 hover:shadow-lg",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
           isInitialLoad && "animate-stat-shimmer",
@@ -131,7 +131,7 @@ export function ActionCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="p-3 sm:p-6 h-full flex flex-col relative z-10">
+        <CardHeader className="p-3 sm:p-6 flex-1 flex flex-col justify-between relative z-10">
           <IconWrapper
             variant={iconVariant}
             size="lg"
