@@ -1,121 +1,161 @@
 
-# Fill Card Content to Match Card Height
+# Full Viewport Dashboard Cards - Fill All Available Space
 
-## Problem
+## Goal
 
-Currently, the cards expand to fill the viewport height, but the content inside them (icon, title, value, description) is positioned at the top with empty space below. The user wants the content to be distributed throughout the card to fill the available space.
+Make the dashboard cards expand to fill the entire viewport height on all screen sizes (QHD 2560x1440, WUXGA 1920x1200, FHD 1920x1080, HD+ 1600x900, HD 1366x768, SXGA 1280x1024, iPhone 12 Pro 390x844, Pixel 5 393x851, WQHD 3440x1440), leaving only approximately 2% padding at the bottom.
 
-## Solution
+## Current Layout Structure
 
-Use flexbox with `justify-between` or `justify-around` to vertically distribute the content within each card, making the content elements spread across the full card height.
+```
+┌─────────────────────────────────────┐
+│ Header (fixed height)               │
+├─────────────────────────────────────┤
+│ Welcome Section (fixed height)      │
+├─────────────────────────────────────┤
+│ Stat Cards Grid (content height)    │
+├─────────────────────────────────────┤
+│ Action Cards Grid (content height)  │
+├─────────────────────────────────────┤
+│                                     │
+│ (empty space at bottom)             │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+## Target Layout
+
+```
+┌─────────────────────────────────────┐
+│ Header (fixed)                      │
+├─────────────────────────────────────┤
+│ Welcome Section (fixed)             │
+├─────────────────────────────────────┤
+│                                     │
+│ Stat Cards Grid (flex: 1)           │
+│ (expands to fill ~49% of space)     │
+│                                     │
+├─────────────────────────────────────┤
+│                                     │
+│ Action Cards Grid (flex: 1)         │
+│ (expands to fill ~49% of space)     │
+│                                     │
+├─────────────────────────────────────┤
+│ ~2% bottom padding                  │
+└─────────────────────────────────────┘
+```
 
 ## Technical Changes
 
-### File: `src/components/ui/stat-card.tsx`
+### File: `src/pages/Dashboard.tsx`
 
-#### Change 1: Make Card use flex column layout
+#### Change 1: Reduce bottom padding on main container
 
-Update the Card component to use flex layout so its children fill the height:
-
-**Line 115-126 - Add flex layout to Card:**
+**Line 67 - Current:**
 ```tsx
-<Card
-  ref={containerRef}
-  className={cn(
-    "group transition-all duration-300 ease-out relative overflow-hidden h-full flex flex-col",
-    // ... rest of classes
-  )}
->
+<main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative z-10">
 ```
 
-#### Change 2: Make CardHeader and CardContent distribute space
-
-**Line 141 - Update CardHeader to be flex with space distribution:**
+**Change to:**
 ```tsx
-<CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6 shrink-0">
+<main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[2%] relative z-10">
 ```
 
-**Line 152 - Update CardContent to grow and fill remaining space:**
+This reduces bottom padding to exactly 2% of viewport.
+
+#### Change 2: Create a flex container for both card grids that fills remaining space
+
+Wrap both card grids in a flex container that grows to fill available height, with each grid taking equal space:
+
+**Lines 103-193 - Current structure:**
 ```tsx
-<CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0 flex-1 flex flex-col justify-center">
+{/* Quick Stats - Equal height cards */}
+<div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 mb-3 sm:mb-4">
+  {/* 4 stat cards */}
+</div>
+
+{/* Quick Actions - Equal height cards */}
+<div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4">
+  {/* 4 action cards */}
+</div>
 ```
 
-This centers the value/subtitle content vertically in the remaining space.
-
-### File: `src/components/ui/action-card.tsx`
-
-#### Change 1: Add flex column with space distribution to Card
-
-**Line 109-119 - Update Card:**
+**Change to:**
 ```tsx
-<Card
-  ref={containerRef}
-  className={cn(
-    "group cursor-pointer transition-all duration-300 ease-out relative overflow-hidden h-full flex flex-col",
-    // ... rest of classes
-  )}
->
+{/* Card grids container - fills remaining viewport */}
+<div className="flex-1 flex flex-col gap-2 sm:gap-4 min-h-0">
+  {/* Quick Stats - Equal height cards */}
+  <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 min-h-0">
+    {/* 4 stat cards with h-full */}
+  </div>
+
+  {/* Quick Actions - Equal height cards */}
+  <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 min-h-0">
+    {/* 4 action cards with h-full */}
+  </div>
+</div>
 ```
 
-#### Change 2: Update CardHeader to fill and distribute content
+Key classes:
+- `flex-1`: Each grid takes equal share of remaining space
+- `min-h-0`: Prevents flex items from overflowing (critical for nested flex)
+- `auto-rows-fr`: All rows within each grid are equal height
 
-**Line 134 - Update CardHeader with justify-between:**
-```tsx
-<CardHeader className="p-3 sm:p-6 h-full flex flex-col justify-between relative z-10">
+## How It Works
+
+```
+Viewport Height: 100vh
+┌────────────────────────────────────────┐
+│ Header (~60-80px fixed)                │
+├────────────────────────────────────────┤
+│ Welcome Section (~80-100px fixed)      │
+├────────────────────────────────────────┤
+│                                        │
+│ ┌─ Flex Container (flex-1) ──────────┐ │
+│ │                                    │ │
+│ │ Stat Cards Grid (flex-1)           │ │
+│ │ [Card][Card][Card][Card]           │ │
+│ │                                    │ │
+│ ├────────────────────────────────────┤ │
+│ │                                    │ │
+│ │ Action Cards Grid (flex-1)         │ │
+│ │ [Card][Card][Card][Card]           │ │
+│ │                                    │ │
+│ └────────────────────────────────────┘ │
+├────────────────────────────────────────┤
+│ 2% bottom padding                      │
+└────────────────────────────────────────┘
 ```
 
-This will distribute the icon at top, title in middle, and description at bottom.
-
-## Visual Representation
-
-### Before (content at top):
+On mobile (2x2 grids):
 ```
-┌─────────────────────┐
-│ Title          Icon │
-│ Value               │
-│ Subtitle            │
-│                     │
-│                     │
-│ (empty space)       │
-│                     │
-└─────────────────────┘
-```
-
-### After (content distributed):
-```
-┌─────────────────────┐
-│ Title          Icon │
-│                     │
-│       Value         │
-│      Subtitle       │
-│                     │
-│       Trend         │
-└─────────────────────┘
-```
-
-For Action Cards:
-```
-┌─────────────────────┐
-│   [Icon]            │
-│                     │
-│   Title             │
-│                     │
-│   Description       │
-│   text here...      │
-└─────────────────────┘
+┌──────────────────────┐
+│ Header               │
+├──────────────────────┤
+│ Welcome              │
+├──────────────────────┤
+│ [Stat1] [Stat2]      │
+│ [Stat3] [Stat4]      │
+├──────────────────────┤
+│ [Action1] [Action2]  │
+│ [Action3] [Action4]  │
+├──────────────────────┤
+│ 2% padding           │
+└──────────────────────┘
 ```
 
 ## Files to Change
 
 | File | Change |
 |------|--------|
-| `src/components/ui/stat-card.tsx` | Add `flex flex-col` to Card, `shrink-0` to CardHeader, `flex-1 flex flex-col justify-center` to CardContent |
-| `src/components/ui/action-card.tsx` | Add `flex flex-col` to Card, change CardHeader to use `justify-between` |
+| `src/pages/Dashboard.tsx` | Add flex wrapper container, change grids to `flex-1`, update padding to `pb-[2%]` |
 
 ## Expected Result
 
-- Content fills the entire card height on all screen sizes
-- StatCard: Title/icon at top, value centered vertically, subtitle/trend below value
-- ActionCard: Icon at top, title in middle area, description at bottom
-- Content scales proportionally as cards grow on larger screens
-- No empty whitespace within cards
+- Cards fill entire available viewport height on all screen sizes
+- Stat cards and action cards each occupy approximately 50% of the available card area
+- Only 2% padding remains at the bottom
+- On mobile: 2x2 grids still work correctly, each card fills its proportional space
+- On desktop: 1x4 grids expand vertically to fill the screen
+- No content clipping or overflow issues
+- Consistent behavior across all specified screen sizes (QHD, WUXGA, FHD, HD+, HD, SXGA, iPhone 12 Pro, Pixel 5, WQHD)
