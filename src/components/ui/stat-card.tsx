@@ -115,7 +115,7 @@ export function StatCard({
       <Card
         ref={containerRef}
         className={cn(
-          "group transition-all duration-300 ease-out relative overflow-hidden h-full",
+          "group transition-all duration-300 ease-out relative overflow-hidden h-full flex flex-col",
           onClick && "cursor-pointer",
           onClick && !glowEffect && "hover:border-primary/40",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
@@ -138,32 +138,32 @@ export function StatCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6">
-          <CardTitle className="text-[11px] sm:text-sm font-medium text-muted-foreground">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-3 space-y-0 relative z-10 px-4 sm:px-6 pt-4 sm:pt-6">
+          <CardTitle className="text-xs sm:text-sm lg:text-base font-medium text-muted-foreground">
             {title}
           </CardTitle>
           {Icon && (
             <Icon 
-              className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
+              className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
               style={iconStyle}
             />
           )}
         </CardHeader>
-        <CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0">
+        <CardContent className="relative z-10 px-4 sm:px-6 pb-4 sm:pb-6 pt-0 flex-1 flex flex-col justify-center">
           {loading ? (
-            <div className="h-6 sm:h-8 w-12 sm:w-16 skeleton rounded" />
+            <div className="h-8 sm:h-10 w-16 sm:w-20 skeleton rounded" />
           ) : (
-            <div className="text-lg sm:text-2xl font-bold tracking-tight">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
               {value}
             </div>
           )}
           {subtitle && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{subtitle}</p>
           )}
           {trend && (
             <p
               className={cn(
-                "text-xs mt-1",
+                "text-sm mt-2",
                 trend.value >= 0 ? "text-success" : "text-destructive"
               )}
             >

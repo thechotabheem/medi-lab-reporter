@@ -47,13 +47,13 @@ export default function Dashboard() {
     <EnhancedPageLayout>
       {/* Header */}
       <header className="app-header">
-        <div className="px-4 py-4 sm:py-5">
+        <div className="px-4 py-5 sm:py-6">
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <IconWrapper size="default" glow hoverPulse className="animate-breathe">
-                <FlaskConical className="h-6 w-6" />
+            <div className="flex items-center gap-4 sm:gap-5">
+              <IconWrapper size="lg" glow hoverPulse className="animate-breathe">
+                <FlaskConical className="h-7 w-7 sm:h-8 sm:w-8" />
               </IconWrapper>
-              <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground animate-breathe animation-delay-2000 cursor-default">
+              <h1 className="font-bold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-foreground animate-breathe animation-delay-2000 cursor-default">
                 MedLab Reporter
               </h1>
             </div>
@@ -65,15 +65,15 @@ export default function Dashboard() {
 
       {/* Main Content - Fills remaining height */}
       <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[2%] relative z-10">
-        {/* Welcome Section - Compact */}
-        <div className="mb-3 sm:mb-4 animate-fade-in text-center">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+        {/* Welcome Section */}
+        <div className="mb-4 sm:mb-5 animate-fade-in text-center">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+          <p className="text-muted-foreground mt-2 text-base sm:text-lg">
             Here's an overview of your lab activity at <SparkleText sparkleCount={3}><span className="text-gradient-shimmer font-semibold">{clinicName}</span></SparkleText>
           </p>
-          <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
+          <p className="text-sm text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
             <span>
               {currentTime.toLocaleDateString('en-US', { 
                 weekday: 'long', 
@@ -196,6 +196,13 @@ export default function Dashboard() {
         </div>
 
       </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 py-3 text-center border-t border-border/30">
+        <p className="text-xs sm:text-sm text-muted-foreground/60">
+          Solely Developed by <span className="font-semibold text-primary/80">WIJDAN-UL-BASEER</span>
+        </p>
+      </footer>
 
     </EnhancedPageLayout>
   );
