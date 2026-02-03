@@ -115,7 +115,7 @@ export function StatCard({
       <Card
         ref={containerRef}
         className={cn(
-          "group transition-all duration-300 ease-out relative overflow-hidden h-full",
+          "group transition-all duration-300 ease-out relative overflow-hidden h-full flex flex-col",
           onClick && "cursor-pointer",
           onClick && !glowEffect && "hover:border-primary/40",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
@@ -138,7 +138,7 @@ export function StatCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6">
+        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6 shrink-0">
           <CardTitle className="text-[11px] sm:text-sm font-medium text-muted-foreground">
             {title}
           </CardTitle>
@@ -149,7 +149,7 @@ export function StatCard({
             />
           )}
         </CardHeader>
-        <CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0">
+        <CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0 flex-1 flex flex-col justify-center">
           {loading ? (
             <div className="h-6 sm:h-8 w-12 sm:w-16 skeleton rounded" />
           ) : (
