@@ -198,7 +198,7 @@ export default function Dashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-3 text-center border-t border-border/30">
+      <footer className="relative z-10 py-3 text-center border-t border-border/30 animate-fade-in animation-delay-700">
         <p className="text-xs sm:text-sm text-muted-foreground/60">
           Solely Developed by <span className="font-semibold text-primary/80">WIJDAN-UL-BASEER</span>
         </p>
