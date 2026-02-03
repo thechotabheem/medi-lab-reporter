@@ -26,6 +26,10 @@ export interface DraftReport {
   selectedTemplate: ReportType | null;
   reportDetails: ReportDetailsDraft;
   reportData: Record<string, string | number | boolean | null>;
+  // Combined mode fields
+  isCombinedMode?: boolean;
+  selectedTests?: ReportType[];
+  combinedReportData?: Record<string, Record<string, string | number | boolean | null>>;
 }
 
 interface UseDraftReportReturn {
@@ -142,7 +146,8 @@ export function useDraftReport(): UseDraftReportReturn {
     draft.selectedTemplate !== null ||
     Object.keys(draft.reportData).length > 0 ||
     draft.reportDetails.referring_doctor !== '' ||
-    draft.reportDetails.clinical_notes !== ''
+    draft.reportDetails.clinical_notes !== '' ||
+    (draft.selectedTests && draft.selectedTests.length > 0)
   );
 
   const draftTimestamp = draft?.savedAt || null;

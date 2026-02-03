@@ -4,22 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { PatientSelector, NewPatientData } from '@/components/reports/PatientSelector';
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
+import { CombinedReportForm } from '@/components/reports/CombinedReportForm';
 import { DraftBanner } from '@/components/reports/DraftBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { SuccessAnimation } from '@/components/ui/success-animation';
-import { useDraftReport, DraftReport } from '@/hooks/useDraftReport';
+import { useDraftReport } from '@/hooks/useDraftReport';
 import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
 import { ageToDateOfBirth } from '@/lib/utils';
 import type { Patient, ReportType } from '@/types/database';
-import { Check, Save } from 'lucide-react';
+import { Check, Save, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateReport() {
@@ -28,15 +30,25 @@ export default function CreateReport() {
   const queryClient = useQueryClient();
   const { draft, hasDraft, saveDraft, clearDraft } = useDraftReport();
 
+  // Mode toggle: single test vs combined
+  const [isCombinedMode, setIsCombinedMode] = useState(false);
+
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [newPatientData, setNewPatientData] = useState<NewPatientData | null>(null);
+  
+  // Single test mode
   const [selectedTemplate, setSelectedTemplate] = useState<ReportType | null>(null);
+  const [reportData, setReportData] = useState<Record<string, string | number | boolean | null>>({});
+  
+  // Combined mode
+  const [selectedTests, setSelectedTests] = useState<ReportType[]>([]);
+  const [combinedReportData, setCombinedReportData] = useState<Record<string, Record<string, string | number | boolean | null>>>({});
+
   const [reportDetails, setReportDetails] = useState({
     referring_doctor: '',
     clinical_notes: '',
     test_date: new Date().toISOString().split('T')[0],
   });
-  const [reportData, setReportData] = useState<Record<string, string | number | boolean | null>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', subtitle: '' });
@@ -44,19 +56,27 @@ export default function CreateReport() {
 
   // Auto-save on changes (after initial load)
   useEffect(() => {
-    if (draftApplied || !hasDraft && (selectedPatient || newPatientData || selectedTemplate)) {
+    if (draftApplied || !hasDraft && (selectedPatient || newPatientData || selectedTemplate || selectedTests.length > 0)) {
       saveDraft({
         patient: selectedPatient ? { id: selectedPatient.id, full_name: selectedPatient.full_name } : null,
         newPatientData: newPatientData || null,
         selectedTemplate,
         reportDetails,
         reportData,
+        // Extended draft for combined mode
+        isCombinedMode,
+        selectedTests,
+        combinedReportData,
       });
     }
-  }, [selectedPatient, newPatientData, selectedTemplate, reportDetails, reportData, draftApplied]);
+  }, [selectedPatient, newPatientData, selectedTemplate, reportDetails, reportData, draftApplied, isCombinedMode, selectedTests, combinedReportData]);
 
   const handleReportDataChange = useCallback((data: Record<string, string | number | boolean | null>) => {
     setReportData(data);
+  }, []);
+
+  const handleCombinedDataChange = useCallback((data: Record<string, Record<string, string | number | boolean | null>>) => {
+    setCombinedReportData(data);
   }, []);
 
   const handleResumeDraft = useCallback(() => {
@@ -64,7 +84,6 @@ export default function CreateReport() {
     
     // Restore draft state
     if (draft.patient) {
-      // We only have id and name from draft, need to fetch full patient
       supabase
         .from('patients')
         .select('*')
@@ -86,6 +105,16 @@ export default function CreateReport() {
     if (draft.reportData) {
       setReportData(draft.reportData);
     }
+    // Restore combined mode state
+    if (draft.isCombinedMode !== undefined) {
+      setIsCombinedMode(draft.isCombinedMode);
+    }
+    if (draft.selectedTests) {
+      setSelectedTests(draft.selectedTests);
+    }
+    if (draft.combinedReportData) {
+      setCombinedReportData(draft.combinedReportData);
+    }
     
     setDraftApplied(true);
     toast.success('Draft restored');
@@ -97,8 +126,30 @@ export default function CreateReport() {
     toast.info('Draft discarded');
   }, [clearDraft]);
 
-  // Can save if we have (existing patient OR valid new patient data) AND a template AND test date
-  const canSave = (selectedPatient || newPatientData) && selectedTemplate && reportDetails.test_date;
+  // Handle mode toggle - clear selections when switching
+  const handleModeToggle = (enabled: boolean) => {
+    setIsCombinedMode(enabled);
+    if (enabled) {
+      // Switching to combined mode - preserve selected template if any
+      if (selectedTemplate) {
+        setSelectedTests([selectedTemplate]);
+      }
+      setSelectedTemplate(null);
+      setReportData({});
+    } else {
+      // Switching to single mode - take first selected test
+      if (selectedTests.length > 0) {
+        setSelectedTemplate(selectedTests[0]);
+      }
+      setSelectedTests([]);
+      setCombinedReportData({});
+    }
+  };
+
+  // Can save conditions
+  const hasPatient = selectedPatient || newPatientData;
+  const hasTest = isCombinedMode ? selectedTests.length > 0 : selectedTemplate;
+  const canSave = hasPatient && hasTest && reportDetails.test_date;
 
   // Get display name for patient section
   const getPatientDisplayName = () => {
@@ -111,7 +162,7 @@ export default function CreateReport() {
     return null;
   };
 
-  // Get patient for the form (use a mock patient object for new patients to calculate reference ranges)
+  // Get patient for the form
   const getPatientForForm = (): Patient | null => {
     if (selectedPatient) return selectedPatient;
     if (newPatientData) {
@@ -132,8 +183,22 @@ export default function CreateReport() {
     return null;
   };
 
+  // Get test type display name
+  const getTestDisplayName = () => {
+    if (isCombinedMode && selectedTests.length > 0) {
+      if (selectedTests.length === 1) {
+        return getReportTypeName(selectedTests[0]);
+      }
+      return `Combined (${selectedTests.length} tests)`;
+    }
+    if (selectedTemplate) {
+      return getReportTypeName(selectedTemplate);
+    }
+    return null;
+  };
+
   const handleSave = async (status: 'draft' | 'completed') => {
-    if (!clinicId || !selectedTemplate) return;
+    if (!clinicId) return;
 
     setIsSaving(true);
 
@@ -158,7 +223,6 @@ export default function CreateReport() {
         if (patientError) throw patientError;
         patientId = newPatient.id;
         
-        // Invalidate patients query so the list updates
         queryClient.invalidateQueries({ queryKey: ['patients'] });
       } else if (selectedPatient) {
         patientId = selectedPatient.id;
@@ -169,21 +233,39 @@ export default function CreateReport() {
       // Generate report number
       const reportNumber = `RPT-${Date.now().toString(36).toUpperCase()}`;
 
+      // Determine report type and data
+      let reportType: ReportType;
+      let finalReportData: Record<string, unknown>;
+      let includedTests: string[] | null = null;
+
+      if (isCombinedMode && selectedTests.length > 0) {
+        reportType = 'combined';
+        finalReportData = combinedReportData;
+        includedTests = selectedTests;
+      } else if (selectedTemplate) {
+        reportType = selectedTemplate;
+        finalReportData = reportData;
+      } else {
+        throw new Error('No test type selected');
+      }
+
       // Create the report
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: reportError } = await supabase
         .from('reports')
-        .insert({
+        .insert([{
           clinic_id: clinicId,
-          created_by: null,
+          created_by: null as string | null,
           report_number: reportNumber,
           patient_id: patientId,
-          report_type: selectedTemplate,
-          report_data: reportData,
+          report_type: reportType,
+          report_data: finalReportData as any,
+          included_tests: includedTests,
           referring_doctor: reportDetails.referring_doctor || null,
           clinical_notes: reportDetails.clinical_notes || null,
           test_date: reportDetails.test_date,
           status,
-        });
+        }]);
 
       if (reportError) throw reportError;
 
@@ -194,17 +276,19 @@ export default function CreateReport() {
       
       // Show success animation
       const isNewPatient = newPatientData && !selectedPatient;
+      const testCount = isCombinedMode ? selectedTests.length : 1;
       setSuccessMessage({
         title: status === 'completed' ? 'Report Complete!' : 'Draft Saved!',
         subtitle: isNewPatient 
-          ? 'Patient registered and report created successfully'
+          ? `Patient registered and ${testCount > 1 ? 'combined ' : ''}report created`
           : status === 'completed' 
-            ? 'Your report has been saved and is ready for review'
+            ? `Your ${testCount > 1 ? 'combined ' : ''}report is ready for review`
             : 'Your progress has been saved',
       });
       setShowSuccess(true);
-    } catch (error: any) {
-      toast.error('Failed to save: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error('Failed to save: ' + message);
     } finally {
       setIsSaving(false);
     }
@@ -217,6 +301,7 @@ export default function CreateReport() {
 
   const patientForForm = getPatientForForm();
   const patientDisplayName = getPatientDisplayName();
+  const testDisplayName = getTestDisplayName();
 
   // Show draft banner if there's a draft and we haven't applied or discarded it
   const showDraftBanner = hasDraft && draft && !draftApplied;
@@ -265,11 +350,37 @@ export default function CreateReport() {
         {/* Section 2: Template Selection */}
         <Card className="relative animate-fade-in-up animation-delay-100 animate-pulse-glow card-gradient-overlay">
           <CardHeader className="p-4 sm:p-6 relative z-10">
-            <CardTitle className="text-base sm:text-lg">2. Select Test Type</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Choose the type of report to create</CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <CardTitle className="text-base sm:text-lg">2. Select Test Type</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  {isCombinedMode 
+                    ? 'Select multiple tests to combine into one report' 
+                    : 'Choose the type of report to create'}
+                </CardDescription>
+              </div>
+              {/* Combined Mode Toggle */}
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="combined-mode" className="text-sm text-muted-foreground cursor-pointer">
+                  Combined Report
+                </Label>
+                <Switch
+                  id="combined-mode"
+                  checked={isCombinedMode}
+                  onCheckedChange={handleModeToggle}
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
-            <TemplateSelector onSelect={setSelectedTemplate} selectedType={selectedTemplate} />
+            <TemplateSelector 
+              onSelect={setSelectedTemplate} 
+              selectedType={selectedTemplate}
+              multiSelect={isCombinedMode}
+              selectedTypes={selectedTests}
+              onMultiSelect={setSelectedTests}
+            />
           </CardContent>
         </Card>
 
@@ -278,8 +389,8 @@ export default function CreateReport() {
           <CardHeader className="p-4 sm:p-6 relative z-10">
             <CardTitle className="text-base sm:text-lg">3. Report Details</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              {selectedTemplate && patientDisplayName
-                ? `${getReportTypeName(selectedTemplate)} for ${patientDisplayName}`
+              {testDisplayName && patientDisplayName
+                ? `${testDisplayName} for ${patientDisplayName}`
                 : 'Add additional information'}
             </CardDescription>
           </CardHeader>
@@ -317,8 +428,8 @@ export default function CreateReport() {
           </CardContent>
         </Card>
 
-        {/* Section 4: Test Results - Only show when patient and template are selected */}
-        {selectedTemplate && patientForForm && (
+        {/* Section 4: Test Results */}
+        {patientForForm && (isCombinedMode ? selectedTests.length > 0 : selectedTemplate) && (
           <Card className="relative animate-fade-in-up animation-delay-300 animate-pulse-glow card-gradient-overlay">
             <CardHeader className="p-4 sm:p-6 relative z-10">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -332,12 +443,21 @@ export default function CreateReport() {
               </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
-              <DynamicReportForm
-                reportType={selectedTemplate}
-                patient={patientForForm}
-                onChange={handleReportDataChange}
-                initialData={reportData}
-              />
+              {isCombinedMode ? (
+                <CombinedReportForm
+                  selectedTests={selectedTests}
+                  patient={patientForForm}
+                  onChange={handleCombinedDataChange}
+                  initialData={combinedReportData}
+                />
+              ) : selectedTemplate ? (
+                <DynamicReportForm
+                  reportType={selectedTemplate}
+                  patient={patientForForm}
+                  onChange={handleReportDataChange}
+                  initialData={reportData}
+                />
+              ) : null}
             </CardContent>
           </Card>
         )}

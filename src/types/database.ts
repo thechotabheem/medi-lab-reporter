@@ -20,7 +20,8 @@ export type ReportType =
   | 'vdrl'
   | 'h_pylori'
   | 'blood_group'
-  | 'ra_factor';
+  | 'ra_factor'
+  | 'combined';
 export type AppRole = 'admin' | 'lab_technician' | 'receptionist';
 export type ReportStatus = 'draft' | 'completed' | 'verified';
 
@@ -80,6 +81,7 @@ export interface Report {
   clinical_notes?: string;
   status: ReportStatus;
   report_data: Record<string, unknown>;
+  included_tests?: string[] | null; // For combined reports
   created_at: string;
   updated_at: string;
   patient?: Patient;
