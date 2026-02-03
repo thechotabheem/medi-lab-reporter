@@ -200,7 +200,7 @@ export default function Dashboard() {
       {/* Footer */}
       <footer className="relative z-10 py-3 text-center border-t border-border/30 animate-fade-in animation-delay-700">
         <p className="text-xs sm:text-sm text-muted-foreground/60">
-          Solely Developed by <span className="font-semibold text-primary/80 hover:text-primary transition-colors duration-300 cursor-default">WIJDAN-UL-BASEER</span>
+          Solely Developed by <span className="font-semibold text-primary/80 hover:text-primary transition-colors duration-300 cursor-default relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">WIJDAN-UL-BASEER</span>
         </p>
       </footer>
 
