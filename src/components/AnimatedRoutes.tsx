@@ -3,6 +3,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import Dashboard from "@/pages/Dashboard";
 import CreateReport from "@/pages/CreateReport";
+import EditReport from "@/pages/EditReport";
 import Reports from "@/pages/Reports";
 import ReportView from "@/pages/ReportView";
 import Patients from "@/pages/Patients";
@@ -98,6 +99,7 @@ export function AnimatedRoutes() {
         <Route path="/reports/new" element={<CreateReport />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/reports/:id" element={<ReportView />} />
+        <Route path="/reports/:id/edit" element={<EditReport />} />
         <Route path="/patients" element={<Patients />} />
         <Route path="/patients/new" element={<AddPatient />} />
         <Route path="/patients/:id" element={<PatientDetail />} />

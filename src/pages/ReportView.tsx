@@ -50,6 +50,7 @@ import {
   Check,
   X,
   Printer,
+  Pencil,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
@@ -288,6 +289,13 @@ export default function ReportView() {
         showBack
         actions={
           <div className="flex gap-1 sm:gap-2 print-hide">
+            {/* Edit button for combined reports */}
+            {isCombinedReport && (
+              <Button variant="outline" size="sm" onClick={() => navigate(`/reports/${id}/edit`)} className="text-xs sm:text-sm">
+                <Pencil className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Edit Tests</span>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handlePrint} className="text-xs sm:text-sm">
               <Printer className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Print</span>
