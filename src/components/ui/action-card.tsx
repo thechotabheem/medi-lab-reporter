@@ -131,18 +131,18 @@ export function ActionCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="h-full flex flex-col justify-center relative z-10" style={{ padding: 'clamp(0.75rem, 2%, 1.5rem)' }}>
+        <CardHeader className="p-3 sm:p-6 h-full flex flex-col relative z-10">
           <IconWrapper
             variant={iconVariant}
             size="lg"
-            className="shrink-0"
-            style={{ ...iconStyle, width: 'clamp(2rem, 4vw, 4rem)', height: 'clamp(2rem, 4vw, 4rem)', marginBottom: 'clamp(0.5rem, 1.5vh, 1.5rem)' }}
+            className="mb-2 sm:mb-3 shrink-0"
+            style={iconStyle}
           >
-            <Icon style={{ width: 'clamp(1rem, 2vw, 2rem)', height: 'clamp(1rem, 2vw, 2rem)' }} />
+            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
           </IconWrapper>
-          <CardTitle className="font-semibold" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1.5rem)' }}>{title}</CardTitle>
+          <CardTitle className="text-xs sm:text-base font-semibold">{title}</CardTitle>
           {description && (
-            <CardDescription className="line-clamp-3 flex-1" style={{ fontSize: 'clamp(0.6rem, 1.1vw, 1.1rem)', marginTop: 'clamp(0.25rem, 0.75vh, 0.75rem)' }}>
+            <CardDescription className="text-[10px] sm:text-sm line-clamp-2 mt-1 flex-1">
               {description}
             </CardDescription>
           )}

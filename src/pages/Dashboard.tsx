@@ -47,13 +47,13 @@ export default function Dashboard() {
     <EnhancedPageLayout>
       {/* Header */}
       <header className="app-header">
-        <div className="px-4 py-[1.5vh] sm:py-[2vh]">
+        <div className="px-4 py-4 sm:py-5">
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-[1vw] sm:gap-[1.5vw]">
-              <IconWrapper size="default" glow hoverPulse className="animate-breathe" style={{ width: 'clamp(2.5rem, 4vw, 4rem)', height: 'clamp(2.5rem, 4vw, 4rem)' }}>
-                <FlaskConical style={{ width: 'clamp(1.25rem, 2vw, 2rem)', height: 'clamp(1.25rem, 2vw, 2rem)' }} />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <IconWrapper size="default" glow hoverPulse className="animate-breathe">
+                <FlaskConical className="h-6 w-6" />
               </IconWrapper>
-              <h1 className="font-bold tracking-tight text-foreground animate-breathe animation-delay-2000 cursor-default" style={{ fontSize: 'clamp(1.25rem, 2.5vw, 2.5rem)' }}>
+              <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground animate-breathe animation-delay-2000 cursor-default">
                 MedLab Reporter
               </h1>
             </div>
@@ -66,14 +66,14 @@ export default function Dashboard() {
       {/* Main Content - Fills remaining height */}
       <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[2%] relative z-10">
         {/* Welcome Section - Compact */}
-        <div className="mb-[1vh] sm:mb-[1.5vh] animate-fade-in text-center">
-          <h2 className="font-bold tracking-tight" style={{ fontSize: 'clamp(1.25rem, 2.2vw, 2.25rem)' }}>
+        <div className="mb-3 sm:mb-4 animate-fade-in text-center">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
-          <p className="text-muted-foreground mt-[0.5vh]" style={{ fontSize: 'clamp(0.875rem, 1.4vw, 1.25rem)' }}>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's an overview of your lab activity at <SparkleText sparkleCount={3}><span className="text-gradient-shimmer font-semibold">{clinicName}</span></SparkleText>
           </p>
-          <p className="text-muted-foreground/70 mt-[0.75vh] flex items-center justify-center gap-2 flex-wrap" style={{ fontSize: 'clamp(0.65rem, 1vw, 1rem)' }}>
+          <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
             <span>
               {currentTime.toLocaleDateString('en-US', { 
                 weekday: 'long', 
