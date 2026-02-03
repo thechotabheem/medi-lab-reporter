@@ -138,34 +138,34 @@ export function StatCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-3 sm:px-6 pt-3 sm:pt-6">
-          <CardTitle className="text-[11px] sm:text-sm font-medium text-muted-foreground">
+        <CardHeader className="flex flex-row items-center justify-between pb-[0.5vh] space-y-0 relative z-10 px-[2%] pt-[3%]">
+          <CardTitle className="font-medium text-muted-foreground" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 1.1rem)' }}>
             {title}
           </CardTitle>
           {Icon && (
             <Icon 
-              className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
-              style={iconStyle}
+              className="text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
+              style={{ ...iconStyle, width: 'clamp(1rem, 2vw, 2rem)', height: 'clamp(1rem, 2vw, 2rem)' }}
             />
           )}
         </CardHeader>
-        <CardContent className="relative z-10 px-3 sm:px-6 pb-3 sm:pb-6 pt-0">
+        <CardContent className="relative z-10 px-[2%] pb-[3%] pt-0 flex-1 flex flex-col justify-center">
           {loading ? (
-            <div className="h-6 sm:h-8 w-12 sm:w-16 skeleton rounded" />
+            <div className="skeleton rounded" style={{ height: 'clamp(1.5rem, 3vh, 3rem)', width: 'clamp(3rem, 6vw, 6rem)' }} />
           ) : (
-            <div className="text-lg sm:text-2xl font-bold tracking-tight">
+            <div className="font-bold tracking-tight" style={{ fontSize: 'clamp(1.25rem, 3.5vw, 4rem)' }}>
               {value}
             </div>
           )}
           {subtitle && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+            <p className="text-muted-foreground" style={{ fontSize: 'clamp(0.6rem, 1vw, 1rem)', marginTop: 'clamp(0.125rem, 0.5vh, 0.5rem)' }}>{subtitle}</p>
           )}
           {trend && (
             <p
               className={cn(
-                "text-xs mt-1",
                 trend.value >= 0 ? "text-success" : "text-destructive"
               )}
+              style={{ fontSize: 'clamp(0.6rem, 1vw, 0.875rem)', marginTop: 'clamp(0.25rem, 0.5vh, 0.5rem)' }}
             >
               {trend.value >= 0 ? "+" : ""}
               {trend.value}% {trend.label}
