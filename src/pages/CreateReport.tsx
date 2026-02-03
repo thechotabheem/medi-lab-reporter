@@ -11,6 +11,7 @@ import { PatientSelector, NewPatientData } from '@/components/reports/PatientSel
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
 import { CombinedReportForm } from '@/components/reports/CombinedReportForm';
+import { TestSelectionSummary } from '@/components/reports/TestSelectionSummary';
 import { DraftBanner } from '@/components/reports/DraftBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { SuccessAnimation } from '@/components/ui/success-animation';
@@ -381,6 +382,12 @@ export default function CreateReport() {
               selectedTypes={selectedTests}
               onMultiSelect={setSelectedTests}
             />
+            {/* Summary card for selected tests */}
+            {isCombinedMode && selectedTests.length > 0 && (
+              <div className="mt-4">
+                <TestSelectionSummary selectedTests={selectedTests} />
+              </div>
+            )}
           </CardContent>
         </Card>
 
