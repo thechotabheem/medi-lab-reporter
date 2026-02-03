@@ -53,7 +53,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
-import { getReportTypeName } from '@/lib/report-templates';
+import { getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from '@/lib/report-templates';
 import '@/styles/print.css';
 
 const calculateAge = (dateOfBirth: string): string => {
@@ -92,7 +92,16 @@ export default function ReportView() {
   });
 
   // Get customized template for this report type
-  const { template, isLoading: isLoadingTemplate } = useCustomizedTemplate(report?.report_type || null);
+  // For combined reports, build template from included_tests
+  const isCombinedReport = report?.report_type === 'combined';
+  const { template: baseTemplate, isLoading: isLoadingTemplate } = useCustomizedTemplate(
+    isCombinedReport ? null : report?.report_type || null
+  );
+  
+  // Build combined template if needed
+  const template = isCombinedReport && report?.included_tests
+    ? buildCombinedTemplate(report.included_tests)
+    : baseTemplate;
 
   const { data: clinic } = useQuery({
     queryKey: ['clinic', clinicId],
@@ -242,7 +251,11 @@ export default function ReportView() {
   }
 
   // Use template from hook (already includes customizations)
-  const reportData = report.report_data as Record<string, unknown>;
+  // For combined reports, flatten the namespaced data
+  const rawReportData = report.report_data as Record<string, unknown>;
+  const reportData = isCombinedReport && report.included_tests
+    ? flattenCombinedReportData(rawReportData, report.included_tests)
+    : rawReportData;
 
   // Collect all abnormal values (only if template is available)
   const abnormalValues: { label: string; value: string; range: string }[] = [];
@@ -267,7 +280,9 @@ export default function ReportView() {
   return (
     <EnhancedPageLayout>
       <PageHeader
-        title={getReportTypeName(report.report_type)}
+        title={isCombinedReport 
+          ? `Combined Report (${report.included_tests?.length || 0} tests)` 
+          : getReportTypeName(report.report_type)}
         subtitle={report.report_number}
         icon={<FileText className="h-5 w-5" />}
         showBack
@@ -383,7 +398,11 @@ export default function ReportView() {
                 {/* Report Title Bar */}
                 <div className="bg-primary text-primary-foreground px-4 sm:px-6 py-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold">{getReportTypeName(report.report_type)}</h2>
+                  <h2 className="text-lg font-semibold">
+                    {isCombinedReport 
+                      ? `Combined Report (${report.included_tests?.map(t => getReportTypeName(t as any)).join(', ')})`
+                      : getReportTypeName(report.report_type)}
+                  </h2>
                     <div className="flex items-center gap-4 text-sm">
                       <span>Report #: {report.report_number}</span>
                       <Badge 

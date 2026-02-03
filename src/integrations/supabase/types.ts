@@ -230,6 +230,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          included_tests: string[] | null
           patient_id: string
           referring_doctor: string | null
           report_data: Json
@@ -245,6 +246,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          included_tests?: string[] | null
           patient_id: string
           referring_doctor?: string | null
           report_data?: Json
@@ -260,6 +262,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          included_tests?: string[] | null
           patient_id?: string
           referring_doctor?: string | null
           report_data?: Json
@@ -346,6 +349,7 @@ export type Database = {
         | "h_pylori"
         | "blood_group"
         | "ra_factor"
+        | "combined"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -500,6 +504,7 @@ export const Constants = {
         "h_pylori",
         "blood_group",
         "ra_factor",
+        "combined",
       ],
     },
   },

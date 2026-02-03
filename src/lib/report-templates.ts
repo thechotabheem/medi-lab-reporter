@@ -294,6 +294,13 @@ export const reportTemplates: Record<ReportType, ReportTemplate> = {
       },
     ],
   },
+
+  // Combined report type - categories are dynamically assembled from included_tests
+  combined: {
+    type: 'combined',
+    name: 'Combined Report',
+    categories: [], // Populated dynamically based on included_tests
+  },
 };
 
 // Active test types to show in template selector (individual tests only)
@@ -340,6 +347,7 @@ export const reportTypeLabels: Record<ReportType, string> = {
   h_pylori: 'H. Pylori',
   blood_group: 'Blood Group',
   ra_factor: 'R.A Factor',
+  combined: 'Combined Report',
 };
 
 export const getReportTemplate = (type: ReportType): ReportTemplate => {
@@ -348,4 +356,43 @@ export const getReportTemplate = (type: ReportType): ReportTemplate => {
 
 export const getReportTypeName = (type: ReportType): string => {
   return reportTemplates[type]?.name || type;
+};
+
+// Build a combined template from multiple test types
+export const buildCombinedTemplate = (includedTests: string[]): ReportTemplate => {
+  const categories = includedTests.flatMap(testType => {
+    const template = reportTemplates[testType as ReportType];
+    if (!template) return [];
+    // Prefix category names with test type to avoid duplicates
+    return template.categories.map(cat => ({
+      ...cat,
+      name: `${template.name} - ${cat.name}`,
+    }));
+  });
+
+  return {
+    type: 'combined',
+    name: 'Combined Report',
+    categories,
+  };
+};
+
+// Flatten combined report data for display
+export const flattenCombinedReportData = (
+  reportData: Record<string, unknown>,
+  includedTests: string[]
+): Record<string, unknown> => {
+  // If report_data already contains namespaced data (e.g., { cbc: {...}, lft: {...} })
+  // flatten it for display
+  const flattened: Record<string, unknown> = {};
+  
+  for (const testType of includedTests) {
+    const testData = reportData[testType];
+    if (testData && typeof testData === 'object') {
+      Object.assign(flattened, testData);
+    }
+  }
+  
+  // If no namespaced data found, return original (backward compatibility)
+  return Object.keys(flattened).length > 0 ? flattened : reportData;
 };

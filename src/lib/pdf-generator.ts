@@ -1,8 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
-import type { Report, Patient, Clinic, Gender, ReportTemplate } from '@/types/database';
-import { reportTemplates, getReportTypeName } from './report-templates';
+import type { Report, Patient, Clinic, Gender, ReportTemplate, ReportType } from '@/types/database';
+import { reportTemplates, getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from './report-templates';
 
 interface ClinicWithBranding {
   name: string;
@@ -308,12 +308,18 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
 
   // ============ REPORT TITLE BAR ============
   
+  // Determine report title
+  const isCombined = report.report_type === 'combined';
+  const reportTitle = isCombined && report.included_tests
+    ? `Combined Report (${report.included_tests.map(t => getReportTypeName(t as ReportType)).join(', ')})`
+    : getReportTypeName(report.report_type);
+  
   doc.setFillColor(...COLORS.primary);
   doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 10, 'F');
-  doc.setFontSize(12);
+  doc.setFontSize(isCombined ? 10 : 12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.white);
-  doc.text(getReportTypeName(report.report_type), MARGIN + 5, yPos + 7);
+  doc.text(reportTitle, MARGIN + 5, yPos + 7, { maxWidth: pageWidth / 2 - MARGIN });
   
   // Report number on right
   doc.setFontSize(10);
@@ -384,8 +390,23 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   // ============ ABNORMAL VALUES SUMMARY ============
   
   // Use custom template if provided, otherwise fall back to default
-  const template = customTemplate || reportTemplates[report.report_type];
-  const reportData = report.report_data as Record<string, unknown>;
+  // For combined reports, build template from included_tests
+  const isCombinedReport = report.report_type === 'combined';
+  let template: ReportTemplate;
+  
+  if (customTemplate) {
+    template = customTemplate;
+  } else if (isCombinedReport && report.included_tests) {
+    template = buildCombinedTemplate(report.included_tests);
+  } else {
+    template = reportTemplates[report.report_type];
+  }
+  
+  // For combined reports, flatten the namespaced data
+  const rawReportData = report.report_data as Record<string, unknown>;
+  const reportData = isCombinedReport && report.included_tests
+    ? flattenCombinedReportData(rawReportData, report.included_tests)
+    : rawReportData;
   
   // Collect abnormal values
   const abnormalValues: { label: string; value: string; range: string }[] = [];

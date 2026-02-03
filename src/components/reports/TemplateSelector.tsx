@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { reportTemplates, activeReportTypes } from '@/lib/report-templates';
 import type { ReportType } from '@/types/database';
-import { Check, Search } from 'lucide-react';
+import { Check, Search, Layers } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { 
   Beaker, 
@@ -22,9 +23,13 @@ import {
 interface TemplateSelectorProps {
   onSelect: (type: ReportType) => void;
   selectedType?: ReportType | null;
+  // Multi-select mode props
+  multiSelect?: boolean;
+  selectedTypes?: ReportType[];
+  onMultiSelect?: (types: ReportType[]) => void;
 }
 
-const templateIcons: Record<ReportType, React.ReactNode> = {
+const templateIcons: Partial<Record<ReportType, React.ReactNode>> = {
   // Legacy
   blood_test: <Beaker className="h-5 w-5" />,
   urine_analysis: <Droplets className="h-5 w-5" />,
@@ -52,7 +57,13 @@ const templateIcons: Record<ReportType, React.ReactNode> = {
   ra_factor: <Activity className="h-5 w-5" />,
 };
 
-export const TemplateSelector = ({ onSelect, selectedType }: TemplateSelectorProps) => {
+export const TemplateSelector = ({ 
+  onSelect, 
+  selectedType,
+  multiSelect = false,
+  selectedTypes = [],
+  onMultiSelect,
+}: TemplateSelectorProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 200);
 
@@ -70,8 +81,44 @@ export const TemplateSelector = ({ onSelect, selectedType }: TemplateSelectorPro
     });
   }, [debouncedSearch]);
 
+  const handleToggle = (type: ReportType) => {
+    if (multiSelect && onMultiSelect) {
+      if (selectedTypes.includes(type)) {
+        onMultiSelect(selectedTypes.filter(t => t !== type));
+      } else {
+        onMultiSelect([...selectedTypes, type]);
+      }
+    } else {
+      onSelect(type);
+    }
+  };
+
+  const isSelected = (type: ReportType) => {
+    if (multiSelect) {
+      return selectedTypes.includes(type);
+    }
+    return selectedType === type;
+  };
+
   return (
     <div className="space-y-4">
+      {/* Header with selection count for multi-select */}
+      {multiSelect && selectedTypes.length > 0 && (
+        <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+          <Layers className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">
+            {selectedTypes.length} test{selectedTypes.length > 1 ? 's' : ''} selected
+          </span>
+          <div className="flex-1 flex flex-wrap gap-1">
+            {selectedTypes.map(type => (
+              <Badge key={type} variant="secondary" className="text-xs">
+                {reportTemplates[type]?.name || type}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -90,23 +137,30 @@ export const TemplateSelector = ({ onSelect, selectedType }: TemplateSelectorPro
             const template = reportTemplates[type];
             if (!template) return null;
             
-            const isSelected = selectedType === type;
+            const selected = isSelected(type);
             const fieldCount = template.categories[0]?.fields.length || 0;
             
             return (
               <div
                 key={type}
-                onClick={() => onSelect(type)}
+                onClick={() => handleToggle(type)}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
                   hover:border-primary hover:bg-primary/5
-                  ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-border'}`}
+                  ${selected ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-border'}`}
               >
-                <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                  {templateIcons[type]}
+                {multiSelect && (
+                  <Checkbox 
+                    checked={selected}
+                    onCheckedChange={() => handleToggle(type)}
+                    className="pointer-events-none"
+                  />
+                )}
+                <div className={`p-2 rounded-lg ${selected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                  {templateIcons[type] || <Beaker className="h-5 w-5" />}
                 </div>
                 <span className="flex-1 font-medium text-foreground">{template.name}</span>
                 <span className="text-sm text-muted-foreground">{fieldCount} fields</span>
-                {isSelected && (
+                {!multiSelect && selected && (
                   <Badge variant="default" className="ml-2">
                     <Check className="h-3 w-3" />
                   </Badge>
