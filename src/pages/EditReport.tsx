@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
 import { CombinedReportForm } from '@/components/reports/CombinedReportForm';
+import { TestSelectionSummary } from '@/components/reports/TestSelectionSummary';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { SuccessAnimation } from '@/components/ui/success-animation';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -204,7 +205,7 @@ export default function EditReport() {
             <CardHeader className="p-4 sm:p-6 relative z-10">
               <CardTitle className="text-base sm:text-lg">Selected Tests</CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                Add or remove tests from this report
+                Add more tests to create a combined report, or remove tests
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
@@ -214,6 +215,12 @@ export default function EditReport() {
                 selectedTypes={selectedTests}
                 onMultiSelect={setSelectedTests}
               />
+              {/* Summary card */}
+              {selectedTests.length > 0 && (
+                <div className="mt-4">
+                  <TestSelectionSummary selectedTests={selectedTests} />
+                </div>
+              )}
             </CardContent>
           </Card>
 
