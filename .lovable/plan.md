@@ -1,117 +1,262 @@
 
-# Multi-Test Report Feature - Options & Implementation Plan
+# Custom Test Types - Implementation Plan
 
-## Current Architecture
+## Overview
 
-The current system has a **one-to-one relationship** between reports and test types:
+This plan covers two complementary features:
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                       CURRENT STATE                          │
-├─────────────────────────────────────────────────────────────┤
-│  Report                                                      │
-│  ├── id                                                      │
-│  ├── patient_id                                              │
-│  ├── report_type (ENUM) ─────► ONE test type only           │
-│  └── report_data (JSONB) ────► Fields for that single test  │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **Extend Template Editor** - Create entirely new test types from scratch in Settings
+2. **Quick Custom Test** - Add one-off tests directly during report creation
 
-Each report can only have **one test type** (CBC, LFT, RFT, etc.), and the `report_data` JSON stores only that test's fields.
+Both features will store custom templates in the existing `custom_templates` table, but with a new approach that doesn't require mapping to the hardcoded `report_type` enum.
 
 ---
 
-## Two Approaches to Multi-Test Reports
-
-### Option A: Combined Report (Single PDF with Multiple Tests)
-
-A new "combined report" type that allows selecting multiple tests, storing all their data together, and generating a single unified PDF.
-
-**Best for**: When you want one PDF document containing CBC + LFT + RFT results for the same patient visit.
+## Current Architecture Analysis
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                    COMBINED REPORT                           │
+│                  CURRENT LIMITATION                          │
 ├─────────────────────────────────────────────────────────────┤
-│  Report                                                      │
-│  ├── id                                                      │
-│  ├── patient_id                                              │
-│  ├── report_type: "combined" (new type)                     │
-│  ├── included_tests: ["cbc", "lft", "rft"] ──► Array        │
-│  └── report_data: {                                          │
-│        cbc: { hemoglobin: 14, ... },                        │
-│        lft: { total_bilirubin: 0.8, ... },                  │
-│        rft: { urea: 25, ... }                               │
-│      }                                                       │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Option B: Quick Multi-Report Creation
-
-Stay with single-test reports but streamline creating multiple reports for the same patient in one session.
-
-**Best for**: When you want separate PDFs for each test but need to enter them efficiently.
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                 QUICK MULTI-CREATE                           │
-├─────────────────────────────────────────────────────────────┤
-│  Select Patient ──► Select Multiple Tests                   │
+│  report_type ENUM (hardcoded in database)                   │
+│  ├── cbc, lft, rft, lipid_profile, etc.                    │
+│  └── combined (for multi-test reports)                      │
 │                                                              │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐                      │
-│  │   CBC   │  │   LFT   │  │   RFT   │                      │
-│  │  Report │  │  Report │  │  Report │                      │
-│  └─────────┘  └─────────┘  └─────────┘                      │
-│       ↓            ↓            ↓                            │
-│  Separate Reports (3 PDFs)                                   │
+│  Template Editor → Can only MODIFY existing types           │
+│  Report Creation → Must select from predefined list         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key insight**: The `custom_templates` table already stores complete template definitions in JSONB. We can leverage this to store fully custom test types without modifying the database enum.
+
+---
+
+## Solution Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                   NEW ARCHITECTURE                           │
+├─────────────────────────────────────────────────────────────┤
+│  custom_templates table                                      │
+│  ├── base_template: "cbc" → Customization of CBC            │
+│  ├── base_template: "custom" → Fully custom test type       │
+│  │   └── customizations: {                                  │
+│  │         name: "Thyroid Panel",                           │
+│  │         categories: [...],                               │
+│  │         isFullyCustom: true                              │
+│  │       }                                                   │
+│  └── base_template: "quick_custom" → One-off test           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Recommended: Option A - Combined Report
+## Database Changes
 
-This provides maximum flexibility with a single unified document.
+### Option 1: Use Existing Schema (Recommended)
 
-### Database Changes Required
+No database migration needed. We'll use the existing `custom_templates` table with a special `base_template` value:
 
-1. Add a new `combined` value to the `report_type` enum
-2. Add an `included_tests` column (text array) to store selected test types
-3. Update the `report_data` structure to namespace fields by test type
+- `base_template = 'custom_<unique_id>'` for fully custom templates
+- Store complete template definition in `customizations` JSONB
 
-### UI/UX Changes
+### Option 2: Add New Table (Alternative)
 
-1. **Template Selector**: Allow multi-select with checkboxes instead of single selection
-2. **Dynamic Form**: Show accordion sections for each selected test
-3. **Report View**: Display all test categories in one view
-4. **PDF Generator**: Generate multi-section PDF with all tests
+If cleaner separation is preferred, add a dedicated table:
 
-### Implementation Scope
+```sql
+CREATE TABLE clinic_custom_tests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clinic_id UUID REFERENCES clinics(id),
+  test_name TEXT NOT NULL,
+  test_code TEXT NOT NULL UNIQUE,
+  categories JSONB NOT NULL DEFAULT '[]',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
-| Component | Changes |
-|-----------|---------|
-| Database | Add enum value + new column |
-| `TemplateSelector` | Add multi-select mode |
-| `CreateReport` | Handle array of templates |
-| `DynamicReportForm` | Render multiple test forms |
-| `ReportView` | Display combined results |
-| `pdf-generator` | Multi-section PDF layout |
-| Types | Update TypeScript definitions |
+**Recommendation**: Option 1 (use existing schema) to minimize database changes.
+
+---
+
+## Feature 1: Extend Template Editor
+
+### UI Changes
+
+Add a "Create New Template" section to the Template Editor page:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  Template Editor                                             │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │ [+] Create New Template                                 ││
+│  │     "Design a completely custom test type"              ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                                              │
+│  Select Existing Template:                                   │
+│  [CBC] [LFT] [RFT] [Lipid] [Custom: Thyroid Panel] ...      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### New Component: CreateCustomTemplateDialog
+
+A multi-step wizard:
+
+1. **Step 1: Basic Info**
+   - Template Name (e.g., "Thyroid Panel")
+   - Template Code (auto-generated, e.g., "thyroid_panel")
+   - Description (optional)
+
+2. **Step 2: Add Categories**
+   - Category name input
+   - Add multiple categories
+
+3. **Step 3: Add Fields to Categories**
+   - Uses existing `AddFieldDialog` component
+   - Assign fields to categories
+   - Configure field types, units, normal ranges
+
+4. **Step 4: Preview & Save**
+   - Show preview of the template
+   - Save to `custom_templates` table
+
+### Data Structure for Fully Custom Template
+
+```typescript
+interface FullyCustomTemplate {
+  name: string;           // "Thyroid Panel"
+  code: string;           // "custom_thyroid_panel"
+  description?: string;
+  categories: TestCategory[];
+  isFullyCustom: true;    // Flag to identify custom templates
+  createdAt: string;
+}
+```
+
+### Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/template-editor/CreateCustomTemplateDialog.tsx` | Create | Multi-step wizard for new templates |
+| `src/hooks/useCustomTemplates.ts` | Modify | Add hooks for CRUD on fully custom templates |
+| `src/pages/TemplateEditor.tsx` | Modify | Add "Create New" button and show custom templates |
+| `src/components/reports/TemplateSelector.tsx` | Modify | Include custom templates in selection list |
+| `src/lib/report-templates.ts` | Modify | Add helper to merge custom templates into available list |
+
+---
+
+## Feature 2: Quick Custom Test During Report Creation
+
+### UI Changes
+
+Add a "Quick Custom Test" option to the template selector:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  Select Test(s)                               [Combined: ON] │
+├─────────────────────────────────────────────────────────────┤
+│  [+] Quick Custom Test                                       │
+│      "Add a one-off test with custom fields"                │
+│                                                              │
+│  Popular Tests:                                              │
+│  [CBC] [LFT] [RFT] [Lipid Profile] ...                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### New Component: QuickCustomTestDialog
+
+A lightweight dialog for quick test creation:
+
+1. **Test Name** (required)
+2. **Add Fields** (inline field editor)
+   - Field name, type, unit, normal range
+   - Add multiple fields
+3. **Save option**: "Save as reusable template" checkbox
+
+### Integration with Combined Reports
+
+Quick custom tests can be added to combined reports:
+- Stored in `report_data` under a custom namespace
+- Uses existing `CombinedReportForm` accordion structure
+
+### Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/reports/QuickCustomTestDialog.tsx` | Create | Inline test builder dialog |
+| `src/components/reports/TemplateSelector.tsx` | Modify | Add Quick Custom Test button |
+| `src/pages/CreateReport.tsx` | Modify | Handle custom test in form state |
+| `src/hooks/useCustomTemplates.ts` | Modify | Add hook to optionally save quick tests |
+
+---
+
+## Implementation Phases
+
+### Phase 1: Database & Type Updates (30 min)
+- Update TypeScript types to support custom templates
+- Add helper functions in `useCustomTemplates.ts`
+
+### Phase 2: Create Custom Template Wizard (2-3 hours)
+- Build `CreateCustomTemplateDialog.tsx` with multi-step form
+- Add category and field management UI
+- Integrate with Template Editor page
+
+### Phase 3: Quick Custom Test (1-2 hours)
+- Build `QuickCustomTestDialog.tsx`
+- Integrate with Template Selector
+- Handle in report creation flow
+
+### Phase 4: Template Selector Integration (1 hour)
+- Show custom templates alongside built-in ones
+- Support selecting custom templates in combined reports
+
+### Phase 5: Testing & Polish (1 hour)
+- End-to-end testing
+- PDF generation for custom tests
+- Edge cases (empty templates, duplicate names)
+
+---
+
+## Technical Considerations
+
+### Unique Identifiers
+Custom templates will use the format: `custom_<slug>_<timestamp>`
+
+Example: `custom_thyroid_panel_1707052800000`
+
+### Template Selector Logic
+
+```typescript
+// Merge built-in and custom templates
+const allTemplates = [
+  ...activeReportTypes.map(type => ({ type, ...reportTemplates[type] })),
+  ...customTemplates.filter(t => t.customizations?.isFullyCustom),
+];
+```
+
+### Report Data Storage
+For reports using custom templates:
+```json
+{
+  "report_type": "combined",
+  "included_tests": ["cbc", "custom_thyroid_panel_123"],
+  "report_data": {
+    "cbc": { "hemoglobin": 14 },
+    "custom_thyroid_panel_123": { "tsh": 2.5, "t3": 120 }
+  }
+}
+```
 
 ---
 
 ## Summary
 
-**Option A (Combined Report)** is recommended if you want:
-- One PDF with all tests
-- Single report record in database
-- Unified patient report document
+| Feature | Complexity | User Benefit |
+|---------|------------|--------------|
+| Create Custom Template (Template Editor) | Medium | Reusable custom test types |
+| Quick Custom Test (Report Creation) | Low | One-off tests without leaving workflow |
 
-**Option B (Quick Multi-Create)** is better if you want:
-- Separate PDFs per test
-- Independent report records
-- Simpler implementation
-
----
-
-Would you like me to proceed with implementing **Option A (Combined Report)** or **Option B (Quick Multi-Create)**?
+Both features leverage the existing `custom_templates` table and JSONB storage, minimizing database changes while maximizing flexibility.
