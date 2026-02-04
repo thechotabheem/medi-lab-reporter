@@ -28,6 +28,7 @@ import { SortableCategoryEditor } from '@/components/template-editor/SortableCat
 import { AddFieldDialog } from '@/components/template-editor/AddFieldDialog';
 import { CloneTemplateDialog } from '@/components/template-editor/CloneTemplateDialog';
 import { TemplatePreviewDialog } from '@/components/template-editor/TemplatePreviewDialog';
+import { CreateCustomTemplateDialog } from '@/components/template-editor/CreateCustomTemplateDialog';
 import { 
   FileText, 
   Settings2, 
@@ -37,6 +38,8 @@ import {
   Loader2,
   Check,
   GripVertical,
+  Beaker,
+  Trash2,
 } from 'lucide-react';
 import { reportTemplates, activeReportTypes, getReportTypeName } from '@/lib/report-templates';
 import { 
@@ -44,6 +47,9 @@ import {
   useSaveCustomTemplate, 
   useDeleteCustomTemplate,
   useAllCustomTemplates,
+  useFullyCustomTemplates,
+  useSaveFullyCustomTemplate,
+  useDeleteFullyCustomTemplate,
   type TemplateCustomization,
   type FieldCustomization,
   type CustomField,
@@ -87,8 +93,11 @@ export default function TemplateEditor() {
   // Fetch existing customization
   const { data: existingCustomization, isLoading: isLoadingTemplate } = useCustomTemplate(selectedTemplate);
   const { data: allCustomTemplates } = useAllCustomTemplates();
+  const { data: fullyCustomTemplates } = useFullyCustomTemplates();
   const { mutate: saveTemplate, isPending: isSaving } = useSaveCustomTemplate();
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteCustomTemplate();
+  const { mutateAsync: saveFullyCustomTemplate, isPending: isSavingCustom } = useSaveFullyCustomTemplate();
+  const { mutate: deleteFullyCustomTemplate } = useDeleteFullyCustomTemplate();
 
   const template = selectedTemplate ? reportTemplates[selectedTemplate] : null;
 
@@ -343,12 +352,74 @@ export default function TemplateEditor() {
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          {/* Create New Template */}
+          <FadeIn>
+            <div className="mb-6">
+              <CreateCustomTemplateDialog 
+                onSave={async (data) => {
+                  await saveFullyCustomTemplate(data);
+                }}
+                isSaving={isSavingCustom}
+              />
+            </div>
+          </FadeIn>
+
+          {/* Custom Templates Created */}
+          {fullyCustomTemplates && fullyCustomTemplates.length > 0 && (
+            <FadeIn>
+              <Card className="mb-6 animate-pulse-glow card-gradient-overlay">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Beaker className="h-4 w-4" />
+                    Your Custom Templates
+                  </CardTitle>
+                  <CardDescription>Templates you've created from scratch</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {fullyCustomTemplates.map((t) => (
+                      <div 
+                        key={t.id}
+                        className="flex items-center justify-between p-3 border rounded-lg bg-card"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Beaker className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <span className="font-medium">{t.name}</span>
+                            <div className="flex gap-2 mt-0.5">
+                              <Badge variant="secondary" className="text-xs">
+                                {t.categories.length} categories
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {t.categories.reduce((sum, c) => sum + c.fields.length, 0)} fields
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteFullyCustomTemplate(t.code)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </FadeIn>
+          )}
+
           {/* Template Selection */}
           <FadeIn>
             <Card className="mb-6 animate-pulse-glow card-gradient-overlay">
               <CardHeader>
-                <CardTitle className="text-base">Select Template</CardTitle>
-                <CardDescription>Choose a template to customize</CardDescription>
+                <CardTitle className="text-base">Customize Built-in Template</CardTitle>
+                <CardDescription>Choose a template to customize fields, labels, and ranges</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
