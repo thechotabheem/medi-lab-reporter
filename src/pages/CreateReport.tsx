@@ -12,6 +12,7 @@ import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
 import { CombinedReportForm } from '@/components/reports/CombinedReportForm';
 import { TestSelectionSummary } from '@/components/reports/TestSelectionSummary';
+import type { QuickCustomTestData } from '@/components/reports/QuickCustomTestDialog';
 import { DraftBanner } from '@/components/reports/DraftBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { SuccessAnimation } from '@/components/ui/success-animation';
@@ -44,6 +45,9 @@ export default function CreateReport() {
   // Combined mode
   const [selectedTests, setSelectedTests] = useState<ReportType[]>([]);
   const [combinedReportData, setCombinedReportData] = useState<Record<string, Record<string, string | number | boolean | null>>>({});
+  
+  // Quick custom tests
+  const [quickCustomTests, setQuickCustomTests] = useState<QuickCustomTestData[]>([]);
 
   const [reportDetails, setReportDetails] = useState({
     referring_doctor: '',
@@ -381,11 +385,20 @@ export default function CreateReport() {
               multiSelect={isCombinedMode}
               selectedTypes={selectedTests}
               onMultiSelect={setSelectedTests}
+              customTests={quickCustomTests}
+              onAddCustomTest={(test) => {
+                setQuickCustomTests(prev => [...prev, test]);
+                // Also add to selected tests for the combined report
+                setSelectedTests(prev => [...prev, test.code as ReportType]);
+              }}
             />
             {/* Summary card for selected tests */}
-            {isCombinedMode && selectedTests.length > 0 && (
+            {isCombinedMode && (selectedTests.length > 0 || quickCustomTests.length > 0) && (
               <div className="mt-4">
-                <TestSelectionSummary selectedTests={selectedTests} />
+                <TestSelectionSummary 
+                  selectedTests={selectedTests} 
+                  customTests={quickCustomTests}
+                />
               </div>
             )}
           </CardContent>

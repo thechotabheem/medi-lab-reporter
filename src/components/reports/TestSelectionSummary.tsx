@@ -1,23 +1,61 @@
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Layers, Clock, List } from 'lucide-react';
+import { Layers, Clock, List, Zap } from 'lucide-react';
 import { reportTemplates, getReportTypeName } from '@/lib/report-templates';
+import { useFullyCustomTemplates } from '@/hooks/useCustomTemplates';
 import type { ReportType } from '@/types/database';
+import type { QuickCustomTestData } from './QuickCustomTestDialog';
 
 interface TestSelectionSummaryProps {
   selectedTests: ReportType[];
+  customTests?: QuickCustomTestData[];
 }
 
 // Estimated seconds per field to fill in
 const SECONDS_PER_FIELD = 8;
 
-export const TestSelectionSummary = ({ selectedTests }: TestSelectionSummaryProps) => {
+export const TestSelectionSummary = ({ selectedTests, customTests = [] }: TestSelectionSummaryProps) => {
+  const { data: fullyCustomTemplates } = useFullyCustomTemplates();
+
   const stats = useMemo(() => {
     let totalFields = 0;
-    const testDetails: { name: string; fields: number }[] = [];
+    const testDetails: { name: string; fields: number; isCustom?: boolean }[] = [];
 
     selectedTests.forEach((type) => {
+      // Check if it's a custom template code
+      const customTemplate = fullyCustomTemplates?.find(t => t.code === type);
+      if (customTemplate) {
+        const fieldCount = customTemplate.categories.reduce(
+          (total, cat) => total + cat.fields.length, 
+          0
+        );
+        totalFields += fieldCount;
+        testDetails.push({
+          name: customTemplate.name,
+          fields: fieldCount,
+          isCustom: true,
+        });
+        return;
+      }
+
+      // Check if it's a quick custom test
+      const quickTest = customTests.find(t => t.code === type);
+      if (quickTest) {
+        const fieldCount = quickTest.categories.reduce(
+          (total, cat) => total + cat.fields.length, 
+          0
+        );
+        totalFields += fieldCount;
+        testDetails.push({
+          name: quickTest.name,
+          fields: fieldCount,
+          isCustom: true,
+        });
+        return;
+      }
+
+      // Built-in template
       const template = reportTemplates[type];
       if (!template) return;
       
@@ -38,9 +76,9 @@ export const TestSelectionSummary = ({ selectedTests }: TestSelectionSummaryProp
     const timeEstimate = minutes < 1 ? '< 1 min' : `~${minutes} min`;
 
     return { totalFields, testDetails, timeEstimate };
-  }, [selectedTests]);
+  }, [selectedTests, customTests, fullyCustomTemplates]);
 
-  if (selectedTests.length === 0) {
+  if (selectedTests.length === 0 && customTests.length === 0) {
     return null;
   }
 
@@ -89,6 +127,7 @@ export const TestSelectionSummary = ({ selectedTests }: TestSelectionSummaryProp
                   key={test.name} 
                   className="flex items-center gap-2 text-xs bg-background/60 rounded-md px-2 py-1"
                 >
+                  {test.isCustom && <Zap className="h-3 w-3 text-primary" />}
                   <span className="font-medium">{test.name}</span>
                   <span className="text-muted-foreground">({test.fields} fields)</span>
                 </div>

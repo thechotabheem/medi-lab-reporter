@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useClinic, DEFAULT_CLINIC_ID } from '@/contexts/ClinicContext';
+import { useClinic } from '@/contexts/ClinicContext';
 import { reportTemplates } from '@/lib/report-templates';
 import type { ReportType, ReportTemplate, TestField, TestCategory } from '@/types/database';
 import type { Json } from '@/integrations/supabase/types';
@@ -36,6 +36,16 @@ export interface TemplateCustomization {
   customFields?: CustomField[];
   categoryOrder?: string[];
   fieldOrder?: Record<string, string[]>;
+}
+
+// Fully custom template structure (stored in customizations JSONB)
+export interface FullyCustomTemplateData {
+  name: string;
+  code: string;
+  description?: string;
+  categories: TestCategory[];
+  isFullyCustom: true;
+  createdAt: string;
 }
 
 interface CustomTemplateRow {
@@ -184,6 +194,129 @@ export const useDeleteCustomTemplate = () => {
       toast.error('Failed to reset template');
     },
   });
+};
+
+// ============ FULLY CUSTOM TEMPLATES ============
+
+// Check if a base_template is a fully custom template
+export const isFullyCustomTemplate = (baseTemplate: string): boolean => {
+  return baseTemplate.startsWith('custom_') || baseTemplate.startsWith('quick_');
+};
+
+// Parse fully custom template data from customizations JSON
+export const parseFullyCustomTemplate = (json: Json | null | undefined): FullyCustomTemplateData | null => {
+  if (!json || typeof json !== 'object' || Array.isArray(json)) return null;
+  const obj = json as Record<string, unknown>;
+  if (obj.isFullyCustom !== true) return null;
+  return obj as unknown as FullyCustomTemplateData;
+};
+
+// Fetch all fully custom templates for the clinic
+export const useFullyCustomTemplates = () => {
+  const { clinicId } = useClinic();
+
+  return useQuery({
+    queryKey: ['fully-custom-templates', clinicId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('custom_templates')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .like('base_template', 'custom_%');
+
+      if (error) {
+        console.error('Error fetching fully custom templates:', error);
+        throw error;
+      }
+
+      // Parse and return fully custom templates
+      return (data as CustomTemplateRow[])
+        .map(row => {
+          const parsed = parseFullyCustomTemplate(row.customizations);
+          if (!parsed) return null;
+          return {
+            id: row.id,
+            code: row.base_template,
+            ...parsed,
+          };
+        })
+        .filter((t): t is NonNullable<typeof t> => t !== null);
+    },
+  });
+};
+
+// Save a new fully custom template
+export const useSaveFullyCustomTemplate = () => {
+  const queryClient = useQueryClient();
+  const { clinicId } = useClinic();
+
+  return useMutation({
+    mutationFn: async (templateData: Omit<FullyCustomTemplateData, 'isFullyCustom' | 'createdAt'>) => {
+      const customizations: FullyCustomTemplateData = {
+        ...templateData,
+        isFullyCustom: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('custom_templates')
+        .insert({
+          clinic_id: clinicId,
+          base_template: templateData.code,
+          customizations: customizations as unknown as Json,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fully-custom-templates', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ['custom-templates', clinicId] });
+      toast.success('Custom template created successfully');
+    },
+    onError: (error) => {
+      console.error('Error creating custom template:', error);
+      toast.error('Failed to create custom template');
+    },
+  });
+};
+
+// Delete a fully custom template
+export const useDeleteFullyCustomTemplate = () => {
+  const queryClient = useQueryClient();
+  const { clinicId } = useClinic();
+
+  return useMutation({
+    mutationFn: async (templateCode: string) => {
+      const { error } = await supabase
+        .from('custom_templates')
+        .delete()
+        .eq('clinic_id', clinicId)
+        .eq('base_template', templateCode);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fully-custom-templates', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ['custom-templates', clinicId] });
+      toast.success('Custom template deleted');
+    },
+    onError: (error) => {
+      console.error('Error deleting custom template:', error);
+      toast.error('Failed to delete custom template');
+    },
+  });
+};
+
+// Convert a fully custom template to a ReportTemplate format
+export const fullyCustomToReportTemplate = (custom: FullyCustomTemplateData): ReportTemplate => {
+  return {
+    type: 'combined' as ReportType, // Use combined as the report_type for storage
+    name: custom.name,
+    categories: custom.categories,
+  };
 };
 
 // Helper function to apply customizations to a template
