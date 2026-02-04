@@ -153,6 +153,9 @@ export const TemplateSelector = ({
       } else {
         onMultiSelect([...selectedTypes, codeAsType]);
       }
+    } else {
+      // Single-select mode: call onSelect with the custom template code
+      onSelect(code as ReportType);
     }
   };
 
