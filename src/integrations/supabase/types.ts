@@ -18,50 +18,86 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
+          border_style: string | null
+          contact_display_format: string | null
           created_at: string
           created_by: string | null
           email: string | null
           enable_qr_code: boolean | null
+          font_size: string | null
           footer_text: string | null
           header_text: string | null
           id: string
           logo_url: string | null
           name: string
+          page_size: string | null
           phone: string | null
+          secondary_color: string | null
+          show_abnormal_summary: boolean | null
+          show_logo_on_all_pages: boolean | null
+          show_patient_id: boolean | null
+          signature_title_left: string | null
+          signature_title_right: string | null
+          tagline: string | null
           updated_at: string
           watermark_text: string | null
+          website: string | null
         }
         Insert: {
           accent_color?: string | null
           address?: string | null
+          border_style?: string | null
+          contact_display_format?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
           enable_qr_code?: boolean | null
+          font_size?: string | null
           footer_text?: string | null
           header_text?: string | null
           id?: string
           logo_url?: string | null
           name: string
+          page_size?: string | null
           phone?: string | null
+          secondary_color?: string | null
+          show_abnormal_summary?: boolean | null
+          show_logo_on_all_pages?: boolean | null
+          show_patient_id?: boolean | null
+          signature_title_left?: string | null
+          signature_title_right?: string | null
+          tagline?: string | null
           updated_at?: string
           watermark_text?: string | null
+          website?: string | null
         }
         Update: {
           accent_color?: string | null
           address?: string | null
+          border_style?: string | null
+          contact_display_format?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
           enable_qr_code?: boolean | null
+          font_size?: string | null
           footer_text?: string | null
           header_text?: string | null
           id?: string
           logo_url?: string | null
           name?: string
+          page_size?: string | null
           phone?: string | null
+          secondary_color?: string | null
+          show_abnormal_summary?: boolean | null
+          show_logo_on_all_pages?: boolean | null
+          show_patient_id?: boolean | null
+          signature_title_left?: string | null
+          signature_title_right?: string | null
+          tagline?: string | null
           updated_at?: string
           watermark_text?: string | null
+          website?: string | null
         }
         Relationships: []
       }

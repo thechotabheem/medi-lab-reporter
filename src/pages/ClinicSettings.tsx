@@ -3,32 +3,70 @@ import { useNavigate } from 'react-router-dom';
 import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
-import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { SkeletonForm } from '@/components/ui/skeleton';
-import { LogoUploader } from '@/components/clinic/LogoUploader';
-import { Switch } from '@/components/ui/switch';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2, FileText, Palette, QrCode } from 'lucide-react';
+import { Building2, Loader2 } from 'lucide-react';
+import {
+  BasicInfoSection,
+  ReportBrandingSection,
+  SignatureSection,
+  VisualStylingSection,
+  PDFOptionsSection,
+} from '@/components/clinic-settings';
 
 interface ClinicData {
   name: string;
   phone: string;
   email: string;
   address: string;
+  website: string;
   header_text: string;
   footer_text: string;
   logo_url: string;
+  tagline: string;
   watermark_text: string;
   enable_qr_code: boolean;
   accent_color: string;
+  secondary_color: string;
+  font_size: string;
+  show_logo_on_all_pages: boolean;
+  signature_title_left: string;
+  signature_title_right: string;
+  page_size: string;
+  show_abnormal_summary: boolean;
+  show_patient_id: boolean;
+  border_style: string;
+  contact_display_format: string;
 }
+
+const defaultFormData: ClinicData = {
+  name: '',
+  phone: '',
+  email: '',
+  address: '',
+  website: '',
+  header_text: '',
+  footer_text: '',
+  logo_url: '',
+  tagline: '',
+  watermark_text: '',
+  enable_qr_code: false,
+  accent_color: '#00968F',
+  secondary_color: '',
+  font_size: 'medium',
+  show_logo_on_all_pages: true,
+  signature_title_left: 'Lab Technician',
+  signature_title_right: 'Pathologist',
+  page_size: 'a4',
+  show_abnormal_summary: true,
+  show_patient_id: true,
+  border_style: 'simple',
+  contact_display_format: 'inline',
+};
 
 export default function ClinicSettings() {
   const navigate = useNavigate();
@@ -36,19 +74,7 @@ export default function ClinicSettings() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  const [formData, setFormData] = useState<ClinicData>({
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    header_text: '',
-    footer_text: '',
-    logo_url: '',
-    watermark_text: '',
-    enable_qr_code: false,
-    accent_color: '#00968F',
-  });
+  const [formData, setFormData] = useState<ClinicData>(defaultFormData);
 
   useEffect(() => {
     const fetchClinicData = async () => {
@@ -69,12 +95,24 @@ export default function ClinicSettings() {
             phone: data.phone || '',
             email: data.email || '',
             address: data.address || '',
+            website: (data as any).website || '',
             header_text: data.header_text || '',
             footer_text: data.footer_text || '',
             logo_url: data.logo_url || '',
+            tagline: (data as any).tagline || '',
             watermark_text: data.watermark_text || '',
             enable_qr_code: data.enable_qr_code || false,
             accent_color: data.accent_color || '#00968F',
+            secondary_color: (data as any).secondary_color || '',
+            font_size: (data as any).font_size || 'medium',
+            show_logo_on_all_pages: (data as any).show_logo_on_all_pages ?? true,
+            signature_title_left: (data as any).signature_title_left || 'Lab Technician',
+            signature_title_right: (data as any).signature_title_right || 'Pathologist',
+            page_size: (data as any).page_size || 'a4',
+            show_abnormal_summary: (data as any).show_abnormal_summary ?? true,
+            show_patient_id: (data as any).show_patient_id ?? true,
+            border_style: (data as any).border_style || 'simple',
+            contact_display_format: (data as any).contact_display_format || 'inline',
           });
         }
       } catch (error: any) {
@@ -109,13 +147,25 @@ export default function ClinicSettings() {
           phone: formData.phone || null,
           email: formData.email || null,
           address: formData.address || null,
+          website: formData.website || null,
           header_text: formData.header_text || null,
           footer_text: formData.footer_text || null,
           logo_url: formData.logo_url || null,
+          tagline: formData.tagline || null,
           watermark_text: formData.watermark_text || null,
           enable_qr_code: formData.enable_qr_code,
           accent_color: formData.accent_color || null,
-        })
+          secondary_color: formData.secondary_color || null,
+          font_size: formData.font_size || 'medium',
+          show_logo_on_all_pages: formData.show_logo_on_all_pages,
+          signature_title_left: formData.signature_title_left || 'Lab Technician',
+          signature_title_right: formData.signature_title_right || 'Pathologist',
+          page_size: formData.page_size || 'a4',
+          show_abnormal_summary: formData.show_abnormal_summary,
+          show_patient_id: formData.show_patient_id,
+          border_style: formData.border_style || 'simple',
+          contact_display_format: formData.contact_display_format || 'inline',
+        } as any)
         .eq('id', clinicId);
 
       if (error) throw error;
@@ -155,195 +205,43 @@ export default function ClinicSettings() {
             </Card>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-              {/* Basic Info */}
               <FadeIn delay={100}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
-                  <CardHeader className="p-4 sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <IconWrapper size="default" className="transition-all duration-300 group-hover:scale-110">
-                        <Building2 className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
-                      </IconWrapper>
-                      <div>
-                        <CardTitle className="text-base sm:text-lg">Basic Information</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">
-                          Your clinic's contact details
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm">Clinic Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => handleChange('name', e.target.value)}
-                        placeholder="Your Clinic Name"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-sm">Phone</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => handleChange('phone', e.target.value)}
-                          placeholder="+1 234 567 8900"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleChange('email', e.target.value)}
-                          placeholder="clinic@example.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="address" className="text-sm">Address</Label>
-                      <Textarea
-                        id="address"
-                        value={formData.address}
-                        onChange={(e) => handleChange('address', e.target.value)}
-                        placeholder="Full clinic address"
-                        rows={2}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                <BasicInfoSection
+                  formData={formData}
+                  onChange={handleChange}
+                />
               </FadeIn>
 
-              {/* Report Branding */}
+              <FadeIn delay={150}>
+                <ReportBrandingSection
+                  formData={formData}
+                  onChange={handleChange}
+                  clinicId={clinicId}
+                />
+              </FadeIn>
+
               <FadeIn delay={200}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
-                  <CardHeader className="p-4 sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
-                        <FileText className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
-                      </IconWrapper>
-                      <div>
-                        <CardTitle className="text-base sm:text-lg">Report Branding</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">
-                          Customize how your reports look
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Clinic Logo</Label>
-                      <LogoUploader
-                        currentLogoUrl={formData.logo_url}
-                        onLogoChange={(url) => handleChange('logo_url', url)}
-                        clinicId={clinicId}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="header_text" className="text-sm">Report Header Text</Label>
-                      <Textarea
-                        id="header_text"
-                        value={formData.header_text}
-                        onChange={(e) => handleChange('header_text', e.target.value)}
-                        placeholder="Text at the top of reports"
-                        rows={2}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="footer_text" className="text-sm">Report Footer Text</Label>
-                      <Textarea
-                        id="footer_text"
-                        value={formData.footer_text}
-                        onChange={(e) => handleChange('footer_text', e.target.value)}
-                        placeholder="Text at the bottom of reports"
-                        rows={2}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                <SignatureSection
+                  formData={formData}
+                  onChange={handleChange}
+                />
               </FadeIn>
 
-              {/* Advanced PDF Options */}
               <FadeIn delay={250}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
-                  <CardHeader className="p-4 sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <IconWrapper variant="muted" size="default" className="transition-all duration-300 group-hover:scale-110">
-                        <Palette className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
-                      </IconWrapper>
-                      <div>
-                        <CardTitle className="text-base sm:text-lg">Advanced PDF Options</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">
-                          Enhanced branding for PDF reports
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="watermark_text" className="text-sm">Watermark Text</Label>
-                      <Input
-                        id="watermark_text"
-                        value={formData.watermark_text}
-                        onChange={(e) => handleChange('watermark_text', e.target.value)}
-                        placeholder="e.g., CONFIDENTIAL, DRAFT"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Appears as a diagonal watermark on PDF reports
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="accent_color" className="text-sm">Accent Color</Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          id="accent_color"
-                          type="color"
-                          value={formData.accent_color}
-                          onChange={(e) => handleChange('accent_color', e.target.value)}
-                          className="w-16 h-10 p-1 cursor-pointer"
-                        />
-                        <Input
-                          value={formData.accent_color}
-                          onChange={(e) => handleChange('accent_color', e.target.value)}
-                          placeholder="#00968F"
-                          className="flex-1"
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Used for headers, borders, and accents in PDF reports
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between py-2">
-                      <div className="space-y-0.5">
-                        <Label className="text-sm flex items-center gap-2">
-                          <QrCode className="h-4 w-4" />
-                          QR Code on Reports
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          Add a QR code linking to the online report view
-                        </p>
-                      </div>
-                      <Switch
-                        checked={formData.enable_qr_code}
-                        onCheckedChange={(checked) => handleChange('enable_qr_code', checked)}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                <VisualStylingSection
+                  formData={formData}
+                  onChange={handleChange}
+                />
               </FadeIn>
 
-              {/* Actions */}
               <FadeIn delay={300}>
+                <PDFOptionsSection
+                  formData={formData}
+                  onChange={handleChange}
+                />
+              </FadeIn>
+
+              <FadeIn delay={350}>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     type="button"
