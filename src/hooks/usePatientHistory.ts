@@ -41,8 +41,9 @@ export const usePatientHistory = ({ patientId, reportType, limit = 5 }: PatientH
         .eq('status', 'completed')
         .order('test_date', { ascending: false })
         .limit(limit);
-
-      if (reportType) {
+      // Only filter by report_type if it's a valid database enum value
+      // Skip for custom templates (custom_*, quick_*) as they use 'combined' report_type
+      if (reportType && !reportType.startsWith('custom_') && !reportType.startsWith('quick_')) {
         query = query.eq('report_type', reportType);
       }
 
