@@ -310,6 +310,51 @@ export const useDeleteFullyCustomTemplate = () => {
   });
 };
 
+// Update an existing fully custom template
+export const useUpdateFullyCustomTemplate = () => {
+  const queryClient = useQueryClient();
+  const { clinicId } = useClinic();
+
+  return useMutation({
+    mutationFn: async ({ 
+      code, 
+      templateData 
+    }: { 
+      code: string; 
+      templateData: Omit<FullyCustomTemplateData, 'isFullyCustom' | 'createdAt'> 
+    }) => {
+      const customizations: FullyCustomTemplateData = {
+        ...templateData,
+        isFullyCustom: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('custom_templates')
+        .update({ 
+          customizations: customizations as unknown as Json,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('clinic_id', clinicId)
+        .eq('base_template', code)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fully-custom-templates', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ['custom-templates', clinicId] });
+      toast.success('Custom template updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error updating custom template:', error);
+      toast.error('Failed to update custom template');
+    },
+  });
+};
+
 // Convert a fully custom template to a ReportTemplate format
 export const fullyCustomToReportTemplate = (custom: FullyCustomTemplateData): ReportTemplate => {
   return {

@@ -202,8 +202,39 @@ export default function CreateReport() {
     return null;
   };
 
+  // Validate that at least one field has data
+  const validateReportData = (): boolean => {
+    if (isCombinedMode) {
+      // Check if any test has at least one non-empty value
+      const hasData = Object.values(combinedReportData).some(testData => 
+        Object.values(testData).some(value => 
+          value !== null && value !== '' && value !== undefined
+        )
+      );
+      if (!hasData) {
+        toast.error('Please fill in at least one test value before saving');
+        return false;
+      }
+    } else {
+      // Single test mode
+      const hasData = Object.values(reportData).some(value => 
+        value !== null && value !== '' && value !== undefined
+      );
+      if (!hasData) {
+        toast.error('Please fill in at least one test value before saving');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSave = async (status: 'draft' | 'completed') => {
     if (!clinicId) return;
+
+    // Validate data for completed reports (skip validation for drafts)
+    if (status === 'completed' && !validateReportData()) {
+      return;
+    }
 
     setIsSaving(true);
 
