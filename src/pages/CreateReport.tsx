@@ -21,9 +21,10 @@ import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
+import { generateReportPDF, downloadPDF } from '@/lib/pdf-generator';
 import { ageToDateOfBirth } from '@/lib/utils';
-import type { Patient, ReportType } from '@/types/database';
-import { Check, Save, Layers } from 'lucide-react';
+import type { Patient, Report, ReportType } from '@/types/database';
+import { Check, Save, Layers, Eye, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateReport() {
@@ -55,6 +56,8 @@ export default function CreateReport() {
     test_date: new Date().toISOString().split('T')[0],
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', subtitle: '' });
   const [draftApplied, setDraftApplied] = useState(false);
@@ -226,6 +229,125 @@ export default function CreateReport() {
       }
     }
     return true;
+  };
+
+  // Build a preview report object from current form state
+  const buildPreviewReport = (): { report: Report; patient: Patient } | null => {
+    const patient = getPatientForForm();
+    if (!patient) return null;
+
+    // Determine report type and data
+    let reportType: ReportType;
+    let finalReportData: Record<string, unknown>;
+    let includedTests: string[] | null = null;
+
+    if (isCombinedMode && selectedTests.length > 0) {
+      reportType = 'combined';
+      finalReportData = combinedReportData;
+      includedTests = selectedTests;
+    } else if (selectedTemplate) {
+      const isCustomTemplate = typeof selectedTemplate === 'string' && 
+        (selectedTemplate.startsWith('custom_') || selectedTemplate.startsWith('quick_'));
+      
+      if (isCustomTemplate) {
+        reportType = 'combined';
+        finalReportData = { [selectedTemplate]: reportData };
+        includedTests = [selectedTemplate];
+      } else {
+        reportType = selectedTemplate;
+        finalReportData = reportData;
+      }
+    } else {
+      return null;
+    }
+
+    const report: Report = {
+      id: 'preview',
+      clinic_id: clinicId || '',
+      created_by: null,
+      report_number: `PREVIEW-${Date.now().toString(36).toUpperCase()}`,
+      patient_id: patient.id,
+      report_type: reportType,
+      report_data: finalReportData,
+      included_tests: includedTests,
+      referring_doctor: reportDetails.referring_doctor || null,
+      clinical_notes: reportDetails.clinical_notes || null,
+      test_date: reportDetails.test_date,
+      status: 'draft',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    return { report, patient };
+  };
+
+  const handlePreviewPDF = async () => {
+    const previewData = buildPreviewReport();
+    if (!previewData) {
+      toast.error('Please select a patient and test type first');
+      return;
+    }
+
+    setIsGeneratingPreview(true);
+    try {
+      const { report, patient } = previewData;
+      
+      // Fetch clinic branding
+      const { data: clinicData } = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('id', clinicId)
+        .single();
+
+      const pdf = await generateReportPDF({
+        report,
+        patient,
+        clinic: clinicData,
+      });
+
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+    } catch (error) {
+      console.error('Preview error:', error);
+      toast.error('Failed to generate preview');
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    const previewData = buildPreviewReport();
+    if (!previewData) {
+      toast.error('Please select a patient and test type first');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const { report, patient } = previewData;
+      
+      // Fetch clinic branding
+      const { data: clinicData } = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('id', clinicId)
+        .single();
+
+      const pdf = await generateReportPDF({
+        report,
+        patient,
+        clinic: clinicData,
+      });
+
+      downloadPDF(pdf, `${patient.full_name}_Report_${report.report_number}.pdf`);
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export PDF');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleSave = async (status: 'draft' | 'completed') => {
@@ -529,6 +651,34 @@ export default function CreateReport() {
       <footer className="app-footer">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePreviewPDF}
+              disabled={!hasPatient || !hasTest || isGeneratingPreview}
+              className="text-xs sm:text-sm"
+            >
+              {isGeneratingPreview ? (
+                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+              ) : (
+                <Eye className="h-4 w-4 sm:mr-2" />
+              )}
+              <span className="hidden sm:inline">Preview</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleExportPDF}
+              disabled={!hasPatient || !hasTest || isExporting}
+              className="text-xs sm:text-sm"
+            >
+              {isExporting ? (
+                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+              ) : (
+                <Download className="h-4 w-4 sm:mr-2" />
+              )}
+              <span className="hidden sm:inline">Export</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
