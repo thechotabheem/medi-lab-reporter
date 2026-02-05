@@ -9,7 +9,7 @@ import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { SkeletonForm } from '@/components/ui/skeleton';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2 } from 'lucide-react';
+import { Building2, Loader2, Eye } from 'lucide-react';
 import {
   BasicInfoSection,
   ReportBrandingSection,
@@ -17,6 +17,8 @@ import {
   VisualStylingSection,
   PDFOptionsSection,
 } from '@/components/clinic-settings';
+import { generateReportPDF } from '@/lib/pdf-generator';
+import type { Report, Patient } from '@/types/database';
 
 interface ClinicData {
   name: string;
@@ -74,7 +76,100 @@ export default function ClinicSettings() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [formData, setFormData] = useState<ClinicData>(defaultFormData);
+
+  const handlePreviewPDF = async () => {
+    setIsGeneratingPreview(true);
+    
+    try {
+      // Create mock patient data
+      const mockPatient: Patient = {
+        id: 'preview-patient',
+        clinic_id: clinicId,
+        full_name: 'John Sample Patient',
+        gender: 'male',
+        date_of_birth: '1985-06-15',
+        patient_id_number: 'PID-2024-001',
+        phone: '+1 555 123 4567',
+        email: 'patient@example.com',
+        address: '123 Sample Street, City',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Create mock report data with sample test results
+      const mockReport: Report = {
+        id: 'preview-report',
+        clinic_id: clinicId,
+        patient_id: mockPatient.id,
+        report_type: 'cbc',
+        report_number: 'RPT-PREVIEW-001',
+        test_date: new Date().toISOString().split('T')[0],
+        status: 'completed',
+        referring_doctor: 'Dr. Sample Physician',
+        clinical_notes: 'Sample clinical notes for preview purposes.',
+        report_data: {
+          hemoglobin: 14.5,
+          rbc: 5.2,
+          wbc: 7500,
+          platelets: 250000,
+          hematocrit: 42,
+          mcv: 88,
+          mch: 29,
+          mchc: 33,
+        },
+        included_tests: null,
+        created_by: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Build clinic branding from current form data
+      const clinicBranding = {
+        name: formData.name || 'Your Clinic Name',
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        logo_url: formData.logo_url,
+        header_text: formData.header_text,
+        footer_text: formData.footer_text,
+        watermark_text: formData.watermark_text,
+        enable_qr_code: formData.enable_qr_code,
+        accent_color: formData.accent_color,
+        tagline: formData.tagline,
+        website: formData.website,
+        font_size: formData.font_size,
+        show_logo_on_all_pages: formData.show_logo_on_all_pages,
+        signature_title_left: formData.signature_title_left,
+        signature_title_right: formData.signature_title_right,
+        page_size: formData.page_size,
+        show_abnormal_summary: formData.show_abnormal_summary,
+        show_patient_id: formData.show_patient_id,
+        border_style: formData.border_style,
+        secondary_color: formData.secondary_color,
+        contact_display_format: formData.contact_display_format,
+      };
+
+      const doc = await generateReportPDF({
+        report: mockReport,
+        patient: mockPatient,
+        clinic: clinicBranding,
+      });
+
+      // Open PDF in new tab
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+      
+      toast({ title: 'Preview Generated', description: 'Sample PDF opened in a new tab.' });
+    } catch (error: any) {
+      console.error('Preview generation error:', error);
+      toast({ title: 'Error', description: 'Failed to generate preview.', variant: 'destructive' });
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
 
   useEffect(() => {
     const fetchClinicData = async () => {
@@ -242,19 +337,35 @@ export default function ClinicSettings() {
               </FadeIn>
 
               <FadeIn delay={350}>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col gap-3">
                   <Button
                     type="button"
-                    variant="outline"
-                    className="flex-1 order-2 sm:order-1"
-                    onClick={() => navigate('/settings')}
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handlePreviewPDF}
+                    disabled={isGeneratingPreview}
                   >
-                    Cancel
+                    {isGeneratingPreview ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Eye className="h-4 w-4 mr-2" />
+                    )}
+                    Preview Sample PDF
                   </Button>
-                  <Button type="submit" className="flex-1 order-1 sm:order-2" disabled={isSaving}>
-                    {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Save Changes
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 order-2 sm:order-1"
+                      onClick={() => navigate('/settings')}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="flex-1 order-1 sm:order-2" disabled={isSaving}>
+                      {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Save Changes
+                    </Button>
+                  </div>
                 </div>
               </FadeIn>
             </form>
