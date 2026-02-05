@@ -1,262 +1,298 @@
 
-# Custom Test Types - Implementation Plan
+# Template Editor Bug Fixes and Enhancement Plan
 
-## Overview
+## Summary
 
-This plan covers two complementary features:
+After thorough investigation of the Template Editor and related components, I identified several critical bugs and areas for improvement. The main issue is that **fully custom templates** (created from scratch in the Template Editor) are not properly integrated with the existing template lookup system, causing them to fail silently or show incorrectly in various parts of the application.
 
-1. **Extend Template Editor** - Create entirely new test types from scratch in Settings
-2. **Quick Custom Test** - Add one-off tests directly during report creation
+## Issues Identified
 
-Both features will store custom templates in the existing `custom_templates` table, but with a new approach that doesn't require mapping to the hardcoded `report_type` enum.
+### Critical Bugs
 
----
+1. **Custom templates don't render in report forms**
+   - `useCustomizedTemplate` hook (line 478) uses `reportTemplates[reportType]` which returns `undefined` for custom templates
+   - `CombinedReportForm.tsx` (lines 34, 72) skips custom templates entirely
+   - `DynamicReportForm.tsx` relies on `useCustomizedTemplate` which fails for custom templates
 
-## Current Architecture Analysis
+2. **Custom templates don't appear in PDF generation**
+   - `buildCombinedTemplate()` in `report-templates.ts` (line 364) only looks up built-in templates
+   - Custom templates are skipped when generating combined report PDFs
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                  CURRENT LIMITATION                          │
-├─────────────────────────────────────────────────────────────┤
-│  report_type ENUM (hardcoded in database)                   │
-│  ├── cbc, lft, rft, lipid_profile, etc.                    │
-│  └── combined (for multi-test reports)                      │
-│                                                              │
-│  Template Editor → Can only MODIFY existing types           │
-│  Report Creation → Must select from predefined list         │
-└─────────────────────────────────────────────────────────────┘
-```
+3. **Report type name lookup fails for custom templates**
+   - `getReportTypeName()` returns the raw code instead of the template name for custom templates
 
-**Key insight**: The `custom_templates` table already stores complete template definitions in JSONB. We can leverage this to store fully custom test types without modifying the database enum.
+4. **TestSelectionSummary shows incorrect field counts**
+   - `TestSelectionSummary.tsx` (line 59) uses hardcoded `reportTemplates` lookup
 
----
+### UX Issues
+
+5. **No ability to edit existing custom templates**
+   - Users can create custom templates but cannot modify them later
+   
+6. **No confirmation when deleting custom templates**
+   - Deletion is instant without warning
+
+7. **Quick Custom Test only works in combined mode**
+   - Users cannot use Quick Custom Test for single-test reports
 
 ## Solution Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                   NEW ARCHITECTURE                           │
-├─────────────────────────────────────────────────────────────┤
-│  custom_templates table                                      │
-│  ├── base_template: "cbc" → Customization of CBC            │
-│  ├── base_template: "custom" → Fully custom test type       │
-│  │   └── customizations: {                                  │
-│  │         name: "Thyroid Panel",                           │
-│  │         categories: [...],                               │
-│  │         isFullyCustom: true                              │
-│  │       }                                                   │
-│  └── base_template: "quick_custom" → One-off test           │
-└─────────────────────────────────────────────────────────────┘
++------------------------+     +---------------------------+
+|   reportTemplates      |     |   custom_templates DB     |
+|   (built-in types)     |     |   (user-created types)    |
++------------------------+     +---------------------------+
+            |                              |
+            v                              v
++----------------------------------------------------------+
+|            getTemplateForReport(type)                     |
+|   - Checks built-in templates first                      |
+|   - Falls back to database custom templates              |
+|   - Returns complete ReportTemplate structure            |
++----------------------------------------------------------+
 ```
 
----
+## Implementation Details
 
-## Database Changes
+### Phase 1: Core Template Resolution (High Priority)
 
-### Option 1: Use Existing Schema (Recommended)
+**File: `src/hooks/useCustomTemplates.ts`**
 
-No database migration needed. We'll use the existing `custom_templates` table with a special `base_template` value:
-
-- `base_template = 'custom_<unique_id>'` for fully custom templates
-- Store complete template definition in `customizations` JSONB
-
-### Option 2: Add New Table (Alternative)
-
-If cleaner separation is preferred, add a dedicated table:
-
-```sql
-CREATE TABLE clinic_custom_tests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clinic_id UUID REFERENCES clinics(id),
-  test_name TEXT NOT NULL,
-  test_code TEXT NOT NULL UNIQUE,
-  categories JSONB NOT NULL DEFAULT '[]',
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-```
-
-**Recommendation**: Option 1 (use existing schema) to minimize database changes.
-
----
-
-## Feature 1: Extend Template Editor
-
-### UI Changes
-
-Add a "Create New Template" section to the Template Editor page:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  Template Editor                                             │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │ [+] Create New Template                                 ││
-│  │     "Design a completely custom test type"              ││
-│  └─────────────────────────────────────────────────────────┘│
-│                                                              │
-│  Select Existing Template:                                   │
-│  [CBC] [LFT] [RFT] [Lipid] [Custom: Thyroid Panel] ...      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### New Component: CreateCustomTemplateDialog
-
-A multi-step wizard:
-
-1. **Step 1: Basic Info**
-   - Template Name (e.g., "Thyroid Panel")
-   - Template Code (auto-generated, e.g., "thyroid_panel")
-   - Description (optional)
-
-2. **Step 2: Add Categories**
-   - Category name input
-   - Add multiple categories
-
-3. **Step 3: Add Fields to Categories**
-   - Uses existing `AddFieldDialog` component
-   - Assign fields to categories
-   - Configure field types, units, normal ranges
-
-4. **Step 4: Preview & Save**
-   - Show preview of the template
-   - Save to `custom_templates` table
-
-### Data Structure for Fully Custom Template
+Add a new hook and helper functions:
 
 ```typescript
-interface FullyCustomTemplate {
-  name: string;           // "Thyroid Panel"
-  code: string;           // "custom_thyroid_panel"
-  description?: string;
-  categories: TestCategory[];
-  isFullyCustom: true;    // Flag to identify custom templates
-  createdAt: string;
-}
+// New: Fetch a fully custom template by its code
+export const useFullyCustomTemplateByCode = (code: string | null) => {
+  const { clinicId } = useClinic();
+  
+  return useQuery({
+    queryKey: ['fully-custom-template', clinicId, code],
+    queryFn: async () => {
+      if (!code || !isFullyCustomTemplate(code)) return null;
+      
+      const { data, error } = await supabase
+        .from('custom_templates')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .eq('base_template', code)
+        .maybeSingle();
+        
+      if (error || !data) return null;
+      
+      const parsed = parseFullyCustomTemplate(data.customizations);
+      return parsed ? fullyCustomToReportTemplate(parsed) : null;
+    },
+    enabled: !!code && isFullyCustomTemplate(code),
+  });
+};
 ```
 
-### Files to Create/Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/template-editor/CreateCustomTemplateDialog.tsx` | Create | Multi-step wizard for new templates |
-| `src/hooks/useCustomTemplates.ts` | Modify | Add hooks for CRUD on fully custom templates |
-| `src/pages/TemplateEditor.tsx` | Modify | Add "Create New" button and show custom templates |
-| `src/components/reports/TemplateSelector.tsx` | Modify | Include custom templates in selection list |
-| `src/lib/report-templates.ts` | Modify | Add helper to merge custom templates into available list |
-
----
-
-## Feature 2: Quick Custom Test During Report Creation
-
-### UI Changes
-
-Add a "Quick Custom Test" option to the template selector:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  Select Test(s)                               [Combined: ON] │
-├─────────────────────────────────────────────────────────────┤
-│  [+] Quick Custom Test                                       │
-│      "Add a one-off test with custom fields"                │
-│                                                              │
-│  Popular Tests:                                              │
-│  [CBC] [LFT] [RFT] [Lipid Profile] ...                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### New Component: QuickCustomTestDialog
-
-A lightweight dialog for quick test creation:
-
-1. **Test Name** (required)
-2. **Add Fields** (inline field editor)
-   - Field name, type, unit, normal range
-   - Add multiple fields
-3. **Save option**: "Save as reusable template" checkbox
-
-### Integration with Combined Reports
-
-Quick custom tests can be added to combined reports:
-- Stored in `report_data` under a custom namespace
-- Uses existing `CombinedReportForm` accordion structure
-
-### Files to Create/Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/reports/QuickCustomTestDialog.tsx` | Create | Inline test builder dialog |
-| `src/components/reports/TemplateSelector.tsx` | Modify | Add Quick Custom Test button |
-| `src/pages/CreateReport.tsx` | Modify | Handle custom test in form state |
-| `src/hooks/useCustomTemplates.ts` | Modify | Add hook to optionally save quick tests |
-
----
-
-## Implementation Phases
-
-### Phase 1: Database & Type Updates (30 min)
-- Update TypeScript types to support custom templates
-- Add helper functions in `useCustomTemplates.ts`
-
-### Phase 2: Create Custom Template Wizard (2-3 hours)
-- Build `CreateCustomTemplateDialog.tsx` with multi-step form
-- Add category and field management UI
-- Integrate with Template Editor page
-
-### Phase 3: Quick Custom Test (1-2 hours)
-- Build `QuickCustomTestDialog.tsx`
-- Integrate with Template Selector
-- Handle in report creation flow
-
-### Phase 4: Template Selector Integration (1 hour)
-- Show custom templates alongside built-in ones
-- Support selecting custom templates in combined reports
-
-### Phase 5: Testing & Polish (1 hour)
-- End-to-end testing
-- PDF generation for custom tests
-- Edge cases (empty templates, duplicate names)
-
----
-
-## Technical Considerations
-
-### Unique Identifiers
-Custom templates will use the format: `custom_<slug>_<timestamp>`
-
-Example: `custom_thyroid_panel_1707052800000`
-
-### Template Selector Logic
+Update `useCustomizedTemplate` to handle both built-in and custom templates:
 
 ```typescript
-// Merge built-in and custom templates
-const allTemplates = [
-  ...activeReportTypes.map(type => ({ type, ...reportTemplates[type] })),
-  ...customTemplates.filter(t => t.customizations?.isFullyCustom),
-];
-```
-
-### Report Data Storage
-For reports using custom templates:
-```json
-{
-  "report_type": "combined",
-  "included_tests": ["cbc", "custom_thyroid_panel_123"],
-  "report_data": {
-    "cbc": { "hemoglobin": 14 },
-    "custom_thyroid_panel_123": { "tsh": 2.5, "t3": 120 }
+export const useCustomizedTemplate = (reportType: ReportType | null) => {
+  const { data: customTemplate, isLoading: loadingCustom } = useCustomTemplate(reportType);
+  const { data: fullyCustom, isLoading: loadingFully } = useFullyCustomTemplateByCode(
+    reportType && isFullyCustomTemplate(reportType) ? reportType : null
+  );
+  
+  const isLoading = loadingCustom || loadingFully;
+  
+  if (!reportType || isLoading) {
+    return { template: null, isLoading };
   }
-}
+  
+  // Check if it's a fully custom template first
+  if (isFullyCustomTemplate(reportType) && fullyCustom) {
+    return { template: fullyCustom, isLoading: false };
+  }
+  
+  // Fall back to built-in template with customizations
+  const baseTemplate = reportTemplates[reportType];
+  if (!baseTemplate) {
+    return { template: null, isLoading: false };
+  }
+  
+  const customizations = parseCustomizations(customTemplate?.customizations);
+  const template = applyCustomizations(baseTemplate, customizations);
+  
+  return { template, isLoading, customizations };
+};
 ```
 
----
+### Phase 2: Fix Report Type Name Resolution
 
-## Summary
+**File: `src/lib/report-templates.ts`**
 
-| Feature | Complexity | User Benefit |
-|---------|------------|--------------|
-| Create Custom Template (Template Editor) | Medium | Reusable custom test types |
-| Quick Custom Test (Report Creation) | Low | One-off tests without leaving workflow |
+Create a new async-aware name resolver that the sync version falls back to:
 
-Both features leverage the existing `custom_templates` table and JSONB storage, minimizing database changes while maximizing flexibility.
+```typescript
+export const getReportTypeName = (type: ReportType | string): string => {
+  // Check built-in templates first
+  const builtIn = reportTemplates[type as ReportType];
+  if (builtIn) return builtIn.name;
+  
+  // For custom templates, return a formatted version of the code
+  if (type.startsWith('custom_') || type.startsWith('quick_')) {
+    // Extract name from code: "custom_thyroid_panel_123" -> "Thyroid Panel"
+    const parts = type.replace(/^(custom_|quick_)/, '').replace(/_\d+$/, '');
+    return parts.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+  
+  return type;
+};
+```
+
+### Phase 3: Fix Combined Report Form
+
+**File: `src/components/reports/CombinedReportForm.tsx`**
+
+The component needs to handle custom templates. Since we need async data, we'll create a wrapper component:
+
+```typescript
+// Create a sub-component for each test section that handles its own template loading
+const TestSection = ({ testType, patient, onChange, initialData }) => {
+  const { template, isLoading } = useCustomizedTemplate(testType);
+  
+  if (isLoading) return <Skeleton />;
+  if (!template) return null;
+  
+  return (
+    <AccordionItem value={testType}>
+      <AccordionTrigger>
+        {template.name}
+        <Badge>{template.categories.reduce((t, c) => t + c.fields.length, 0)} fields</Badge>
+      </AccordionTrigger>
+      <AccordionContent>
+        <DynamicReportForm
+          reportType={testType}
+          patient={patient}
+          onChange={onChange}
+          initialData={initialData}
+        />
+      </AccordionContent>
+    </AccordionItem>
+  );
+};
+```
+
+### Phase 4: Fix PDF Generation
+
+**File: `src/lib/pdf-generator.ts`**
+
+Add a function to resolve templates including custom ones. Since PDF generation happens in a synchronous context, we need to pass the resolved template data:
+
+```typescript
+// Modify generateReportPDF to accept an optional pre-resolved template
+export const generateReportPDF = async (
+  report: Report,
+  patient: Patient,
+  clinic: ClinicSettings,
+  options?: { customTemplates?: Map<string, ReportTemplate> }
+) => {
+  // ... existing code ...
+  
+  // For included_tests, resolve each template
+  if (report.included_tests) {
+    for (const testType of report.included_tests) {
+      const template = reportTemplates[testType] 
+        || options?.customTemplates?.get(testType);
+      // Use resolved template
+    }
+  }
+};
+```
+
+### Phase 5: Add Edit Custom Template Feature
+
+**File: `src/components/template-editor/EditCustomTemplateDialog.tsx`** (new file)
+
+Create a dialog similar to `CreateCustomTemplateDialog` but pre-populated with existing template data and an update mutation.
+
+**File: `src/pages/TemplateEditor.tsx`**
+
+Add an "Edit" button next to each custom template in the list.
+
+### Phase 6: Add Delete Confirmation
+
+**File: `src/pages/TemplateEditor.tsx`**
+
+Replace the direct delete with an AlertDialog confirmation:
+
+```typescript
+<AlertDialog>
+  <AlertDialogTrigger asChild>
+    <Button variant="ghost" size="icon" className="text-destructive">
+      <Trash2 className="h-4 w-4" />
+    </Button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Delete Custom Template?</AlertDialogTitle>
+      <AlertDialogDescription>
+        This will permanently delete "{templateName}". 
+        Existing reports using this template will not be affected.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction onClick={() => deleteFullyCustomTemplate(code)}>
+        Delete
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### Phase 7: Enable Quick Custom Test for Single-Test Mode
+
+**File: `src/components/reports/TemplateSelector.tsx`**
+
+Remove the `multiSelect` condition from the QuickCustomTestDialog rendering:
+
+```typescript
+// Before: {multiSelect && onAddCustomTest && (
+// After:  {onAddCustomTest && (
+```
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/hooks/useCustomTemplates.ts` | Add `useFullyCustomTemplateByCode` hook, update `useCustomizedTemplate` |
+| `src/lib/report-templates.ts` | Update `getReportTypeName` and `buildCombinedTemplate` to handle custom templates |
+| `src/components/reports/CombinedReportForm.tsx` | Create `TestSection` component that uses hooks for template resolution |
+| `src/components/reports/TestSelectionSummary.tsx` | Use hook-based template resolution |
+| `src/lib/pdf-generator.ts` | Accept custom template map for combined reports |
+| `src/pages/ReportView.tsx` | Pass resolved custom templates to PDF generator |
+| `src/pages/TemplateEditor.tsx` | Add edit button, delete confirmation dialog |
+| `src/components/template-editor/EditCustomTemplateDialog.tsx` | New file - edit dialog |
+| `src/components/reports/TemplateSelector.tsx` | Enable Quick Custom Test for single mode |
+
+## Testing Checklist
+
+After implementation, verify:
+
+1. Create a new custom template from Template Editor wizard
+2. Select the custom template in single-test mode and verify form renders
+3. Select the custom template in combined mode with other tests
+4. Save a report using the custom template
+5. View the saved report and verify data displays correctly
+6. Generate PDF for a report with custom template
+7. Edit an existing custom template
+8. Delete a custom template (confirm dialog appears)
+9. Verify existing reports still work after template deletion
+10. Test Quick Custom Test in single-test mode
+
+## Implementation Order
+
+1. Fix `useCustomizedTemplate` hook (critical - enables all other fixes)
+2. Fix `getReportTypeName` function
+3. Fix `CombinedReportForm` component
+4. Fix `TestSelectionSummary` component
+5. Fix PDF generation
+6. Add edit functionality
+7. Add delete confirmation
+8. Enable Quick Custom Test for single mode
+
+Total estimated time: 2-3 hours
