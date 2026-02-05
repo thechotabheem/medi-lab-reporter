@@ -1,167 +1,97 @@
 
-# Edit Custom Templates & Report Validation Plan
+# Professional Logo Design for Zia Clinic & Maternity Home
 
-## Summary
+## Overview
 
-This plan adds two important features:
-1. **Edit Existing Custom Templates** - Allow users to modify custom templates after creation
-2. **Report Validation** - Prevent saving reports with completely empty test results
+I'll use the AI image generation capabilities (Lovable AI) to create a professional, eye-catching logo for Zia Clinic & Maternity Home that aligns with the existing design system and medical aesthetic.
 
 ---
 
-## Feature 1: Edit Custom Templates
+## Design Direction
 
-### New File: `EditCustomTemplateDialog.tsx`
+### Brand Identity Elements
+- **Name**: Zia Clinic & Maternity Home
+- **Industry**: Medical/Healthcare (Clinic + Maternity Services)
+- **Current Color Palette**: 
+  - Primary Teal: `#14b8a6` / `hsl(162, 84%, 42%)`
+  - Background: `#090a0d` (dark)
+  - Text: `#f8fafc` (light)
 
-Create a new dialog component that mirrors the structure of `CreateCustomTemplateDialog.tsx` but:
-- Pre-populates with existing template data
-- Uses an update mutation instead of insert
-- Preserves the original template code
-
-### Changes to `useCustomTemplates.ts`
-
-Add a new mutation hook for updating fully custom templates:
-
-```typescript
-export const useUpdateFullyCustomTemplate = () => {
-  const queryClient = useQueryClient();
-  const { clinicId } = useClinic();
-
-  return useMutation({
-    mutationFn: async ({ 
-      code, 
-      templateData 
-    }: { 
-      code: string; 
-      templateData: Omit<FullyCustomTemplateData, 'isFullyCustom' | 'createdAt'> 
-    }) => {
-      const customizations: FullyCustomTemplateData = {
-        ...templateData,
-        isFullyCustom: true,
-        createdAt: new Date().toISOString(), // Keep updated time
-      };
-
-      const { data, error } = await supabase
-        .from('custom_templates')
-        .update({ 
-          customizations: customizations as unknown as Json,
-          updated_at: new Date().toISOString() 
-        })
-        .eq('clinic_id', clinicId)
-        .eq('base_template', code)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fully-custom-templates'] });
-      queryClient.invalidateQueries({ queryKey: ['custom-templates'] });
-      toast.success('Custom template updated successfully');
-    },
-  });
-};
-```
-
-### Changes to `TemplateEditor.tsx`
-
-Add an Edit button next to each custom template in the "Your Custom Templates" section:
-
-```typescript
-<div className="flex gap-1">
-  <EditCustomTemplateDialog 
-    template={t}
-    onSave={updateFullyCustomTemplate}
-    isSaving={isUpdating}
-  />
-  <AlertDialog>
-    {/* existing delete button */}
-  </AlertDialog>
-</div>
-```
+### Logo Concept Ideas
+1. **Medical + Maternity Fusion**: Combine medical elements (cross, heartbeat) with maternal symbols (mother & child silhouette, heart)
+2. **Monogram Style**: Stylized "Z" or "ZC" with medical/maternity accents
+3. **Abstract Symbol**: Modern geometric shape representing care, protection, and health
+4. **Icon + Wordmark**: Clean symbol that works standalone and with text
 
 ---
 
-## Feature 2: Report Validation
+## Implementation Plan
 
-### Changes to `CreateReport.tsx`
+### Step 1: Generate Logo Options
+Create an edge function or use client-side AI to generate multiple logo concepts:
+- Use `google/gemini-2.5-flash-image` or `google/gemini-3-pro-image-preview` for image generation
+- Generate 2-3 variations with different styles
 
-Add validation before saving to ensure at least one field has data:
+### Step 2: Create Logo Generation Page
+Add a temporary page or dialog for logo generation:
+- Allow regeneration with different prompts
+- Preview logos on both light and dark backgrounds
+- Download selected logo
 
-```typescript
-const validateReportData = (): boolean => {
-  if (isCombinedMode) {
-    // Check if any test has at least one non-empty value
-    const hasData = Object.values(combinedReportData).some(testData => 
-      Object.values(testData).some(value => 
-        value !== null && value !== '' && value !== undefined
-      )
-    );
-    if (!hasData) {
-      toast.error('Please fill in at least one test value before saving');
-      return false;
-    }
-  } else {
-    // Single test mode
-    const hasData = Object.values(reportData).some(value => 
-      value !== null && value !== '' && value !== undefined
-    );
-    if (!hasData) {
-      toast.error('Please fill in at least one test value before saving');
-      return false;
-    }
-  }
-  return true;
-};
+### Step 3: Integrate Selected Logo
+- Save the final logo to Supabase storage (or as SVG)
+- Update `public/icon.svg` with the new logo
+- Ensure PWA icons are updated
 
-// In handleSave function:
-const handleSave = async (status: 'draft' | 'completed') => {
-  // Skip validation for drafts
-  if (status === 'completed' && !validateReportData()) {
-    return;
-  }
-  // ... rest of save logic
-};
-```
+---
+
+## Technical Approach
+
+### Option A: Edge Function (Recommended)
+Create `supabase/functions/generate-logo/index.ts`:
+- Accepts logo description/style parameters
+- Uses Lovable AI gateway for image generation
+- Returns base64 image for preview
+- Uploads final selection to storage
+
+### Option B: Client-Side Component
+Create a logo generator component:
+- Uses fetch to Lovable AI gateway directly
+- Displays generated options in a gallery
+- Allows selection and upload to storage
 
 ---
 
 ## Files to Create/Modify
 
-| File | Action | Changes |
+| File | Action | Purpose |
 |------|--------|---------|
-| `src/components/template-editor/EditCustomTemplateDialog.tsx` | Create | New dialog for editing existing custom templates |
-| `src/hooks/useCustomTemplates.ts` | Modify | Add `useUpdateFullyCustomTemplate` mutation hook |
-| `src/pages/TemplateEditor.tsx` | Modify | Add Edit button, import and use the new dialog |
-| `src/pages/CreateReport.tsx` | Modify | Add validation function, call before save |
+| `supabase/functions/generate-logo/index.ts` | Create | Edge function for AI logo generation |
+| `src/pages/LogoGenerator.tsx` | Create | UI for generating and selecting logos |
+| `src/App.tsx` | Modify | Add route for logo generator |
+| `public/icon.svg` | Replace | Update with selected final logo |
 
 ---
 
-## Implementation Details
+## Suggested Logo Prompt
 
-### EditCustomTemplateDialog Component
-
-The dialog will:
-- Accept an existing template object as a prop
-- Use the same 4-step wizard UI as the create dialog
-- Pre-populate all fields (name, categories, fields)
-- Keep the original template code unchanged
-- Show "Update Template" instead of "Create Template" in the button
-
-### Validation Rules
-
-For completed reports:
-- At least one field must have a non-empty value
-- Empty strings, null, and undefined are considered empty
-- Numbers (including 0) are considered valid values
-- Drafts can be saved without validation
+```text
+Create a professional, modern logo for "Zia Clinic & Maternity Home". 
+Style: Clean, minimalist medical/healthcare design.
+Colors: Teal (#14b8a6) on transparent or dark background.
+Elements: Subtly combine medical symbolism (health, care) with maternity theme (motherhood, nurturing).
+Format: Simple icon that works at small sizes, suitable for app icon and favicon.
+No text in the logo - symbol only.
+```
 
 ---
 
-## Technical Notes
+## Alternative: Manual Design
 
-- The edit dialog reuses most of the UI from `CreateCustomTemplateDialog`
-- Template code is preserved during edits to maintain report associations
-- Validation runs client-side for immediate feedback
-- Drafts bypass validation to allow partial saves
+If you prefer, I can create a hand-crafted SVG logo using:
+- Clean geometric shapes
+- The teal brand color
+- Medical/maternity symbolism
+- Optimized for all sizes (favicon to splash screen)
+
+This would be a code-based SVG without AI generation.
