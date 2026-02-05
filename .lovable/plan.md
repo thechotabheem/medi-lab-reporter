@@ -1,56 +1,167 @@
-# Template Editor Bug Fixes - COMPLETED ✅
+
+# Edit Custom Templates & Report Validation Plan
 
 ## Summary
 
-Fixed critical bugs in the Template Editor where fully custom templates (created from scratch) were not properly integrated with the template lookup system.
+This plan adds two important features:
+1. **Edit Existing Custom Templates** - Allow users to modify custom templates after creation
+2. **Report Validation** - Prevent saving reports with completely empty test results
 
-## Issues Fixed
+---
 
-### ✅ Critical Bugs Fixed
+## Feature 1: Edit Custom Templates
 
-1. **Custom templates now render in report forms**
-   - Updated `useCustomizedTemplate` hook to fetch fully custom templates from the database
-   - Added `useFullyCustomTemplateByCode` hook for async template resolution
-   - Fixed `CombinedReportForm.tsx` with `TestSection` component that handles async loading
+### New File: `EditCustomTemplateDialog.tsx`
 
-2. **Custom templates now appear in PDF generation**
-   - PDF generator already accepts `customTemplate` parameter which now works correctly
+Create a new dialog component that mirrors the structure of `CreateCustomTemplateDialog.tsx` but:
+- Pre-populates with existing template data
+- Uses an update mutation instead of insert
+- Preserves the original template code
 
-3. **Report type name lookup works for custom templates**
-   - Updated `getReportTypeName()` to parse names from custom slugs (e.g., `custom_thyroid_panel_123` → "Thyroid Panel")
+### Changes to `useCustomTemplates.ts`
 
-4. **TestSelectionSummary shows correct field counts**
-   - Already uses `useFullyCustomTemplates` hook, now works with the fixed template resolution
+Add a new mutation hook for updating fully custom templates:
 
-### ✅ UX Issues Fixed
+```typescript
+export const useUpdateFullyCustomTemplate = () => {
+  const queryClient = useQueryClient();
+  const { clinicId } = useClinic();
 
-5. **Delete confirmation for custom templates**
-   - Added `AlertDialog` confirmation before deleting custom templates in Template Editor
+  return useMutation({
+    mutationFn: async ({ 
+      code, 
+      templateData 
+    }: { 
+      code: string; 
+      templateData: Omit<FullyCustomTemplateData, 'isFullyCustom' | 'createdAt'> 
+    }) => {
+      const customizations: FullyCustomTemplateData = {
+        ...templateData,
+        isFullyCustom: true,
+        createdAt: new Date().toISOString(), // Keep updated time
+      };
 
-6. **Quick Custom Test works in single-test mode**
-   - Removed the `multiSelect` condition from QuickCustomTestDialog rendering
+      const { data, error } = await supabase
+        .from('custom_templates')
+        .update({ 
+          customizations: customizations as unknown as Json,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('clinic_id', clinicId)
+        .eq('base_template', code)
+        .select()
+        .single();
 
-## Files Modified
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fully-custom-templates'] });
+      queryClient.invalidateQueries({ queryKey: ['custom-templates'] });
+      toast.success('Custom template updated successfully');
+    },
+  });
+};
+```
 
-| File | Changes |
-|------|---------|
-| `src/hooks/useCustomTemplates.ts` | Added `useFullyCustomTemplateByCode` hook, updated `useCustomizedTemplate` to handle both built-in and custom templates |
-| `src/lib/report-templates.ts` | Updated `getReportTypeName` to parse custom template names from slugs |
-| `src/components/reports/CombinedReportForm.tsx` | Complete rewrite with `TestSection` component that handles async template loading |
-| `src/pages/TemplateEditor.tsx` | Added AlertDialog import and delete confirmation dialog |
-| `src/components/reports/TemplateSelector.tsx` | Enabled Quick Custom Test for single mode |
+### Changes to `TemplateEditor.tsx`
 
-## Testing Recommendations
+Add an Edit button next to each custom template in the "Your Custom Templates" section:
 
-1. ✅ Create a new custom template from Template Editor wizard
-2. ✅ Select the custom template in single-test mode and verify form renders
-3. ✅ Select the custom template in combined mode with other tests
-4. ✅ Save a report using the custom template
-5. ✅ View the saved report and verify data displays correctly
-6. ✅ Generate PDF for a report with custom template
-7. ✅ Delete a custom template (confirm dialog appears)
-8. ✅ Test Quick Custom Test in single-test mode
+```typescript
+<div className="flex gap-1">
+  <EditCustomTemplateDialog 
+    template={t}
+    onSave={updateFullyCustomTemplate}
+    isSaving={isUpdating}
+  />
+  <AlertDialog>
+    {/* existing delete button */}
+  </AlertDialog>
+</div>
+```
 
-## Remaining Enhancement (Optional)
+---
 
-- **Edit existing custom templates** - Would require a new `EditCustomTemplateDialog` component (not critical for core functionality)
+## Feature 2: Report Validation
+
+### Changes to `CreateReport.tsx`
+
+Add validation before saving to ensure at least one field has data:
+
+```typescript
+const validateReportData = (): boolean => {
+  if (isCombinedMode) {
+    // Check if any test has at least one non-empty value
+    const hasData = Object.values(combinedReportData).some(testData => 
+      Object.values(testData).some(value => 
+        value !== null && value !== '' && value !== undefined
+      )
+    );
+    if (!hasData) {
+      toast.error('Please fill in at least one test value before saving');
+      return false;
+    }
+  } else {
+    // Single test mode
+    const hasData = Object.values(reportData).some(value => 
+      value !== null && value !== '' && value !== undefined
+    );
+    if (!hasData) {
+      toast.error('Please fill in at least one test value before saving');
+      return false;
+    }
+  }
+  return true;
+};
+
+// In handleSave function:
+const handleSave = async (status: 'draft' | 'completed') => {
+  // Skip validation for drafts
+  if (status === 'completed' && !validateReportData()) {
+    return;
+  }
+  // ... rest of save logic
+};
+```
+
+---
+
+## Files to Create/Modify
+
+| File | Action | Changes |
+|------|--------|---------|
+| `src/components/template-editor/EditCustomTemplateDialog.tsx` | Create | New dialog for editing existing custom templates |
+| `src/hooks/useCustomTemplates.ts` | Modify | Add `useUpdateFullyCustomTemplate` mutation hook |
+| `src/pages/TemplateEditor.tsx` | Modify | Add Edit button, import and use the new dialog |
+| `src/pages/CreateReport.tsx` | Modify | Add validation function, call before save |
+
+---
+
+## Implementation Details
+
+### EditCustomTemplateDialog Component
+
+The dialog will:
+- Accept an existing template object as a prop
+- Use the same 4-step wizard UI as the create dialog
+- Pre-populate all fields (name, categories, fields)
+- Keep the original template code unchanged
+- Show "Update Template" instead of "Create Template" in the button
+
+### Validation Rules
+
+For completed reports:
+- At least one field must have a non-empty value
+- Empty strings, null, and undefined are considered empty
+- Numbers (including 0) are considered valid values
+- Drafts can be saved without validation
+
+---
+
+## Technical Notes
+
+- The edit dialog reuses most of the UI from `CreateCustomTemplateDialog`
+- Template code is preserved during edits to maintain report associations
+- Validation runs client-side for immediate feedback
+- Drafts bypass validation to allow partial saves
