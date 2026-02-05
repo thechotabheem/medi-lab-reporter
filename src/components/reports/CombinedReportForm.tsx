@@ -1,11 +1,90 @@
 import { useCallback, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DynamicReportForm } from './DynamicReportForm';
 import { reportTemplates, getReportTypeName } from '@/lib/report-templates';
-import type { ReportType, Patient } from '@/types/database';
-import { Layers } from 'lucide-react';
+import { useCustomizedTemplate, isFullyCustomTemplate } from '@/hooks/useCustomTemplates';
+import type { ReportType, Patient, ReportTemplate } from '@/types/database';
+import { Layers, AlertCircle } from 'lucide-react';
+
+interface TestSectionProps {
+  testType: ReportType;
+  patient: Patient;
+  onChange: (data: Record<string, string | number | boolean | null>) => void;
+  initialData: Record<string, string | number | boolean | null>;
+}
+
+// Individual test section that handles its own template loading
+const TestSection = ({ testType, patient, onChange, initialData }: TestSectionProps) => {
+  const { template, isLoading } = useCustomizedTemplate(testType);
+
+  if (isLoading) {
+    return (
+      <AccordionItem value={testType} className="border rounded-lg overflow-hidden">
+        <AccordionTrigger className="px-4 hover:no-underline hover:bg-muted/50">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="px-4 pb-4">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    );
+  }
+
+  if (!template) {
+    return (
+      <AccordionItem value={testType} className="border rounded-lg overflow-hidden border-destructive/50">
+        <AccordionTrigger className="px-4 hover:no-underline hover:bg-destructive/5">
+          <div className="flex items-center gap-3 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <span>{getReportTypeName(testType)}</span>
+            <Badge variant="destructive" className="text-xs">Template not found</Badge>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="px-4 pb-4">
+          <p className="text-sm text-muted-foreground">
+            This template could not be loaded. It may have been deleted or is unavailable.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+    );
+  }
+
+  const testFieldCount = template.categories.reduce((total, cat) => total + cat.fields.length, 0);
+
+  return (
+    <AccordionItem value={testType} className="border rounded-lg overflow-hidden">
+      <AccordionTrigger className="px-4 hover:no-underline hover:bg-muted/50">
+        <div className="flex items-center gap-3">
+          <CardTitle className="text-base">{template.name}</CardTitle>
+          <Badge variant="outline" className="text-xs">
+            {testFieldCount} fields
+          </Badge>
+          {isFullyCustomTemplate(testType as string) && (
+            <Badge variant="secondary" className="text-xs">Custom</Badge>
+          )}
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        <DynamicReportForm
+          reportType={testType}
+          patient={patient}
+          onChange={onChange}
+          initialData={initialData}
+        />
+      </AccordionContent>
+    </AccordionItem>
+  );
+};
 
 interface CombinedReportFormProps {
   selectedTests: ReportType[];
@@ -28,13 +107,18 @@ export const CombinedReportForm = ({
     });
   }, [onChange, initialData]);
 
-  // Count total fields across all selected tests
-  const totalFields = useMemo(() => {
-    return selectedTests.reduce((total, type) => {
+  // Count total fields across all selected tests (for built-in templates only, custom ones load async)
+  const { totalFields, builtInCount } = useMemo(() => {
+    let total = 0;
+    let builtIn = 0;
+    selectedTests.forEach(type => {
       const template = reportTemplates[type];
-      if (!template) return total;
-      return total + template.categories.reduce((catTotal, cat) => catTotal + cat.fields.length, 0);
-    }, 0);
+      if (template) {
+        builtIn++;
+        total += template.categories.reduce((catTotal, cat) => catTotal + cat.fields.length, 0);
+      }
+    });
+    return { totalFields: total, builtInCount: builtIn };
   }, [selectedTests]);
 
   if (selectedTests.length === 0) {
@@ -60,7 +144,9 @@ export const CombinedReportForm = ({
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{selectedTests.length} tests</Badge>
-              <Badge variant="outline">{totalFields} total fields</Badge>
+              {builtInCount > 0 && (
+                <Badge variant="outline">{totalFields}+ fields</Badge>
+              )}
             </div>
           </div>
         </CardContent>
@@ -68,37 +154,15 @@ export const CombinedReportForm = ({
 
       {/* Individual Test Forms */}
       <Accordion type="multiple" defaultValue={selectedTests} className="space-y-4">
-        {selectedTests.map((testType) => {
-          const template = reportTemplates[testType];
-          if (!template) return null;
-
-          const testFieldCount = template.categories.reduce((total, cat) => total + cat.fields.length, 0);
-
-          return (
-            <AccordionItem 
-              key={testType} 
-              value={testType} 
-              className="border rounded-lg overflow-hidden"
-            >
-              <AccordionTrigger className="px-4 hover:no-underline hover:bg-muted/50">
-                <div className="flex items-center gap-3">
-                  <CardTitle className="text-base">{getReportTypeName(testType)}</CardTitle>
-                  <Badge variant="outline" className="text-xs">
-                    {testFieldCount} fields
-                  </Badge>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <DynamicReportForm
-                  reportType={testType}
-                  patient={patient}
-                  onChange={(data) => handleTestDataChange(testType, data)}
-                  initialData={initialData[testType] || {}}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
+        {selectedTests.map((testType) => (
+          <TestSection
+            key={testType}
+            testType={testType}
+            patient={patient}
+            onChange={(data) => handleTestDataChange(testType, data)}
+            initialData={initialData[testType] || {}}
+          />
+        ))}
       </Accordion>
     </div>
   );

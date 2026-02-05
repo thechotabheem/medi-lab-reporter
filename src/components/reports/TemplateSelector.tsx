@@ -206,8 +206,8 @@ export const TemplateSelector = ({
       </div>
       
       <div className="space-y-2">
-        {/* Quick Custom Test Option (only in multiSelect / combined mode) */}
-        {multiSelect && onAddCustomTest && (
+        {/* Quick Custom Test Option (available in both single and combined modes) */}
+        {onAddCustomTest && (
           <QuickCustomTestDialog 
             onAdd={handleAddQuickTest}
             onSaveAsTemplate={handleSaveAsTemplate}
