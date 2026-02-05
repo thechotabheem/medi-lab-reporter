@@ -319,6 +319,31 @@ export const fullyCustomToReportTemplate = (custom: FullyCustomTemplateData): Re
   };
 };
 
+// New: Fetch a fully custom template by its code
+export const useFullyCustomTemplateByCode = (code: string | null) => {
+  const { clinicId } = useClinic();
+
+  return useQuery({
+    queryKey: ['fully-custom-template', clinicId, code],
+    queryFn: async () => {
+      if (!code || !isFullyCustomTemplate(code)) return null;
+
+      const { data, error } = await supabase
+        .from('custom_templates')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .eq('base_template', code)
+        .maybeSingle();
+
+      if (error || !data) return null;
+
+      const parsed = parseFullyCustomTemplate(data.customizations);
+      return parsed ? fullyCustomToReportTemplate(parsed) : null;
+    },
+    enabled: !!code && isFullyCustomTemplate(code),
+  });
+};
+
 // Helper function to apply customizations to a template
 export const applyCustomizations = (
   baseTemplate: ReportTemplate,
@@ -467,15 +492,30 @@ const parseCustomizations = (json: Json | null | undefined): TemplateCustomizati
   return obj as unknown as TemplateCustomization;
 };
 
-// Hook to get a customized template
+// Hook to get a customized template (handles both built-in and fully custom templates)
 export const useCustomizedTemplate = (reportType: ReportType | null) => {
-  const { data: customTemplate, isLoading } = useCustomTemplate(reportType);
+  const { data: customTemplate, isLoading: loadingCustom } = useCustomTemplate(reportType);
+  const { data: fullyCustom, isLoading: loadingFully } = useFullyCustomTemplateByCode(
+    reportType && isFullyCustomTemplate(reportType as string) ? (reportType as string) : null
+  );
+
+  const isLoading = loadingCustom || loadingFully;
 
   if (!reportType || isLoading) {
     return { template: null, isLoading };
   }
 
+  // Check if it's a fully custom template first
+  if (isFullyCustomTemplate(reportType as string) && fullyCustom) {
+    return { template: fullyCustom, isLoading: false };
+  }
+
+  // Fall back to built-in template with customizations
   const baseTemplate = reportTemplates[reportType];
+  if (!baseTemplate) {
+    return { template: null, isLoading: false };
+  }
+
   const customizations = parseCustomizations(customTemplate?.customizations);
   const template = applyCustomizations(baseTemplate, customizations);
 

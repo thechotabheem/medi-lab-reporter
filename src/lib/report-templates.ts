@@ -354,8 +354,19 @@ export const getReportTemplate = (type: ReportType): ReportTemplate => {
   return reportTemplates[type];
 };
 
-export const getReportTypeName = (type: ReportType): string => {
-  return reportTemplates[type]?.name || type;
+export const getReportTypeName = (type: ReportType | string): string => {
+  // Check built-in templates first
+  const builtIn = reportTemplates[type as ReportType];
+  if (builtIn) return builtIn.name;
+
+  // For custom templates, extract a readable name from the code
+  if (typeof type === 'string' && (type.startsWith('custom_') || type.startsWith('quick_'))) {
+    // Extract name from code: "custom_thyroid_panel_1234567890" -> "Thyroid Panel"
+    const parts = type.replace(/^(custom_|quick_)/, '').replace(/_\d+$/, '');
+    return parts.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  return type;
 };
 
 // Build a combined template from multiple test types
