@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { TemplateSelector } from '@/components/reports/TemplateSelector';
 import { DynamicReportForm } from '@/components/reports/DynamicReportForm';
 import { CombinedReportForm } from '@/components/reports/CombinedReportForm';
 import { TestSelectionSummary } from '@/components/reports/TestSelectionSummary';
+import { ReportPreviewThumbnail } from '@/components/reports/ReportPreviewThumbnail';
 import type { QuickCustomTestData } from '@/components/reports/QuickCustomTestDialog';
 import { DraftBanner } from '@/components/reports/DraftBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
@@ -231,66 +232,15 @@ export default function CreateReport() {
     return true;
   };
 
-  // Build a preview report object from current form state
-  const buildPreviewReport = (): { report: Report; patient: Patient } | null => {
-    const patient = getPatientForForm();
-    if (!patient) return null;
-
-    // Determine report type and data
-    let reportType: ReportType;
-    let finalReportData: Record<string, unknown>;
-    let includedTests: string[] | null = null;
-
-    if (isCombinedMode && selectedTests.length > 0) {
-      reportType = 'combined';
-      finalReportData = combinedReportData;
-      includedTests = selectedTests;
-    } else if (selectedTemplate) {
-      const isCustomTemplate = typeof selectedTemplate === 'string' && 
-        (selectedTemplate.startsWith('custom_') || selectedTemplate.startsWith('quick_'));
-      
-      if (isCustomTemplate) {
-        reportType = 'combined';
-        finalReportData = { [selectedTemplate]: reportData };
-        includedTests = [selectedTemplate];
-      } else {
-        reportType = selectedTemplate;
-        finalReportData = reportData;
-      }
-    } else {
-      return null;
-    }
-
-    const report: Report = {
-      id: 'preview',
-      clinic_id: clinicId || '',
-      created_by: null,
-      report_number: `PREVIEW-${Date.now().toString(36).toUpperCase()}`,
-      patient_id: patient.id,
-      report_type: reportType,
-      report_data: finalReportData,
-      included_tests: includedTests,
-      referring_doctor: reportDetails.referring_doctor || null,
-      clinical_notes: reportDetails.clinical_notes || null,
-      test_date: reportDetails.test_date,
-      status: 'draft',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    return { report, patient };
-  };
-
   const handlePreviewPDF = async () => {
-    const previewData = buildPreviewReport();
-    if (!previewData) {
+    if (!previewReport) {
       toast.error('Please select a patient and test type first');
       return;
     }
 
     setIsGeneratingPreview(true);
     try {
-      const { report, patient } = previewData;
+      const { report, patient } = previewReport;
       
       // Fetch clinic branding
       const { data: clinicData } = await supabase
@@ -317,15 +267,14 @@ export default function CreateReport() {
   };
 
   const handleExportPDF = async () => {
-    const previewData = buildPreviewReport();
-    if (!previewData) {
+    if (!previewReport) {
       toast.error('Please select a patient and test type first');
       return;
     }
 
     setIsExporting(true);
     try {
-      const { report, patient } = previewData;
+      const { report, patient } = previewReport;
       
       // Fetch clinic branding
       const { data: clinicData } = await supabase
@@ -471,6 +420,56 @@ export default function CreateReport() {
   const patientForForm = getPatientForForm();
   const patientDisplayName = getPatientDisplayName();
   const testDisplayName = getTestDisplayName();
+  
+  // Memoize preview report to avoid repeated calls
+  const previewReport = useMemo(() => {
+    const patient = patientForForm;
+    if (!patient) return null;
+
+    // Determine report type and data
+    let reportType: ReportType;
+    let finalReportData: Record<string, unknown>;
+    let includedTests: string[] | null = null;
+
+    if (isCombinedMode && selectedTests.length > 0) {
+      reportType = 'combined';
+      finalReportData = combinedReportData;
+      includedTests = selectedTests;
+    } else if (selectedTemplate) {
+      const isCustomTemplate = typeof selectedTemplate === 'string' && 
+        (selectedTemplate.startsWith('custom_') || selectedTemplate.startsWith('quick_'));
+      
+      if (isCustomTemplate) {
+        reportType = 'combined';
+        finalReportData = { [selectedTemplate]: reportData };
+        includedTests = [selectedTemplate];
+      } else {
+        reportType = selectedTemplate;
+        finalReportData = reportData;
+      }
+    } else {
+      return null;
+    }
+
+    const report: Report = {
+      id: 'preview',
+      clinic_id: clinicId || '',
+      created_by: null,
+      report_number: `PREVIEW-${Date.now().toString(36).toUpperCase()}`,
+      patient_id: patient.id,
+      report_type: reportType,
+      report_data: finalReportData,
+      included_tests: includedTests,
+      referring_doctor: reportDetails.referring_doctor || null,
+      clinical_notes: reportDetails.clinical_notes || null,
+      test_date: reportDetails.test_date,
+      status: 'draft',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    return { report, patient };
+  }, [patientForForm, isCombinedMode, selectedTests, combinedReportData, selectedTemplate, reportData, clinicId, reportDetails]);
 
   // Show draft banner if there's a draft and we haven't applied or discarded it
   const showDraftBanner = hasDraft && draft && !draftApplied;
@@ -612,38 +611,55 @@ export default function CreateReport() {
           </CardContent>
         </Card>
 
-        {/* Section 4: Test Results */}
+        {/* Section 4: Test Results with Live Preview */}
         {patientForForm && (isCombinedMode ? selectedTests.length > 0 : selectedTemplate) && (
-          <Card className="relative animate-fade-in-up animation-delay-300 animate-pulse-glow card-gradient-overlay">
-            <CardHeader className="p-4 sm:p-6 relative z-10">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <CardTitle className="text-base sm:text-lg">4. Enter Test Results</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Abnormal values will be highlighted</CardDescription>
+          <div className="grid gap-6 lg:grid-cols-[1fr,320px]">
+            {/* Test Results Form */}
+            <Card className="relative animate-fade-in-up animation-delay-300 animate-pulse-glow card-gradient-overlay">
+              <CardHeader className="p-4 sm:p-6 relative z-10">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base sm:text-lg">4. Enter Test Results</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Abnormal values will be highlighted</CardDescription>
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Patient: <span className="font-medium text-foreground">{patientDisplayName}</span>
+                  </div>
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">
-                  Patient: <span className="font-medium text-foreground">{patientDisplayName}</span>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
+                {isCombinedMode ? (
+                  <CombinedReportForm
+                    selectedTests={selectedTests}
+                    patient={patientForForm}
+                    onChange={handleCombinedDataChange}
+                    initialData={combinedReportData}
+                  />
+                ) : selectedTemplate ? (
+                  <DynamicReportForm
+                    reportType={selectedTemplate}
+                    patient={patientForForm}
+                    onChange={handleReportDataChange}
+                    initialData={reportData}
+                  />
+                ) : null}
+              </CardContent>
+            </Card>
+            
+            {/* Live PDF Preview Thumbnail */}
+            {previewReport && clinicId && (
+              <div className="hidden lg:block animate-fade-in-up animation-delay-400">
+                <div className="sticky top-4">
+                  <ReportPreviewThumbnail
+                    report={previewReport.report}
+                    patient={previewReport.patient}
+                    clinicId={clinicId}
+                    onOpenFullPreview={handlePreviewPDF}
+                  />
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0 relative z-10">
-              {isCombinedMode ? (
-                <CombinedReportForm
-                  selectedTests={selectedTests}
-                  patient={patientForForm}
-                  onChange={handleCombinedDataChange}
-                  initialData={combinedReportData}
-                />
-              ) : selectedTemplate ? (
-                <DynamicReportForm
-                  reportType={selectedTemplate}
-                  patient={patientForForm}
-                  onChange={handleReportDataChange}
-                  initialData={reportData}
-                />
-              ) : null}
-            </CardContent>
-          </Card>
+            )}
+          </div>
         )}
       </main>
 
