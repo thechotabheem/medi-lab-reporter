@@ -1,62 +1,87 @@
 
 
-# Add More Branding Options to Clinic Settings
+# Add Preview & Export Buttons to Create Report Page
 
 ## Summary
 
-Enhance the Clinic Settings page with additional branding customization options for a more professional and personalized PDF report experience. These new options will provide greater control over the visual appearance and content of generated reports.
+Add **Preview PDF** and **Export PDF** buttons to the Create Report page footer, allowing users to preview their report before saving and export a PDF directly from the form. This provides immediate visual feedback on how the report will look.
 
 ---
 
-## New Branding Options to Add
+## Changes Overview
 
-### 1. Report Appearance Section
+### Location
+The buttons will be added to the sticky footer of `src/pages/CreateReport.tsx`, alongside the existing "Save as Draft" and "Complete Report" buttons.
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `tagline` | Text | Short clinic tagline displayed below the name |
-| `font_size` | Select | Report font size preference (Small/Medium/Large) |
-| `show_logo_on_all_pages` | Toggle | Display logo on continuation pages |
-| `signature_title_left` | Text | Custom title for left signature box (default: "Lab Technician") |
-| `signature_title_right` | Text | Custom title for right signature box (default: "Pathologist") |
+### New Buttons
 
-### 2. PDF Formatting Section
-
-| Field | Type | Purpose |
-|-------|------|---------|
-| `page_size` | Select | Paper size (A4/Letter/Legal) |
-| `show_abnormal_summary` | Toggle | Show/hide the abnormal values summary box |
-| `show_patient_id` | Toggle | Include patient ID on reports |
-| `border_style` | Select | Report border style (None/Simple/Double) |
-| `secondary_color` | Color | Secondary accent color for borders/dividers |
-
-### 3. Contact Display Section
-
-| Field | Type | Purpose |
-|-------|------|---------|
-| `website` | Text | Clinic website URL |
-| `contact_display_format` | Select | How to show contact info (Inline/Stacked/Hidden) |
+| Button | Icon | Action |
+|--------|------|--------|
+| **Preview** | `Eye` | Opens the PDF in a new browser tab for preview |
+| **Export** | `Download` | Downloads the PDF file directly |
 
 ---
 
-## Database Changes
+## Implementation Details
 
-Add new columns to the `clinics` table:
+### 1. Add New State Variables
 
-```sql
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS tagline TEXT;
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS font_size TEXT DEFAULT 'medium';
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS show_logo_on_all_pages BOOLEAN DEFAULT true;
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS signature_title_left TEXT DEFAULT 'Lab Technician';
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS signature_title_right TEXT DEFAULT 'Pathologist';
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS page_size TEXT DEFAULT 'a4';
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS show_abnormal_summary BOOLEAN DEFAULT true;
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS show_patient_id BOOLEAN DEFAULT true;
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS border_style TEXT DEFAULT 'simple';
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS secondary_color TEXT;
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS website TEXT;
-ALTER TABLE clinics ADD COLUMN IF NOT EXISTS contact_display_format TEXT DEFAULT 'inline';
+```typescript
+const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+const [isExporting, setIsExporting] = useState(false);
 ```
+
+### 2. Create Mock Report Builder Function
+
+A helper function `buildPreviewReport()` will construct a temporary Report object from the current form state:
+
+- Uses current patient data (selected or new patient form)
+- Uses current test template(s) selection
+- Uses current report data values
+- Generates a temporary report number
+- Sets status as "draft"
+
+### 3. Add Handler Functions
+
+**Preview Handler:**
+```typescript
+const handlePreviewPDF = async () => {
+  // Build mock report from current form state
+  // Generate PDF using generateReportPDF()
+  // Open in new tab using blob URL
+};
+```
+
+**Export Handler:**
+```typescript
+const handleExportPDF = async () => {
+  // Build mock report from current form state
+  // Generate PDF using generateReportPDF()
+  // Download using downloadPDF()
+};
+```
+
+### 4. Update Footer UI
+
+The footer will be reorganized with the new buttons:
+
+```text
++--------------------------------------------------+
+| [Eye] Preview | [Download] Export | [Save] Draft | [Check] Complete |
++--------------------------------------------------+
+```
+
+On mobile, the Preview and Export buttons will show only icons to save space.
+
+---
+
+## Dependencies
+
+| Import | Source | Purpose |
+|--------|--------|---------|
+| `generateReportPDF` | `@/lib/pdf-generator` | Generate PDF document |
+| `downloadPDF` | `@/lib/pdf-generator` | Trigger file download |
+| `Eye`, `Download` | `lucide-react` | Button icons |
 
 ---
 
@@ -64,85 +89,41 @@ ALTER TABLE clinics ADD COLUMN IF NOT EXISTS contact_display_format TEXT DEFAULT
 
 | File | Changes |
 |------|---------|
-| `src/pages/ClinicSettings.tsx` | Add new form fields grouped into sections |
-| `src/lib/pdf-generator.ts` | Use new branding options when generating PDFs |
-| `src/integrations/supabase/types.ts` | Auto-updated after migration |
-| `src/contexts/ClinicContext.tsx` | Include new fields in clinic data |
+| `src/pages/CreateReport.tsx` | Add preview/export state, handlers, and footer buttons |
 
 ---
 
-## UI Organization
+## Button Enable Conditions
 
-Reorganize settings into clearly labeled cards:
+The Preview and Export buttons will be enabled when:
+- A patient is selected (existing or new)
+- At least one test type is selected
+- At least one test value has been entered
 
-1. **Basic Information** (existing)
-   - Clinic Name, Phone, Email, Address
-
-2. **Report Branding** (enhanced)
-   - Logo upload
-   - Tagline
-   - Header text, Footer text
-   - Website
-
-3. **Signature Configuration** (new)
-   - Left signature title
-   - Right signature title
-
-4. **Visual Styling** (enhanced from "Advanced PDF Options")
-   - Accent color
-   - Secondary color
-   - Border style
-   - Font size preference
-
-5. **PDF Options** (new)
-   - Page size
-   - Show logo on all pages
-   - Show abnormal summary
-   - Show patient ID
-   - Watermark text
-   - QR code toggle
-   - Contact display format
+This matches the existing validation logic for saving reports.
 
 ---
 
-## Technical Details
+## Clinic Branding Integration
 
-### ClinicSettings.tsx Changes
+The preview will fetch the current clinic settings to apply:
+- Logo and letterhead
+- Accent colors
+- Signature titles
+- Font size preferences
+- Border styles
+- All other branding options
 
-Add new state fields to `ClinicData` interface:
-
-```typescript
-interface ClinicData {
-  // existing fields...
-  tagline: string;
-  font_size: string;
-  show_logo_on_all_pages: boolean;
-  signature_title_left: string;
-  signature_title_right: string;
-  page_size: string;
-  show_abnormal_summary: boolean;
-  show_patient_id: boolean;
-  border_style: string;
-  secondary_color: string;
-  website: string;
-  contact_display_format: string;
-}
-```
-
-### PDF Generator Updates
-
-Extend `ClinicWithBranding` interface and update rendering logic:
-
-- Use `signature_title_left` and `signature_title_right` for signature boxes
-- Apply `font_size` preference to body text
-- Conditionally show abnormal summary based on `show_abnormal_summary`
-- Apply `border_style` to tables and sections
-- Display `website` in contact line
-- Support `show_logo_on_all_pages` for continuation headers
+This gives users an accurate preview of how the final report will look with their clinic's branding.
 
 ---
 
-## Preview Feature (Optional Enhancement)
+## User Experience
 
-Consider adding a "Preview PDF" button that generates a sample report with current settings, allowing users to see changes before saving.
+1. User fills in patient info, selects test type, enters results
+2. User can click **Preview** at any time to see a draft version
+3. If satisfied, user can **Export** to download immediately, or
+4. User clicks **Complete Report** to save to database
+
+This workflow allows users to verify the report appearance before committing to the database.
 
