@@ -29,6 +29,7 @@ import { AddFieldDialog } from '@/components/template-editor/AddFieldDialog';
 import { CloneTemplateDialog } from '@/components/template-editor/CloneTemplateDialog';
 import { TemplatePreviewDialog } from '@/components/template-editor/TemplatePreviewDialog';
 import { CreateCustomTemplateDialog } from '@/components/template-editor/CreateCustomTemplateDialog';
+import { EditCustomTemplateDialog } from '@/components/template-editor/EditCustomTemplateDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +62,7 @@ import {
   useFullyCustomTemplates,
   useSaveFullyCustomTemplate,
   useDeleteFullyCustomTemplate,
+  useUpdateFullyCustomTemplate,
   type TemplateCustomization,
   type FieldCustomization,
   type CustomField,
@@ -109,6 +111,7 @@ export default function TemplateEditor() {
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteCustomTemplate();
   const { mutateAsync: saveFullyCustomTemplate, isPending: isSavingCustom } = useSaveFullyCustomTemplate();
   const { mutate: deleteFullyCustomTemplate } = useDeleteFullyCustomTemplate();
+  const { mutateAsync: updateFullyCustomTemplate, isPending: isUpdatingCustom } = useUpdateFullyCustomTemplate();
 
   const template = selectedTemplate ? reportTemplates[selectedTemplate] : null;
 
@@ -409,36 +412,43 @@ export default function TemplateEditor() {
                             </div>
                           </div>
                         </div>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Custom Template?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete "{t.name}". 
-                                Existing reports using this template will not be affected, 
-                                but you won't be able to create new reports with it.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => deleteFullyCustomTemplate(t.code)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        <div className="flex gap-1">
+                          <EditCustomTemplateDialog 
+                            template={t}
+                            onSave={updateFullyCustomTemplate}
+                            isSaving={isUpdatingCustom}
+                          />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Custom Template?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete "{t.name}". 
+                                  Existing reports using this template will not be affected, 
+                                  but you won't be able to create new reports with it.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteFullyCustomTemplate(t.code)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     ))}
                   </div>
