@@ -248,8 +248,19 @@ export default function CreateReport() {
         finalReportData = combinedReportData;
         includedTests = selectedTests;
       } else if (selectedTemplate) {
-        reportType = selectedTemplate;
-        finalReportData = reportData;
+        // Check if it's a custom template (starts with 'custom_' or 'quick_')
+        const isCustomTemplate = typeof selectedTemplate === 'string' && 
+          (selectedTemplate.startsWith('custom_') || selectedTemplate.startsWith('quick_'));
+        
+        if (isCustomTemplate) {
+          // Custom templates use 'combined' as report_type with the custom code in included_tests
+          reportType = 'combined';
+          finalReportData = { [selectedTemplate]: reportData };
+          includedTests = [selectedTemplate];
+        } else {
+          reportType = selectedTemplate;
+          finalReportData = reportData;
+        }
       } else {
         throw new Error('No test type selected');
       }
