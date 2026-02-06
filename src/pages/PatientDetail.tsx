@@ -42,6 +42,7 @@ import {
   MapPin,
   Edit2,
   Trash2,
+  GitCompare,
   Save,
   X,
   FileText,
@@ -328,10 +329,23 @@ export default function PatientDetail() {
                       <CardTitle className="text-base sm:text-lg">Report History</CardTitle>
                       <CardDescription className="text-xs sm:text-sm">{reports?.length || 0} reports found</CardDescription>
                     </div>
-                    <Button size="sm" onClick={() => navigate('/reports/new')} className="text-xs sm:text-sm">
-                      <Plus className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">New Report</span>
-                    </Button>
+                    <div className="flex gap-2">
+                      {(reports?.length ?? 0) >= 2 && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => navigate(`/patients/${id}/compare`)}
+                          className="text-xs sm:text-sm"
+                        >
+                          <GitCompare className="h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Compare</span>
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={() => navigate('/reports/new')} className="text-xs sm:text-sm">
+                        <Plus className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">New Report</span>
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
                     {reportsLoading ? (
