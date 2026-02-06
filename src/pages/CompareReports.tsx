@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useReportComparison } from '@/hooks/useReportComparison';
+import { useClinic } from '@/contexts/ClinicContext';
 import { ReportComparisonTable } from '@/components/reports/ReportComparisonTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,15 +27,20 @@ import {
   Calendar,
   FileText,
   AlertCircle,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import type { Report, Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
+import { downloadComparisonPDF } from '@/lib/comparison-pdf-generator';
 
 export default function CompareReports() {
   const { id: patientId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { clinic } = useClinic();
 
   // Get initial report IDs from URL params
   const initialReportA = searchParams.get('reportA');
@@ -42,6 +48,7 @@ export default function CompareReports() {
 
   const [reportAId, setReportAId] = useState<string | null>(initialReportA);
   const [reportBId, setReportBId] = useState<string | null>(initialReportB);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Fetch patient
   const { data: patient, isLoading: patientLoading } = useQuery({
@@ -146,6 +153,30 @@ export default function CompareReports() {
     const temp = reportAId;
     setReportAId(reportBId);
     setReportBId(temp);
+  };
+
+  // Export comparison PDF
+  const handleExportPDF = async () => {
+    if (!reportA || !reportB || !patient) return;
+    
+    setIsExporting(true);
+    try {
+      await downloadComparisonPDF({
+        reportA,
+        reportB,
+        patient,
+        comparison,
+        uniqueToA,
+        uniqueToB,
+        clinic,
+      });
+      toast.success('Comparison PDF downloaded successfully');
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      toast.error('Failed to generate comparison PDF');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Check if same report selected
@@ -342,10 +373,32 @@ export default function CompareReports() {
             {!sameReportSelected && reportAId && reportBId && (
               <FadeIn delay={200}>
                 <div className="space-y-4">
-                  <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <GitCompare className="h-5 w-5 text-primary" />
-                    Comparison Results
-                  </h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      <GitCompare className="h-5 w-5 text-primary" />
+                      Comparison Results
+                    </h2>
+                    {!isComparing && comparison.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleExportPDF}
+                        disabled={isExporting}
+                      >
+                        {isExporting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Exporting...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            Export Comparison PDF
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
                   {isComparing ? (
                     <div className="space-y-3">
                       <Skeleton className="h-12 w-full" />
