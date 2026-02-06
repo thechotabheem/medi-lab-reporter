@@ -14,6 +14,7 @@ import ClinicSettings from "@/pages/ClinicSettings";
 import TemplateEditor from "@/pages/TemplateEditor";
 import Documentation from "@/pages/Documentation";
 import Install from "@/pages/Install";
+import CompareReports from "@/pages/CompareReports";
 
 import NotFound from "@/pages/NotFound";
 
@@ -104,6 +105,7 @@ export function AnimatedRoutes() {
         <Route path="/patients" element={<Patients />} />
         <Route path="/patients/new" element={<AddPatient />} />
         <Route path="/patients/:id" element={<PatientDetail />} />
+        <Route path="/patients/:id/compare" element={<CompareReports />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/clinic" element={<ClinicSettings />} />
         <Route path="/settings/templates" element={<TemplateEditor />} />

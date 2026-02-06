@@ -51,6 +51,7 @@ import {
   X,
   Printer,
   Pencil,
+  GitCompare,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
@@ -289,6 +290,16 @@ export default function ReportView() {
         showBack
         actions={
           <div className="flex gap-1 sm:gap-2 print-hide">
+            {/* Compare with other reports */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate(`/patients/${report.patient_id}/compare?reportB=${report.id}`)} 
+              className="text-xs sm:text-sm"
+            >
+              <GitCompare className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Compare</span>
+            </Button>
             {/* Edit button for all reports - allows adding tests to convert single to combined */}
             <Button variant="outline" size="sm" onClick={() => navigate(`/reports/${id}/edit`)} className="text-xs sm:text-sm">
               <Pencil className="h-4 w-4 sm:mr-2" />
