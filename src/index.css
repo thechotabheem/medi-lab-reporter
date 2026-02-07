@@ -456,22 +456,6 @@
     }
   }
 
-  /* Shimmer effect */
-  .shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 0%,
-      hsl(var(--muted-foreground) / 0.1) 50%,
-      hsl(var(--muted)) 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
 
   /* Sparkle animation - dramatic */
   @keyframes sparkle {
@@ -528,37 +512,6 @@
     }
   }
 
-  /* Elegant teal shimmer text gradient */
-  .text-gradient-shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(162 84% 42%) 0%,
-      hsl(162 84% 55%) 25%,
-      hsl(172 80% 50%) 50%,
-      hsl(162 84% 55%) 75%,
-      hsl(162 84% 42%) 100%
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    opacity: 0;
-    animation: 
-      text-fade-in 0.8s ease-out forwards,
-      shimmer-sweep 4s ease-in-out 1.5s infinite;
-    filter: drop-shadow(0 0 6px hsl(162 84% 42% / 0.4));
-  }
-
-  @keyframes shimmer-sweep {
-    0%, 100% { 
-      background-position: 100% 50%;
-      filter: drop-shadow(0 0 6px hsl(162 84% 42% / 0.4));
-    }
-    50% { 
-      background-position: 0% 50%;
-      filter: drop-shadow(0 0 10px hsl(162 84% 52% / 0.5));
-    }
-  }
 
   /* Pulsing glow animation for cards */
   @keyframes pulse-glow {
@@ -622,31 +575,6 @@
     animation: icon-pulse 0.8s ease-in-out infinite;
   }
 
-  /* Stat card shimmer on initial load */
-  @keyframes stat-shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  .animate-stat-shimmer::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      hsl(162 84% 42% / 0.08) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: stat-shimmer 1.2s ease-out forwards;
-    pointer-events: none;
-    z-index: 1;
-  }
 
   /* Bounce animation on click */
   @keyframes card-bounce {

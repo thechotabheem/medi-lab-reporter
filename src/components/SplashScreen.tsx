@@ -66,15 +66,6 @@ export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreen
         }}
       />
 
-      {/* Layer 4: Animated shimmer sweep */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(105deg, transparent 40%, hsl(162 84% 42% / 0.03) 45%, hsl(162 84% 42% / 0.06) 50%, hsl(162 84% 42% / 0.03) 55%, transparent 60%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer-sweep 4s ease-in-out infinite',
-        }}
-      />
 
       {/* Main content */}
       <div className="relative flex flex-col items-center gap-6">
@@ -132,7 +123,7 @@ export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreen
             opacity: 0,
           }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gradient-shimmer tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-gradient-primary tracking-tight">
             Lab Reporter
           </h1>
         </div>
