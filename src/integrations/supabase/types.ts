@@ -325,6 +325,54 @@ export type Database = {
           },
         ]
       }
+      saved_comparisons: {
+        Row: {
+          clinic_id: string
+          comparison_mode: string
+          created_at: string
+          id: string
+          name: string
+          patient_id: string
+          report_ids: string[]
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          comparison_mode?: string
+          created_at?: string
+          id?: string
+          name: string
+          patient_id: string
+          report_ids: string[]
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          comparison_mode?: string
+          created_at?: string
+          id?: string
+          name?: string
+          patient_id?: string
+          report_ids?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_comparisons_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_comparisons_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

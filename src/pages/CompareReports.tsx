@@ -4,9 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useReportComparison } from '@/hooks/useReportComparison';
 import { useMultiReportComparison } from '@/hooks/useMultiReportComparison';
+import { useSavedComparisons, type SavedComparison } from '@/hooks/useSavedComparisons';
 import { useClinic } from '@/contexts/ClinicContext';
 import { ReportComparisonTable } from '@/components/reports/ReportComparisonTable';
 import { MultiReportComparisonTable } from '@/components/reports/MultiReportComparisonTable';
+import { SaveComparisonDialog } from '@/components/reports/SaveComparisonDialog';
+import { SavedComparisonsList } from '@/components/reports/SavedComparisonsList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -71,6 +74,14 @@ export default function CompareReports() {
 
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+
+  // Saved comparisons
+  const { 
+    savedComparisons, 
+    isLoading: savedComparisonsLoading, 
+    saveComparison, 
+    deleteComparison 
+  } = useSavedComparisons(patientId);
 
   // Fetch patient
   const { data: patient, isLoading: patientLoading } = useQuery({
@@ -343,6 +354,31 @@ export default function CompareReports() {
   // Available reports for adding (multi mode)
   const availableReports = reports?.filter(r => !selectedReportIds.includes(r.id)) ?? [];
 
+  // Get current report IDs for saving
+  const currentReportIds = comparisonMode === 'dual'
+    ? [reportAId, reportBId].filter(Boolean) as string[]
+    : selectedReportIds;
+
+  // Handle saving comparison
+  const handleSaveComparison = (name: string) => {
+    saveComparison.mutate({
+      name,
+      reportIds: currentReportIds,
+      comparisonMode,
+    });
+  };
+
+  // Handle loading a saved comparison
+  const handleLoadComparison = (saved: SavedComparison) => {
+    setComparisonMode(saved.comparison_mode);
+    if (saved.comparison_mode === 'dual' && saved.report_ids.length >= 2) {
+      setReportAId(saved.report_ids[0]);
+      setReportBId(saved.report_ids[1]);
+    } else {
+      setSelectedReportIds(saved.report_ids);
+    }
+  };
+
   if (isLoading) {
     return (
       <EnhancedPageLayout>
@@ -401,18 +437,34 @@ export default function CompareReports() {
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-5xl">
           <div className="space-y-6">
-            {/* Mode Toggle */}
+            {/* Mode Toggle + Saved Comparisons */}
             <FadeIn>
-              <Tabs value={comparisonMode} onValueChange={handleModeChange}>
-                <TabsList className="grid w-full max-w-md grid-cols-2">
-                  <TabsTrigger value="dual">
-                    2 Reports
-                  </TabsTrigger>
-                  <TabsTrigger value="multi" disabled={(reports?.length ?? 0) < 3}>
-                    Multi-Report (3-5)
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Tabs value={comparisonMode} onValueChange={handleModeChange}>
+                  <TabsList className="grid w-full max-w-xs grid-cols-2">
+                    <TabsTrigger value="dual">
+                      2 Reports
+                    </TabsTrigger>
+                    <TabsTrigger value="multi" disabled={(reports?.length ?? 0) < 3}>
+                      Multi-Report (3-5)
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="flex gap-2">
+                  <SavedComparisonsList
+                    savedComparisons={savedComparisons ?? []}
+                    isLoading={savedComparisonsLoading}
+                    onLoad={handleLoadComparison}
+                    onDelete={(id) => deleteComparison.mutate(id)}
+                    isDeleting={deleteComparison.isPending}
+                  />
+                  <SaveComparisonDialog
+                    onSave={handleSaveComparison}
+                    isSaving={saveComparison.isPending}
+                    disabled={!hasValidComparison}
+                  />
+                </div>
+              </div>
             </FadeIn>
 
             {/* Dual Mode Selectors */}
