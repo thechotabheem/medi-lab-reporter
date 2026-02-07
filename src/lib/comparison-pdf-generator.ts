@@ -450,3 +450,18 @@ export const downloadComparisonPDF = async (options: GenerateComparisonPDFOption
   const fileName = `comparison_${options.patient.full_name.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.pdf`;
   doc.save(fileName);
 };
+
+export const shareComparisonPDFViaWhatsApp = async (options: GenerateComparisonPDFOptions): Promise<void> => {
+  const doc = await generateComparisonPDF(options);
+  const pdfBlob = doc.output('blob');
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+  
+  // For web, we can only open WhatsApp with a message, not attach files directly
+  const message = encodeURIComponent(`Lab report comparison for ${options.patient.full_name} is ready. Comparing reports from ${format(new Date(options.reportA.test_date), 'dd MMM yyyy')} and ${format(new Date(options.reportB.test_date), 'dd MMM yyyy')}.`);
+  const phone = options.patient.phone?.replace(/\D/g, '') || '';
+  
+  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  
+  // Clean up
+  URL.revokeObjectURL(pdfUrl);
+};
