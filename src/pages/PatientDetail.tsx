@@ -330,7 +330,7 @@ export default function PatientDetail() {
                       <CardDescription className="text-xs sm:text-sm">{reports?.length || 0} reports found</CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      {(reports?.length ?? 0) >= 2 && (
+                      {(reports?.filter(r => r.status === 'completed').length ?? 0) >= 2 && (
                         <Button 
                           variant="outline" 
                           size="sm" 
@@ -338,7 +338,9 @@ export default function PatientDetail() {
                           className="text-xs sm:text-sm"
                         >
                           <GitCompare className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Compare</span>
+                          <span className="hidden sm:inline">
+                            Compare ({reports?.filter(r => r.status === 'completed').length})
+                          </span>
                         </Button>
                       )}
                       <Button size="sm" onClick={() => navigate('/reports/new')} className="text-xs sm:text-sm">
