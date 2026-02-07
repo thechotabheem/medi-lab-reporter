@@ -29,12 +29,13 @@ import {
   AlertCircle,
   Download,
   Loader2,
+  Share2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { Report, Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
-import { downloadComparisonPDF } from '@/lib/comparison-pdf-generator';
+import { downloadComparisonPDF, shareComparisonPDFViaWhatsApp } from '@/lib/comparison-pdf-generator';
 
 export default function CompareReports() {
   const { id: patientId } = useParams<{ id: string }>();
@@ -49,6 +50,7 @@ export default function CompareReports() {
   const [reportAId, setReportAId] = useState<string | null>(initialReportA);
   const [reportBId, setReportBId] = useState<string | null>(initialReportB);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Fetch patient
   const { data: patient, isLoading: patientLoading } = useQuery({
@@ -176,6 +178,30 @@ export default function CompareReports() {
       toast.error('Failed to generate comparison PDF');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // Share comparison via WhatsApp
+  const handleShareWhatsApp = async () => {
+    if (!reportA || !reportB || !patient) return;
+    
+    setIsSharing(true);
+    try {
+      await shareComparisonPDFViaWhatsApp({
+        reportA,
+        reportB,
+        patient,
+        comparison,
+        uniqueToA,
+        uniqueToB,
+        clinic,
+      });
+      toast.success('Opening WhatsApp...');
+    } catch (error) {
+      console.error('Failed to share PDF:', error);
+      toast.error('Failed to share comparison PDF');
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -379,24 +405,44 @@ export default function CompareReports() {
                       Comparison Results
                     </h2>
                     {!isComparing && comparison.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleExportPDF}
-                        disabled={isExporting}
-                      >
-                        {isExporting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Exporting...
-                          </>
-                        ) : (
-                          <>
-                            <Download className="h-4 w-4 mr-2" />
-                            Export Comparison PDF
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleExportPDF}
+                          disabled={isExporting || isSharing}
+                        >
+                          {isExporting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Exporting...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="h-4 w-4 mr-2" />
+                              Export PDF
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleShareWhatsApp}
+                          disabled={isExporting || isSharing}
+                        >
+                          {isSharing ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Sharing...
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              Share
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     )}
                   </div>
                   {isComparing ? (
