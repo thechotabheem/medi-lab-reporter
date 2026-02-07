@@ -17,8 +17,6 @@ export function EnhancedPageLayout({
 }: EnhancedPageLayoutProps) {
   return (
     <div className={cn("page-container dashboard-bg", className)}>
-      {/* Animated shimmer overlay */}
-      <div className="dashboard-bg-shimmer" />
       {showCursorGlow && <CursorGlow />}
       <div className="relative z-10 flex-1 flex flex-col">
         {children}
