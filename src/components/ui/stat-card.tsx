@@ -33,20 +33,11 @@ export function StatCard({
   glowEffect = false,
 }: StatCardProps) {
   const { ripples, createRipple, containerRef } = useRipple();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isBouncing, setIsBouncing] = useState(false);
   const tiltRef = useRef<HTMLDivElement>(null);
   const [tiltStyle, setTiltStyle] = useState({ transform: '', transition: '' });
   const [iconStyle, setIconStyle] = useState({ transform: '', transition: '' });
   const [glowPosition, setGlowPosition] = useState({ x: 0, y: 0, opacity: 0 });
-
-  useEffect(() => {
-    // Remove shimmer effect after initial load animation completes
-    const timer = setTimeout(() => {
-      setIsInitialLoad(false);
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!tiltRef.current) return;
@@ -119,7 +110,6 @@ export function StatCard({
           onClick && "cursor-pointer",
           onClick && !glowEffect && "hover:border-primary/40",
           glowEffect && "animate-pulse-glow border-primary/20 card-gradient-overlay",
-          isInitialLoad && "animate-stat-shimmer",
           isBouncing && "animate-card-bounce",
           className
         )}
