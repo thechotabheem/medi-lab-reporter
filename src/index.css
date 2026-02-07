@@ -363,7 +363,7 @@
     position: relative;
   }
 
-  /* Animated gradient border */
+  /* Static gradient border */
   .app-header::before {
     content: '';
     position: absolute;
@@ -379,8 +379,6 @@
       hsl(162 84% 42% / 0.3) 80%,
       transparent 100%
     );
-    background-size: 200% 100%;
-    animation: header-border-shimmer 6s ease-in-out infinite;
   }
 
   /* Subtle inner glow from top */
@@ -398,15 +396,6 @@
     );
     pointer-events: none;
     z-index: -1;
-  }
-
-  @keyframes header-border-shimmer {
-    0%, 100% {
-      background-position: 200% 0;
-    }
-    50% {
-      background-position: -200% 0;
-    }
   }
 
   /* Footer styles */
