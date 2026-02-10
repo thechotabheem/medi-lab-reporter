@@ -2,3 +2,6 @@ project_id = "kjgqrjqrjzmdpvppqfta"
 
 [functions.reset-clinic-data]
 verify_jwt = false
+
+[functions.manage-staff]
+verify_jwt = false
