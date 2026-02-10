@@ -135,7 +135,7 @@ export function AnimatedRoutes() {
             <Route path="/settings/templates" element={isAdmin ? <TemplateEditor /> : <Navigate to="/dashboard" replace />} />
             <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
             <Route path="/documentation" element={<Documentation />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
