@@ -31,7 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ShieldCheck, UserPlus, KeyRound, Trash2, Users } from 'lucide-react';
+import { ShieldCheck, UserPlus, KeyRound, Trash2, Users, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface StaffUser {
@@ -63,6 +63,8 @@ export default function AdminPanel() {
   const [resetUserId, setResetUserId] = useState('');
   const [resetUserName, setResetUserName] = useState('');
   const [resetPassword, setResetPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -201,7 +203,12 @@ export default function AdminPanel() {
                       </div>
                       <div className="space-y-2">
                         <Label>Password</Label>
-                        <Input type="password" placeholder="Min 6 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} minLength={6} />
+                        <div className="relative">
+                          <Input type={showNewPassword ? 'text' : 'password'} placeholder="Min 6 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pr-10" minLength={6} />
+                          <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <DialogFooter>
@@ -303,7 +310,12 @@ export default function AdminPanel() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>New Password</Label>
-              <Input type="password" placeholder="Min 6 characters" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} minLength={6} />
+              <div className="relative">
+                <Input type={showResetPassword ? 'text' : 'password'} placeholder="Min 6 characters" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} className="pr-10" minLength={6} />
+                <button type="button" onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+                  {showResetPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
           </div>
           <DialogFooter>
