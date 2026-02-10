@@ -29,10 +29,13 @@ import { format } from 'date-fns';
 import { getReportTypeName } from '@/lib/report-templates';
 import { exportToCSV } from '@/lib/csv-export';
 import { toast } from 'sonner';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
+import { useDataFreshness } from '@/hooks/useDataFreshness';
 
 export default function Reports() {
   const navigate = useNavigate();
   const { data: reports, isLoading } = useReports();
+  const { dataSource, lastFetchedAt } = useDataFreshness('reports');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -82,6 +85,7 @@ export default function Reports() {
         icon={<ClipboardList className="h-5 w-5" />}
         showBack
         backPath="/dashboard"
+        badge={<DataSourceBadge dataSource={dataSource} lastFetchedAt={lastFetchedAt} />}
       />
       
       <HeaderDivider />

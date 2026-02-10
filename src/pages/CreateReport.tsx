@@ -29,6 +29,7 @@ import { ageToDateOfBirth } from '@/lib/utils';
 import type { Patient, Report, ReportType } from '@/types/database';
 import { Check, Save, Layers, Eye, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { enqueueAction } from '@/lib/offlineQueue';
 
 export default function CreateReport() {
   const navigate = useNavigate();
@@ -362,22 +363,47 @@ export default function CreateReport() {
       }
 
       // Create the report
+      const reportPayload = {
+        clinic_id: clinicId,
+        created_by: null as string | null,
+        report_number: reportNumber,
+        patient_id: patientId,
+        report_type: reportType,
+        report_data: finalReportData as any,
+        included_tests: includedTests,
+        referring_doctor: reportDetails.referring_doctor || null,
+        clinical_notes: reportDetails.clinical_notes || null,
+        test_date: reportDetails.test_date,
+        status,
+      };
+
+      if (!navigator.onLine) {
+        // If new patient was just created inline, attach to payload for later sync
+        if (newPatientData && !selectedPatient) {
+          (reportPayload as any)._newPatient = {
+            clinic_id: clinicId,
+            full_name: newPatientData.full_name,
+            date_of_birth: ageToDateOfBirth(newPatientData.age),
+            gender: newPatientData.gender,
+            phone: newPatientData.phone || null,
+            patient_id_number: newPatientData.patient_id_number || null,
+          };
+        }
+        await enqueueAction('create-report', reportPayload as any);
+        clearDraft();
+        const testCount = isCombinedMode ? selectedTests.length : 1;
+        setSuccessMessage({
+          title: 'Saved Offline!',
+          subtitle: `Your ${testCount > 1 ? 'combined ' : ''}report will sync when connected`,
+        });
+        setShowSuccess(true);
+        return;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: reportError } = await supabase
         .from('reports')
-        .insert([{
-          clinic_id: clinicId,
-          created_by: null as string | null,
-          report_number: reportNumber,
-          patient_id: patientId,
-          report_type: reportType,
-          report_data: finalReportData as any,
-          included_tests: includedTests,
-          referring_doctor: reportDetails.referring_doctor || null,
-          clinical_notes: reportDetails.clinical_notes || null,
-          test_date: reportDetails.test_date,
-          status,
-        }]);
+        .insert([reportPayload]);
 
       if (reportError) throw reportError;
 
@@ -408,6 +434,25 @@ export default function CreateReport() {
       setShowSuccess(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
+      // Network error fallback - enqueue offline
+      if (!navigator.onLine || (error instanceof Error && error.message.includes('fetch'))) {
+        const reportPayload = {
+          clinic_id: clinicId,
+          report_number: `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase(),
+          report_type: isCombinedMode ? 'combined' : selectedTemplate,
+          report_data: isCombinedMode ? combinedReportData : reportData,
+          included_tests: isCombinedMode ? selectedTests : null,
+          referring_doctor: reportDetails.referring_doctor || null,
+          clinical_notes: reportDetails.clinical_notes || null,
+          test_date: reportDetails.test_date,
+          status,
+        };
+        await enqueueAction('create-report', reportPayload as any);
+        clearDraft();
+        toast.success('Saved offline - will sync when connected');
+        navigate('/dashboard');
+        return;
+      }
       toast.error('Failed to save: ' + message);
     } finally {
       setIsSaving(false);

@@ -13,6 +13,7 @@ interface PageHeaderProps {
   backPath?: string;
   actions?: React.ReactNode;
   className?: string;
+  badge?: React.ReactNode;
 }
 
 export function PageHeader({
@@ -23,6 +24,7 @@ export function PageHeader({
   backPath,
   actions,
   className,
+  badge,
 }: PageHeaderProps) {
   const navigate = useNavigate();
 
@@ -53,9 +55,12 @@ export function PageHeader({
               {icon || <FlaskConical className="h-5 w-5" />}
             </IconWrapper>
             <div className="min-w-0">
-              <h1 className="font-semibold text-base sm:text-lg truncate">
-                {title}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-semibold text-base sm:text-lg truncate">
+                  {title}
+                </h1>
+                {badge}
+              </div>
               {subtitle && (
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   {subtitle}

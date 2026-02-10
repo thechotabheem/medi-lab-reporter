@@ -11,6 +11,7 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
 import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate";
+import { OfflineSyncStatus } from "@/components/OfflineSyncStatus";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => {
               )}
               <OfflineBanner />
               <ServiceWorkerUpdate />
+              <OfflineSyncStatus />
               <Toaster />
               <Sonner />
               <BrowserRouter>
