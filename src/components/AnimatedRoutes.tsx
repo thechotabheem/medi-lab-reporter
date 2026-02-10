@@ -20,7 +20,7 @@ import Install from "@/pages/Install";
 import CompareReports from "@/pages/CompareReports";
 import AdminPanel from "@/pages/AdminPanel";
 import AccountSettings from "@/pages/AccountSettings";
-import NotFound from "@/pages/NotFound";
+
 
 // Check for reduced motion preference
 const prefersReducedMotion = () => {
