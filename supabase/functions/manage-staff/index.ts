@@ -29,16 +29,15 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: claimsError } = await userClient.auth.getClaims(token);
-    if (claimsError || !claims?.claims?.sub) {
+    const { data, error: userError } = await userClient.auth.getUser();
+    if (userError || !data?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = claims.claims.sub;
+    const userId = data.user.id;
 
     // Check admin role
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
@@ -113,14 +112,12 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // Don't allow deleting yourself (the admin)
       if (user_id === userId) {
         return new Response(JSON.stringify({ error: "Cannot delete your own account" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // Clean up role and profile
       await adminClient.from("user_roles").delete().eq("user_id", user_id);
       await adminClient.from("profiles").delete().eq("user_id", user_id);
       const { error: delErr } = await adminClient.auth.admin.deleteUser(user_id);
