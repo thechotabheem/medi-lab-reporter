@@ -18,6 +18,7 @@ import {
   BookOpen,
   LogOut,
   ShieldCheck,
+  KeyRound,
 } from 'lucide-react';
 import { ResetDataDialog } from '@/components/settings/ResetDataDialog';
 import { toast } from 'sonner';
@@ -234,7 +235,11 @@ export default function Settings() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
+                <CardContent className="p-4 sm:p-6 pt-0 space-y-2">
+                  <Button variant="outline" className="w-full" onClick={() => navigate('/settings/account')}>
+                    <KeyRound className="h-4 w-4 mr-2" />
+                    Account Settings
+                  </Button>
                   <Button variant="outline" className="w-full" onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out

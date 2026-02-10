@@ -19,6 +19,7 @@ import Documentation from "@/pages/Documentation";
 import Install from "@/pages/Install";
 import CompareReports from "@/pages/CompareReports";
 import AdminPanel from "@/pages/AdminPanel";
+import AccountSettings from "@/pages/AccountSettings";
 import NotFound from "@/pages/NotFound";
 
 // Check for reduced motion preference
@@ -129,6 +130,7 @@ export function AnimatedRoutes() {
             <Route path="/patients/:id" element={<PatientDetail />} />
             <Route path="/patients/:id/compare" element={<CompareReports />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/account" element={<AccountSettings />} />
             <Route path="/settings/clinic" element={isAdmin ? <ClinicSettings /> : <Navigate to="/dashboard" replace />} />
             <Route path="/settings/templates" element={isAdmin ? <TemplateEditor /> : <Navigate to="/dashboard" replace />} />
             <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
