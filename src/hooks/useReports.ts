@@ -1,13 +1,53 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useClinic } from '@/contexts/ClinicContext';
-import type { Report, ReportType } from '@/types/database';
+import { getPendingActions, type OfflineAction } from '@/lib/offlineQueue';
+import type { Report, ReportType, ReportStatus } from '@/types/database';
 import { toast } from 'sonner';
+
+export interface ReportWithPending extends Report {
+  _isPending?: boolean;
+}
 
 export const useReports = () => {
   const { clinicId } = useClinic();
+  const [pendingReports, setPendingReports] = useState<ReportWithPending[]>([]);
 
-  return useQuery({
+  useEffect(() => {
+    const loadPending = async () => {
+      try {
+        const actions = await getPendingActions();
+        const reports = actions
+          .filter((a: OfflineAction) => a.type === 'create-report')
+          .map((a: OfflineAction) => ({
+            id: `pending-${a.id}`,
+            clinic_id: (a.payload.clinic_id as string) || '',
+            patient_id: (a.payload.patient_id as string) || '',
+            created_by: null,
+            report_type: (a.payload.report_type as ReportType) || 'blood_test',
+            report_data: (a.payload.report_data as Record<string, unknown>) || {},
+            report_number: (a.payload.report_number as string) || 'PENDING',
+            referring_doctor: (a.payload.referring_doctor as string) || null,
+            clinical_notes: (a.payload.clinical_notes as string) || null,
+            test_date: (a.payload.test_date as string) || new Date().toISOString().split('T')[0],
+            status: (a.payload.status as ReportStatus) || 'draft',
+            included_tests: (a.payload.included_tests as string[]) || null,
+            created_at: a.createdAt,
+            updated_at: a.createdAt,
+            _isPending: true,
+          }));
+        setPendingReports(reports);
+      } catch {
+        // IndexedDB unavailable
+      }
+    };
+    loadPending();
+    window.addEventListener('online', loadPending);
+    return () => window.removeEventListener('online', loadPending);
+  }, []);
+
+  const query = useQuery({
     queryKey: ['reports', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,6 +61,17 @@ export const useReports = () => {
     },
     enabled: !!clinicId,
   });
+
+  const mergedData: ReportWithPending[] | undefined = query.data
+    ? [...pendingReports, ...query.data]
+    : pendingReports.length > 0
+    ? pendingReports
+    : undefined;
+
+  return {
+    ...query,
+    data: mergedData,
+  };
 };
 
 export const useCreateReport = () => {
@@ -39,7 +90,6 @@ export const useCreateReport = () => {
     }) => {
       if (!clinicId) throw new Error('No clinic found');
 
-      // Generate report number
       const reportNumber = `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
 
       const { data, error } = await supabase

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useReports } from '@/hooks/useReports';
+import { useReports, type ReportWithPending } from '@/hooks/useReports';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -182,7 +182,7 @@ export default function Reports() {
                 key={report.id}
                 className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:scale-[1.01] animate-fade-in-up animate-pulse-glow card-gradient-overlay"
                 style={{ animationDelay: `${index * 30}ms` }}
-                onClick={() => navigate(`/reports/${report.id}`)}
+                onClick={() => !(report as ReportWithPending)._isPending && navigate(`/reports/${report.id}`)}
                 role="button"
                 tabIndex={0}
                 aria-label={`${getReportTypeName(report.report_type)} for ${report.patient?.full_name}, ${report.status}`}
@@ -214,6 +214,11 @@ export default function Reports() {
                           >
                             {report.status}
                           </Badge>
+                          {(report as ReportWithPending)._isPending && (
+                            <Badge variant="outline" className="text-2xs sm:text-xs border-amber-500/50 text-amber-500 animate-pulse">
+                              Pending Sync
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-3 sm:gap-4 text-2xs sm:text-sm text-muted-foreground flex-wrap">
                           <span className="flex items-center gap-1">

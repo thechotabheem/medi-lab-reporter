@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePatients } from '@/hooks/usePatients';
+import { usePatients, type PatientWithPending } from '@/hooks/usePatients';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -172,8 +173,8 @@ export default function Patients() {
                   key={patient.id}
                   className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:scale-[1.02] animate-fade-in-up animate-pulse-glow card-gradient-overlay"
                   style={{ animationDelay: `${index * 50}ms` }}
-                  onClick={() => navigate(`/patients/${patient.id}`)}
-                  role="button"
+                   onClick={() => !(patient as PatientWithPending)._isPending && navigate(`/patients/${patient.id}`)}
+                   role="button"
                   tabIndex={0}
                   aria-label={`View ${patient.full_name}, ${age} years, ${patient.gender}`}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/patients/${patient.id}`); } }}
@@ -183,6 +184,11 @@ export default function Patients() {
                       <CardTitle className="text-base sm:text-lg group-hover:text-primary transition-colors">
                         {patient.full_name}
                       </CardTitle>
+                      {(patient as PatientWithPending)._isPending && (
+                        <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-500 animate-pulse">
+                          Pending Sync
+                        </Badge>
+                      )}
                       <button
                         onClick={(e) => handleTogglePin(e, patient.id)}
                         className="p-1 rounded-md hover:bg-primary/10 transition-colors"

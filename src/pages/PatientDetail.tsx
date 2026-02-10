@@ -53,12 +53,15 @@ import { format } from 'date-fns';
 import type { Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
 import { calculateAgeFromDOB, ageToDateOfBirth } from '@/lib/utils';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
+import { useDataFreshness } from '@/hooks/useDataFreshness';
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Patient>>({});
+  const { dataSource, lastFetchedAt } = useDataFreshness('patient-' + id);
 
   const updatePatient = useUpdatePatient();
   const deletePatient = useDeletePatient();
@@ -168,6 +171,7 @@ export default function PatientDetail() {
         icon={<User className="h-5 w-5" />}
         showBack
         backPath="/patients"
+        badge={<DataSourceBadge dataSource={dataSource} lastFetchedAt={lastFetchedAt} />}
         actions={
           !isEditing && (
             <div className="flex gap-2">
