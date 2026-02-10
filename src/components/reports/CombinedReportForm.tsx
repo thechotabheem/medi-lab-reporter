@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Skeleton } from '@/components/ui/skeleton';
 import { DynamicReportForm } from './DynamicReportForm';
 import { reportTemplates, getReportTypeName } from '@/lib/report-templates';
-import { useCustomizedTemplate, isFullyCustomTemplate } from '@/hooks/useCustomTemplates';
+import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import type { ReportType, Patient, ReportTemplate } from '@/types/database';
 import { Layers, AlertCircle } from 'lucide-react';
 
@@ -69,9 +69,6 @@ const TestSection = ({ testType, patient, onChange, initialData }: TestSectionPr
           <Badge variant="outline" className="text-xs">
             {testFieldCount} fields
           </Badge>
-          {isFullyCustomTemplate(testType as string) && (
-            <Badge variant="secondary" className="text-xs">Custom</Badge>
-          )}
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">

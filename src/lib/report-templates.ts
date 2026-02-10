@@ -354,14 +354,49 @@ export const getReportTemplate = (type: ReportType): ReportTemplate => {
   return reportTemplates[type];
 };
 
+// Runtime registry for custom templates (populated when custom templates load)
+const customTemplateRegistry: Map<string, { name: string; categories: import('@/types/database').TestCategory[] }> = new Map();
+
+/**
+ * Register custom templates into the runtime registry so they appear
+ * alongside built-in templates everywhere (name resolution, etc.)
+ */
+export const registerCustomTemplates = (templates: { code: string; name: string; categories: import('@/types/database').TestCategory[] }[]) => {
+  customTemplateRegistry.clear();
+  templates.forEach(t => customTemplateRegistry.set(t.code, { name: t.name, categories: t.categories }));
+};
+
+/**
+ * Get all active template entries: built-in + registered custom templates.
+ * Returns a flat list sorted alphabetically by name.
+ */
+export const getAllActiveTemplates = (): { code: string; name: string; isCustom: boolean }[] => {
+  const builtIn = activeReportTypes.map(type => ({
+    code: type,
+    name: reportTemplates[type]?.name || type,
+    isCustom: false,
+  }));
+  
+  const custom = Array.from(customTemplateRegistry.entries()).map(([code, data]) => ({
+    code,
+    name: data.name,
+    isCustom: true,
+  }));
+
+  return [...builtIn, ...custom].sort((a, b) => a.name.localeCompare(b.name));
+};
+
 export const getReportTypeName = (type: ReportType | string): string => {
   // Check built-in templates first
   const builtIn = reportTemplates[type as ReportType];
   if (builtIn) return builtIn.name;
 
-  // For custom templates, extract a readable name from the code
+  // Check runtime registry (custom templates)
+  const custom = customTemplateRegistry.get(type);
+  if (custom) return custom.name;
+
+  // Fallback: extract a readable name from the code
   if (typeof type === 'string' && (type.startsWith('custom_') || type.startsWith('quick_'))) {
-    // Extract name from code: "custom_thyroid_panel_1234567890" -> "Thyroid Panel"
     const parts = type.replace(/^(custom_|quick_)/, '').replace(/_\d+$/, '');
     return parts.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }

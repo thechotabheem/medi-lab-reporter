@@ -23,6 +23,7 @@ import { useClinic } from '@/contexts/ClinicContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
+import { isCustomTemplateCode, getReportSaveParams } from '@/lib/template-utils';
 import { generateReportPDF, downloadPDF } from '@/lib/pdf-generator';
 import { ageToDateOfBirth } from '@/lib/utils';
 import type { Patient, Report, ReportType } from '@/types/database';
@@ -352,19 +353,10 @@ export default function CreateReport() {
         finalReportData = combinedReportData;
         includedTests = selectedTests;
       } else if (selectedTemplate) {
-        // Check if it's a custom template (starts with 'custom_' or 'quick_')
-        const isCustomTemplate = typeof selectedTemplate === 'string' && 
-          (selectedTemplate.startsWith('custom_') || selectedTemplate.startsWith('quick_'));
-        
-        if (isCustomTemplate) {
-          // Custom templates use 'combined' as report_type with the custom code in included_tests
-          reportType = 'combined';
-          finalReportData = { [selectedTemplate]: reportData };
-          includedTests = [selectedTemplate];
-        } else {
-          reportType = selectedTemplate;
-          finalReportData = reportData;
-        }
+        const saveParams = getReportSaveParams(selectedTemplate, reportData);
+        reportType = saveParams.reportType;
+        finalReportData = saveParams.finalReportData;
+        includedTests = saveParams.includedTests;
       } else {
         throw new Error('No test type selected');
       }
@@ -446,17 +438,10 @@ export default function CreateReport() {
       finalReportData = combinedReportData;
       includedTests = selectedTests;
     } else if (selectedTemplate) {
-      const isCustomTemplate = typeof selectedTemplate === 'string' && 
-        (selectedTemplate.startsWith('custom_') || selectedTemplate.startsWith('quick_'));
-      
-      if (isCustomTemplate) {
-        reportType = 'combined';
-        finalReportData = { [selectedTemplate]: reportData };
-        includedTests = [selectedTemplate];
-      } else {
-        reportType = selectedTemplate;
-        finalReportData = reportData;
-      }
+      const saveParams = getReportSaveParams(selectedTemplate, reportData);
+      reportType = saveParams.reportType;
+      finalReportData = saveParams.finalReportData;
+      includedTests = saveParams.includedTests;
     } else {
       return null;
     }

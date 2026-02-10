@@ -57,7 +57,7 @@ import {
   Trash2,
   // Search imported at top
 } from 'lucide-react';
-import { reportTemplates, activeReportTypes, getReportTypeName } from '@/lib/report-templates';
+import { reportTemplates, activeReportTypes, getReportTypeName, registerCustomTemplates, getAllActiveTemplates } from '@/lib/report-templates';
 import { 
   useCustomTemplate, 
   useSaveCustomTemplate, 
@@ -358,28 +358,27 @@ export default function TemplateEditor() {
     return orderedFields;
   }, [customizations.fieldOrder]);
 
-  // Filter custom templates based on search
-  const filteredCustomTemplates = useMemo(() => {
-    if (!fullyCustomTemplates) return [];
-    if (!debouncedSearch.trim()) return fullyCustomTemplates;
-    
-    const query = debouncedSearch.toLowerCase();
-    return fullyCustomTemplates.filter(t => 
-      t.name.toLowerCase().includes(query) ||
-      t.categories.some(c => c.name.toLowerCase().includes(query))
-    );
-  }, [fullyCustomTemplates, debouncedSearch]);
+  // Register custom templates into the unified registry
+  useEffect(() => {
+    if (fullyCustomTemplates) {
+      registerCustomTemplates(fullyCustomTemplates);
+    }
+  }, [fullyCustomTemplates]);
 
-  // Filter built-in templates based on search
-  const filteredBuiltInTemplates = useMemo(() => {
-    if (!debouncedSearch.trim()) return activeReportTypes;
-    
+  // Build unified list of all templates (built-in + custom), sorted alphabetically
+  const allTemplateEntries = useMemo(() => {
+    return getAllActiveTemplates();
+  }, [fullyCustomTemplates]);
+
+  // Filter unified list based on search
+  const filteredTemplateEntries = useMemo(() => {
+    if (!debouncedSearch.trim()) return allTemplateEntries;
     const query = debouncedSearch.toLowerCase();
-    return activeReportTypes.filter(type => 
-      getReportTypeName(type).toLowerCase().includes(query) ||
-      type.toLowerCase().includes(query)
+    return allTemplateEntries.filter(t =>
+      t.name.toLowerCase().includes(query) ||
+      t.code.toLowerCase().includes(query)
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, allTemplateEntries]);
 
   return (
     <EnhancedPageLayout>
@@ -423,128 +422,117 @@ export default function TemplateEditor() {
             </div>
           </FadeIn>
 
-          {/* Custom Templates Created */}
-          {fullyCustomTemplates && fullyCustomTemplates.length > 0 && (
-            <FadeIn>
-              <Card className="mb-6 animate-pulse-glow card-gradient-overlay">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Beaker className="h-4 w-4" />
-                    Your Custom Templates
-                    {debouncedSearch && (
-                      <Badge variant="outline" className="text-xs font-normal">
-                        {filteredCustomTemplates.length} of {fullyCustomTemplates.length}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <CardDescription>Templates you've created from scratch</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {filteredCustomTemplates.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
-                      No custom templates match "{debouncedSearch}"
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {filteredCustomTemplates.map((t) => (
-                        <div 
-                          key={t.id}
-                          className="flex items-center justify-between p-3 border rounded-lg bg-card"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <Beaker className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                              <span className="font-medium">{t.name}</span>
-                              <div className="flex gap-2 mt-0.5">
-                                <Badge variant="secondary" className="text-xs">
-                                  {t.categories.length} categories
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                  {t.categories.reduce((sum, c) => sum + c.fields.length, 0)} fields
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <EditCustomTemplateDialog 
-                              template={t}
-                              onSave={updateFullyCustomTemplate}
-                              isSaving={isUpdatingCustom}
-                            />
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Custom Template?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will permanently delete "{t.name}". 
-                                    Existing reports using this template will not be affected, 
-                                    but you won't be able to create new reports with it.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction 
-                                    onClick={() => deleteFullyCustomTemplate(t.code)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </FadeIn>
-          )}
-
-          {/* Template Selection */}
+          {/* Unified Template List */}
           <FadeIn>
             <Card className="mb-6 animate-pulse-glow card-gradient-overlay">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  Customize Built-in Template
+                  All Templates
                   {debouncedSearch && (
                     <Badge variant="outline" className="text-xs font-normal">
-                      {filteredBuiltInTemplates.length} of {activeReportTypes.length}
+                      {filteredTemplateEntries.length} of {allTemplateEntries.length}
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription>Choose a template to customize fields, labels, and ranges</CardDescription>
+                <CardDescription>Select a template to customize, or edit/delete your custom ones</CardDescription>
               </CardHeader>
               <CardContent>
-                {filteredBuiltInTemplates.length === 0 ? (
+                {filteredTemplateEntries.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4 text-center">
-                    No built-in templates match "{debouncedSearch}"
+                    No templates match "{debouncedSearch}"
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                    {filteredBuiltInTemplates.map((type) => (
-                      <Button
-                        key={type}
-                        variant={selectedTemplate === type ? 'default' : 'outline'}
-                        className="justify-start text-left h-auto py-2 transition-all duration-300 hover:scale-[1.02]"
-                        onClick={() => setSelectedTemplate(type)}
-                      >
-                        <FileText className="h-4 w-4 mr-2 shrink-0" />
-                        <span className="truncate text-xs">{getReportTypeName(type)}</span>
-                      </Button>
-                    ))}
+                  <div className="space-y-2">
+                    {filteredTemplateEntries.map((entry) => {
+                      const customData = entry.isCustom 
+                        ? fullyCustomTemplates?.find(t => t.code === entry.code) 
+                        : null;
+
+                      return (
+                        <div 
+                          key={entry.code}
+                          className={`flex items-center justify-between p-3 border rounded-lg transition-all cursor-pointer hover:border-primary/50 ${
+                            selectedTemplate === entry.code ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'bg-card'
+                          }`}
+                          onClick={() => {
+                            if (!entry.isCustom) {
+                              setSelectedTemplate(entry.code as ReportType);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <span className="font-medium">{entry.name}</span>
+                              {customData && (
+                                <div className="flex gap-2 mt-0.5">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {customData.categories.length} categories
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {customData.categories.reduce((sum, c) => sum + c.fields.length, 0)} fields
+                                  </Badge>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            {entry.isCustom && customData ? (
+                              <>
+                                <EditCustomTemplateDialog 
+                                  template={customData}
+                                  onSave={updateFullyCustomTemplate}
+                                  isSaving={isUpdatingCustom}
+                                />
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-destructive hover:text-destructive"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Template?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will permanently delete "{entry.name}". 
+                                        Existing reports using this template will not be affected.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => deleteFullyCustomTemplate(entry.code)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </>
+                            ) : (
+                              <Button
+                                variant={selectedTemplate === entry.code ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTemplate(entry.code as ReportType);
+                                }}
+                              >
+                                Customize
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
