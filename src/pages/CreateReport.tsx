@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useLogActivity } from '@/hooks/useActivityLog';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ export default function CreateReport() {
   const navigate = useNavigate();
   const { clinicId } = useClinic();
   const queryClient = useQueryClient();
+  const logActivity = useLogActivity();
   const { draft, hasDraft, saveDraft, clearDraft } = useDraftReport();
 
   // Mode toggle: single test vs combined
@@ -386,6 +388,14 @@ export default function CreateReport() {
         }]);
 
       if (reportError) throw reportError;
+
+      // Log activity
+      const patientName = selectedPatient?.full_name || newPatientData?.full_name || 'Unknown';
+      logActivity({
+        action: 'created',
+        entity_type: 'report',
+        entity_name: `${reportNumber} for ${patientName}`,
+      });
 
       // Clear draft on successful save
       clearDraft();
