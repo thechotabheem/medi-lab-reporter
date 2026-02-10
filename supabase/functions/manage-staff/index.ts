@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, email, password, full_name, user_id } = await req.json();
+    const { action, email, password, full_name, user_id, username } = await req.json();
 
     if (action === "create") {
       // Check account limit (max 5 total)
@@ -80,6 +80,11 @@ Deno.serve(async (req) => {
         user_id: newUser.user.id,
         role: "lab_technician",
       });
+
+      // Set username on profile (auto-created by trigger)
+      if (username) {
+        await adminClient.from("profiles").update({ username }).eq("user_id", newUser.user.id);
+      }
 
       return new Response(JSON.stringify({ success: true, user: { id: newUser.user.id, email } }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -133,11 +138,15 @@ Deno.serve(async (req) => {
       const { data: roles } = await adminClient.from("user_roles").select("user_id, role");
       const roleMap = new Map((roles || []).map((r: any) => [r.user_id, r.role]));
 
+      const { data: profiles } = await adminClient.from("profiles").select("user_id, username");
+      const usernameMap = new Map((profiles || []).map((p: any) => [p.user_id, p.username]));
+
       const accountList = (users || []).map((u: any) => ({
         id: u.id,
         email: u.email,
         full_name: u.user_metadata?.full_name || u.email,
         role: roleMap.get(u.id) || "lab_technician",
+        username: usernameMap.get(u.id) || null,
         created_at: u.created_at,
         last_sign_in: u.last_sign_in_at,
       }));

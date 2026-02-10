@@ -39,6 +39,7 @@ interface StaffUser {
   email: string;
   full_name: string;
   role: string;
+  username: string | null;
   created_at: string;
   last_sign_in: string | null;
 }
@@ -52,6 +53,7 @@ export default function AdminPanel() {
 
   // Create dialog state
   const [createOpen, setCreateOpen] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newName, setNewName] = useState('');
@@ -93,15 +95,16 @@ export default function AdminPanel() {
   };
 
   const handleCreate = async () => {
-    if (!newEmail || !newPassword || !newName) {
+    if (!newUsername || !newEmail || !newPassword || !newName) {
       toast.error('All fields are required');
       return;
     }
     setActionLoading(true);
     try {
-      await callManageStaff({ action: 'create', email: newEmail, password: newPassword, full_name: newName });
+      await callManageStaff({ action: 'create', email: newEmail, password: newPassword, full_name: newName, username: newUsername.trim().toLowerCase() });
       toast.success('Staff account created!');
       setCreateOpen(false);
+      setNewUsername('');
       setNewEmail('');
       setNewPassword('');
       setNewName('');
@@ -189,6 +192,10 @@ export default function AdminPanel() {
                         <Input placeholder="Dr. John Doe" value={newName} onChange={(e) => setNewName(e.target.value)} />
                       </div>
                       <div className="space-y-2">
+                        <Label>Username</Label>
+                        <Input placeholder="e.g. staff.3" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
                         <Label>Email</Label>
                         <Input type="email" placeholder="staff@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
                       </div>
@@ -232,7 +239,9 @@ export default function AdminPanel() {
                                 {u.role === 'admin' ? 'Admin' : 'Staff'}
                               </Badge>
                             </div>
-                            <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {u.username ? `@${u.username}` : u.email}
+                            </p>
                           </div>
                         </div>
 
