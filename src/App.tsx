@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useNavigate } from "react-router-dom";
 import { ClinicProvider } from "@/contexts/ClinicContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SplashScreen } from "@/components/SplashScreen";
@@ -18,7 +19,6 @@ function KeyboardShortcuts() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Don't trigger when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
 
       const mod = e.metaKey || e.ctrlKey;
@@ -60,21 +60,23 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
-        <ClinicProvider>
-          <TooltipProvider>
-            {showSplash && isFirstLoad && (
-              <SplashScreen onComplete={handleSplashComplete} />
-            )}
-            <OfflineBanner />
-            <ServiceWorkerUpdate />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <KeyboardShortcuts />
-              <AnimatedRoutes />
-            </BrowserRouter>
-          </TooltipProvider>
-        </ClinicProvider>
+        <AuthProvider>
+          <ClinicProvider>
+            <TooltipProvider>
+              {showSplash && isFirstLoad && (
+                <SplashScreen onComplete={handleSplashComplete} />
+              )}
+              <OfflineBanner />
+              <ServiceWorkerUpdate />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <KeyboardShortcuts />
+                <AnimatedRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </ClinicProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

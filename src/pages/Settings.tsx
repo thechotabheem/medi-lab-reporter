@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -15,12 +16,20 @@ import {
   FileText,
   AlertTriangle,
   BookOpen,
+  LogOut,
 } from 'lucide-react';
 import { ResetDataDialog } from '@/components/settings/ResetDataDialog';
+import { toast } from 'sonner';
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { signOut, user } = useAuth();
   const { settings: notificationSettings, updateSetting } = useNotificationSettings();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+  };
 
   return (
     <EnhancedPageLayout>
@@ -186,8 +195,33 @@ export default function Settings() {
               </Card>
             </FadeIn>
 
+            {/* Account */}
+            <FadeIn delay={250}>
+              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3">
+                    <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
+                      <LogOut className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
+                    </IconWrapper>
+                    <div>
+                      <CardTitle className="text-base sm:text-lg">Account</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        {user?.email}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
+
             {/* Danger Zone - Reset Data */}
-            <FadeIn delay={275}>
+            <FadeIn delay={300}>
               <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-destructive/40 hover:shadow-lg border-destructive/20">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">

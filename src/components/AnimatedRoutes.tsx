@@ -1,7 +1,9 @@
-import { useLocation, Routes, Route } from "react-router-dom";
+import { useLocation, Routes, Route, Navigate } from "react-router-dom";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import CreateReport from "@/pages/CreateReport";
 import EditReport from "@/pages/EditReport";
@@ -26,6 +28,7 @@ const prefersReducedMotion = () => {
 
 export function AnimatedRoutes() {
   const location = useLocation();
+  const { user, isLoading: authLoading } = useAuth();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [transitionStage, setTransitionStage] = useState<"enter" | "exit">("enter");
   const previousPathRef = useRef(location.pathname);
@@ -76,9 +79,25 @@ export function AnimatedRoutes() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  // If not authenticated, show auth page (except install route)
+  if (!user && displayLocation.pathname !== '/install') {
+    return (
+      <Routes location={displayLocation}>
+        <Route path="*" element={<Auth />} />
+      </Routes>
+    );
+  }
+
   return (
     <>
-      {/* Skip to content link for a11y */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
@@ -97,6 +116,7 @@ export function AnimatedRoutes() {
         <div id="main-content">
           <Routes location={displayLocation}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
             <Route path="/install" element={<Install />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/reports/new" element={<CreateReport />} />
