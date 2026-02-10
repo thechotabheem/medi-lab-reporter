@@ -20,6 +20,8 @@ import {
 import { calculateAgeFromDOB } from '@/lib/utils';
 import { exportToCSV } from '@/lib/csv-export';
 import { toast } from 'sonner';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
+import { useDataFreshness } from '@/hooks/useDataFreshness';
 
 const PINNED_KEY = 'lab-reporter-pinned-patients';
 
@@ -39,6 +41,7 @@ function togglePin(id: string): string[] {
 export default function Patients() {
   const navigate = useNavigate();
   const { data: patients, isLoading } = usePatients();
+  const { dataSource, lastFetchedAt } = useDataFreshness('patients');
   const [searchTerm, setSearchTerm] = useState('');
   const [pinnedIds, setPinnedIds] = useState<string[]>(getPinnedIds);
 
@@ -100,6 +103,7 @@ export default function Patients() {
         icon={<Users className="h-5 w-5" />}
         showBack
         backPath="/dashboard"
+        badge={<DataSourceBadge dataSource={dataSource} lastFetchedAt={lastFetchedAt} />}
       />
       
       <HeaderDivider />

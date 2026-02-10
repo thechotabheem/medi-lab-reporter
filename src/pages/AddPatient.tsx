@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { ageToDateOfBirth } from '@/lib/utils';
 import { patientSchema } from '@/lib/validation-schemas';
+import { enqueueAction } from '@/lib/offlineQueue';
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -79,25 +80,40 @@ export default function AddPatient() {
     const validated = result.data;
     setIsSubmitting(true);
 
-    try {
-      const { error } = await supabase.from('patients').insert({
-        clinic_id: clinicId,
-        full_name: validated.full_name.trim(),
-        date_of_birth: ageToDateOfBirth(parseInt(validated.age)),
-        gender: validated.gender,
-        phone: validated.phone?.trim() || null,
-        email: validated.email?.trim() || null,
-        patient_id_number: validated.patient_id_number?.trim() || null,
-        address: validated.address?.trim() || null,
-      });
+    const patientPayload = {
+      clinic_id: clinicId,
+      full_name: validated.full_name.trim(),
+      date_of_birth: ageToDateOfBirth(parseInt(validated.age)),
+      gender: validated.gender,
+      phone: validated.phone?.trim() || null,
+      email: validated.email?.trim() || null,
+      patient_id_number: validated.patient_id_number?.trim() || null,
+      address: validated.address?.trim() || null,
+    };
 
+    try {
+      if (!navigator.onLine) {
+        await enqueueAction('create-patient', patientPayload);
+        toast({ title: 'Saved offline', description: `${validated.full_name} will sync when connected.` });
+        navigate('/patients');
+        return;
+      }
+
+      const { error } = await supabase.from('patients').insert(patientPayload);
       if (error) throw error;
 
       toast({ title: 'Patient added', description: `${validated.full_name} has been added.` });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       navigate('/patients');
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to add patient.', variant: 'destructive' });
+      // Network error - enqueue offline
+      if (!navigator.onLine || error?.message?.includes('fetch')) {
+        await enqueueAction('create-patient', patientPayload);
+        toast({ title: 'Saved offline', description: `${validated.full_name} will sync when connected.` });
+        navigate('/patients');
+      } else {
+        toast({ title: 'Error', description: error.message || 'Failed to add patient.', variant: 'destructive' });
+      }
     } finally {
       setIsSubmitting(false);
     }
