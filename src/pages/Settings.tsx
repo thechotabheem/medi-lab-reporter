@@ -51,7 +51,7 @@ export default function Settings() {
             {/* Admin Panel - admin only */}
             {isAdmin && (
               <FadeIn delay={75}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                <Card className="group animate-pulse-glow transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
                       <IconWrapper variant="default" size="default" className="transition-all duration-300 group-hover:scale-110">
@@ -77,7 +77,7 @@ export default function Settings() {
             {/* Clinic Settings - admin only */}
             {isAdmin && (
               <FadeIn delay={100}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                <Card className="group animate-pulse-glow transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
                       <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
@@ -103,7 +103,7 @@ export default function Settings() {
             {/* Template Customization - admin only */}
             {isAdmin && (
               <FadeIn delay={150}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                <Card className="group animate-pulse-glow transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
                       <IconWrapper variant="default" size="default" className="transition-all duration-300 group-hover:scale-110">
@@ -128,7 +128,7 @@ export default function Settings() {
 
             {/* Documentation */}
             <FadeIn delay={175}>
-              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+              <Card className="group animate-pulse-glow transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">
                     <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
@@ -155,7 +155,7 @@ export default function Settings() {
             </FadeIn>
 
             <FadeIn delay={225}>
-              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+              <Card className="group animate-pulse-glow transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">
                     <IconWrapper variant="muted" size="default" className="transition-all duration-300 group-hover:scale-110">
@@ -221,7 +221,7 @@ export default function Settings() {
 
             {/* Account */}
             <FadeIn delay={250}>
-              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+              <Card className="group animate-pulse-glow transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center gap-3">
                     <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
@@ -251,7 +251,7 @@ export default function Settings() {
             {/* Danger Zone - Reset Data (admin only) */}
             {isAdmin && (
               <FadeIn delay={300}>
-                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-destructive/40 hover:shadow-lg border-destructive/20">
+                <Card className="group animate-pulse-glow transition-all duration-300 hover:border-destructive/40 hover:shadow-lg border-destructive/20">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
                       <IconWrapper variant="destructive" size="default" className="transition-all duration-300 group-hover:scale-110">
