@@ -100,6 +100,12 @@ export const useDeleteReport = () => {
 
   return useMutation({
     mutationFn: async (reportId: string) => {
+      if (!navigator.onLine) {
+        await enqueueAction('delete-report', { _entityId: reportId });
+        toast.success('Delete saved offline - will sync when connected');
+        return;
+      }
+
       const { error } = await supabase
         .from('reports')
         .delete()
@@ -110,9 +116,16 @@ export const useDeleteReport = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      toast.success('Report deleted successfully');
+      if (navigator.onLine) {
+        toast.success('Report deleted successfully');
+      }
     },
-    onError: (error) => {
+    onError: async (error, reportId) => {
+      if (!navigator.onLine || error.message?.includes('fetch')) {
+        await enqueueAction('delete-report', { _entityId: reportId });
+        toast.success('Delete saved offline - will sync when connected');
+        return;
+      }
       toast.error('Failed to delete report: ' + error.message);
     },
   });
