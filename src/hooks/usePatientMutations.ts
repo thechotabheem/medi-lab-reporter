@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Gender } from '@/types/database';
 import { toast } from 'sonner';
+import { enqueueAction } from '@/lib/offlineQueue';
 
 interface UpdatePatientData {
   id: string;
@@ -20,6 +21,14 @@ export const useUpdatePatient = () => {
   return useMutation({
     mutationFn: async (data: UpdatePatientData) => {
       const { id, ...updateData } = data;
+
+      if (!navigator.onLine) {
+        await enqueueAction('update-patient', { ...updateData, _entityId: id });
+        toast.success('Update saved offline - will sync when connected');
+        // Return a fake result for optimistic UI
+        return { ...updateData, id } as any;
+      }
+
       const { data: result, error } = await supabase
         .from('patients')
         .update(updateData)
@@ -33,9 +42,18 @@ export const useUpdatePatient = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.invalidateQueries({ queryKey: ['patient'] });
-      toast.success('Patient updated successfully');
+      if (navigator.onLine) {
+        toast.success('Patient updated successfully');
+      }
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      // Network error fallback
+      if (!navigator.onLine || error.message?.includes('fetch')) {
+        const { id, ...updateData } = variables;
+        await enqueueAction('update-patient', { ...updateData, _entityId: id });
+        toast.success('Update saved offline - will sync when connected');
+        return;
+      }
       toast.error('Failed to update patient: ' + error.message);
     },
   });

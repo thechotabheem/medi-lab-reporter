@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Report } from '@/types/database';
 import { toast } from 'sonner';
+import { enqueueAction } from '@/lib/offlineQueue';
 
 export const useReport = (reportId: string | undefined) => {
   return useQuery({
@@ -48,11 +49,21 @@ export const useUpdateReport = () => {
     mutationFn: async (data: {
       id: string;
       report_data?: Record<string, unknown>;
+      report_type?: string;
+      included_tests?: string[] | null;
       status?: 'draft' | 'completed' | 'verified';
       referring_doctor?: string;
       clinical_notes?: string;
+      test_date?: string;
     }) => {
       const { id, ...updateData } = data;
+
+      if (!navigator.onLine) {
+        await enqueueAction('update-report', { ...updateData, _entityId: id });
+        toast.success('Update saved offline - will sync when connected');
+        return { ...updateData, id } as any;
+      }
+
       const { data: result, error } = await supabase
         .from('reports')
         .update(updateData as any)
@@ -67,9 +78,18 @@ export const useUpdateReport = () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
       queryClient.invalidateQueries({ queryKey: ['report'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      toast.success('Report updated successfully');
+      if (navigator.onLine) {
+        toast.success('Report updated successfully');
+      }
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      // Network error fallback
+      if (!navigator.onLine || error.message?.includes('fetch')) {
+        const { id, ...updateData } = variables;
+        await enqueueAction('update-report', { ...updateData, _entityId: id });
+        toast.success('Update saved offline - will sync when connected');
+        return;
+      }
       toast.error('Failed to update report: ' + error.message);
     },
   });
