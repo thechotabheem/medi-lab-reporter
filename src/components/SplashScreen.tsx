@@ -136,9 +136,9 @@ export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreen
             opacity: 0,
           }}
         >
-          <SparkleText className="text-base md:text-lg text-muted-foreground font-medium" sparkleCount={3}>
+          <span className="text-base md:text-lg text-muted-foreground font-medium">
             Zia Clinic & Maternity Home
-          </SparkleText>
+          </span>
         </div>
 
         {/* Professional tagline */}
