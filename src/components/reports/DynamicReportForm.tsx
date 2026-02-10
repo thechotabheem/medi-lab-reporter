@@ -265,7 +265,7 @@ export const DynamicReportForm = ({
                     type={field.type === 'number' ? 'number' : 'text'}
                     step={field.type === 'number' ? '0.01' : undefined}
                     value={(formField.value as string | number) ?? ''}
-                    placeholder={field.type === 'number' ? '0.00' : `Enter ${field.label.toLowerCase()}`}
+                    placeholder={field.type === 'number' ? '' : `Enter ${field.label.toLowerCase()}`}
                     disabled={field.calculated}
                     className={status === 'abnormal' ? 'border-destructive' : ''}
                   />
