@@ -1,85 +1,59 @@
 
-# Restricted 5-Account System with Role-Based Access
+# Unify Templates: Make Custom Templates First-Class Citizens
 
-## Overview
+## The Problem
 
-The app will be locked to exactly **5 accounts**: 1 Admin + 4 Staff. Public sign-up will be removed entirely. Only the admin can create staff accounts via a new admin panel. Staff get full CRUD access to patients and reports but cannot access settings, templates, or danger zone features.
+Currently, the app has two separate systems for templates:
 
-## What Changes
+1. **Built-in templates** - hardcoded in `report-templates.ts` with their own type enum in the database (`cbc`, `lft`, etc.)
+2. **Custom templates** - stored in `custom_templates` table with `custom_` or `quick_` prefixes, forced to use the `combined` report type as a workaround
 
-### 1. Remove Public Sign-Up from Auth Page
-- The Auth page (`src/pages/Auth.tsx`) becomes **login-only** -- no sign-up form, no toggle
-- Clean, simple login screen for all 5 users
+This creates complexity everywhere: special prefix checks (`custom_`, `quick_`), separate UI sections ("Your Custom Templates" vs "Built-in Tests"), different data storage patterns, and workarounds to fit custom templates into the rigid database enum.
 
-### 2. Add Role Awareness to Auth Context
-- Update `src/contexts/AuthContext.tsx` to fetch the logged-in user's role from the `user_roles` table
-- Expose `role` ("admin" or "lab_technician") and `isAdmin` boolean to all components
+## The Solution
 
-### 3. Create Admin Account Management Page
-- New page `src/pages/AdminPanel.tsx` -- accessible only to admins
-- Shows all 5 accounts in a table (name, email, role, status)
-- Admin can **create staff accounts** (up to 4) via a backend function
-- Admin can **reset passwords** for staff accounts
-- Enforces the 5-account hard limit
+Merge both systems so custom templates appear and behave identically to built-in ones -- a single flat list, no "Custom" badges or separate sections, and a unified data flow.
 
-### 4. Create Backend Function for Account Management
-- New edge function `manage-staff` that uses the service role key to:
-  - Create new user accounts (with email + password)
-  - Reset passwords for existing staff
-  - Delete staff accounts
-- Only callable by the admin (validates caller's role server-side)
+### What Changes
 
-### 5. Guard Admin-Only Routes
-- These pages become admin-only:
-  - `/settings/clinic` (Clinic Settings)
-  - `/settings/templates` (Template Editor)
-  - `/admin` (new Admin Panel)
-  - Reset Data dialog (Danger Zone in Settings)
-- Staff see a simplified Settings page without these options
-- Routes redirect non-admin users to dashboard
+**1. TemplateSelector.tsx -- Single unified list**
+- Remove the separate "Your Custom Templates" and "Built-in Tests" sections
+- Render one flat list combining both built-in and database custom templates, sorted alphabetically
+- Remove "Custom" badges -- all templates look the same to the user
+- Keep the search/filter which already works across both
 
-### 6. Update Settings Page
-- Hide "Clinic Settings", "Report Templates", and "Danger Zone" cards for staff users
-- Add "Account Management" card for admin only
-- Staff still see: Notifications, Documentation, Account (sign out)
+**2. report-templates.ts -- Dynamic template registry**
+- Add a runtime registry that custom templates get merged into when loaded
+- Update `getReportTypeName()` to check the registry
+- Update `activeReportTypes` to be dynamically built (merging hardcoded + loaded custom templates)
 
-### 7. Update Navigation
-- Add "Admin" tab to bottom nav for admin users only (replaces or adds to existing nav)
+**3. useCustomTemplates.ts -- Simplified resolution**
+- `useCustomizedTemplate` already handles both paths; simplify so custom templates return in the same format as built-in ones without the `isFullyCustom` flag mattering to consumers
+- Remove `quick_` prefix handling (convert existing quick templates to use the same code pattern)
 
----
+**4. CreateReport.tsx and EditReport.tsx -- Uniform save logic**
+- Custom templates will continue using `combined` report type in the database (this is unavoidable without a DB enum change), but the branching logic will be simplified into a single helper function instead of scattered `startsWith('custom_')` checks
+
+**5. CombinedReportForm.tsx -- Remove "Custom" badge**
+- Remove the `isFullyCustomTemplate` check and "Custom" badge display
+
+**6. Template Editor page -- Remove section separation**
+- Merge "Your Custom Templates" and "Built-in Templates" into one list
+- Custom templates show an "Edit" option; built-in ones show "Customize"
 
 ## Technical Details
 
-### Files to Create
-| File | Purpose |
-|------|---------|
-| `src/pages/AdminPanel.tsx` | Admin account management UI |
-| `supabase/functions/manage-staff/index.ts` | Backend function for creating/managing staff accounts |
+### Files to modify:
+- `src/components/reports/TemplateSelector.tsx` -- merge lists, remove separate sections
+- `src/lib/report-templates.ts` -- add `registerCustomTemplates()` and `getAllActiveTemplates()` helpers
+- `src/hooks/useCustomTemplates.ts` -- add a hook that merges custom templates into the registry on load
+- `src/pages/CreateReport.tsx` -- extract `isCustomTemplate` check into a shared util, simplify branching
+- `src/pages/EditReport.tsx` -- same simplification
+- `src/components/reports/CombinedReportForm.tsx` -- remove Custom badge
+- `src/pages/TemplateEditor.tsx` -- unified template list
+- `src/hooks/usePatientHistory.ts` -- use the shared util instead of inline prefix checks
 
-### Files to Modify
-| File | Changes |
-|------|---------|
-| `src/pages/Auth.tsx` | Remove sign-up form, login-only |
-| `src/contexts/AuthContext.tsx` | Add `role`, `isAdmin` fields by querying `user_roles` |
-| `src/pages/Settings.tsx` | Conditionally hide admin-only cards based on role |
-| `src/components/AnimatedRoutes.tsx` | Add `/admin` route, guard admin-only routes |
-| `src/components/navigation/MobileBottomNav.tsx` | Show admin nav item for admins |
-| `src/pages/Dashboard.tsx` | Show admin action card for admin users |
-
-### Edge Function: `manage-staff`
-- **POST /manage-staff** with actions: `create`, `reset-password`, `delete`
-- Validates that the calling user has the `admin` role using the `has_role` function
-- Uses `SUPABASE_SERVICE_ROLE_KEY` to manage auth users
-- Automatically assigns `lab_technician` role to new staff and creates their profile
-- Enforces max 5 total accounts
-
-### Role Check Flow
-```
-User logs in -> AuthContext fetches role from user_roles table -> 
-isAdmin = (role === 'admin') -> UI conditionally renders admin features
-```
-
-### Security
-- Role checks happen both client-side (for UI) and server-side (in edge function)
-- The edge function verifies the caller's JWT and checks their role in the database before performing any action
-- Staff cannot escalate privileges since role management only happens through the edge function with admin validation
+### Data compatibility:
+- No database migration needed -- custom templates still use `combined` report type with `included_tests`
+- Existing reports and custom templates continue working without changes
+- The `custom_` prefix convention stays in the database, but the UI no longer exposes this distinction to users
