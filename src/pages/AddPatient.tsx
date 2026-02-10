@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { ageToDateOfBirth } from '@/lib/utils';
+import { patientSchema } from '@/lib/validation-schemas';
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function AddPatient() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -41,6 +43,14 @@ export default function AddPatient() {
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,34 +61,39 @@ export default function AddPatient() {
       return;
     }
 
-    if (!formData.full_name || !formData.age || !formData.gender) {
-      toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
+    // Validate with Zod
+    const result = patientSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0] as string;
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      toast({ title: 'Validation Error', description: 'Please fix the highlighted fields.', variant: 'destructive' });
       return;
     }
 
-    const age = parseInt(formData.age);
-    if (isNaN(age) || age < 0 || age > 150) {
-      toast({ title: 'Invalid age', description: 'Please enter a valid age.', variant: 'destructive' });
-      return;
-    }
-
+    const validated = result.data;
     setIsSubmitting(true);
 
     try {
       const { error } = await supabase.from('patients').insert({
         clinic_id: clinicId,
-        full_name: formData.full_name,
-        date_of_birth: ageToDateOfBirth(age),
-        gender: formData.gender as 'male' | 'female' | 'other',
-        phone: formData.phone || null,
-        email: formData.email || null,
-        patient_id_number: formData.patient_id_number || null,
-        address: formData.address || null,
+        full_name: validated.full_name.trim(),
+        date_of_birth: ageToDateOfBirth(parseInt(validated.age)),
+        gender: validated.gender,
+        phone: validated.phone?.trim() || null,
+        email: validated.email?.trim() || null,
+        patient_id_number: validated.patient_id_number?.trim() || null,
+        address: validated.address?.trim() || null,
       });
 
       if (error) throw error;
 
-      toast({ title: 'Patient added', description: `${formData.full_name} has been added.` });
+      toast({ title: 'Patient added', description: `${validated.full_name} has been added.` });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       navigate('/patients');
     } catch (error: any) {
@@ -121,7 +136,9 @@ export default function AddPatient() {
                       onChange={(e) => handleChange('full_name', e.target.value)}
                       placeholder="John Doe"
                       required
+                      className={errors.full_name ? 'border-destructive' : ''}
                     />
+                    {errors.full_name && <p className="text-xs text-destructive">{errors.full_name}</p>}
                   </div>
 
                   {/* Age and Gender */}
@@ -137,12 +154,14 @@ export default function AddPatient() {
                         onChange={(e) => handleChange('age', e.target.value)}
                         placeholder="35"
                         required
+                        className={errors.age ? 'border-destructive' : ''}
                       />
+                      {errors.age && <p className="text-xs text-destructive">{errors.age}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="gender" className="text-sm">Gender *</Label>
                       <Select value={formData.gender} onValueChange={(value) => handleChange('gender', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className={errors.gender ? 'border-destructive' : ''}>
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                         <SelectContent>
@@ -151,6 +170,7 @@ export default function AddPatient() {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
                     </div>
                   </div>
 
@@ -175,7 +195,9 @@ export default function AddPatient() {
                         value={formData.phone}
                         onChange={(e) => handleChange('phone', e.target.value)}
                         placeholder="+1 234 567 8900"
+                        className={errors.phone ? 'border-destructive' : ''}
                       />
+                      {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm">Email</Label>
@@ -185,7 +207,9 @@ export default function AddPatient() {
                         value={formData.email}
                         onChange={(e) => handleChange('email', e.target.value)}
                         placeholder="patient@example.com"
+                        className={errors.email ? 'border-destructive' : ''}
                       />
+                      {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                     </div>
                   </div>
 

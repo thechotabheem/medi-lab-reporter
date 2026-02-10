@@ -54,5 +54,6 @@ export const useDashboardStats = () => {
       };
     },
     enabled: !!clinicId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };

@@ -114,6 +114,10 @@ export function StatCard({
           className
         )}
         onClick={handleClick}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        aria-label={onClick ? `${title}: ${value}${subtitle ? `, ${subtitle}` : ''}` : undefined}
+        onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
       >
         {glowEffect && <Ripple ripples={ripples} />}
         <div

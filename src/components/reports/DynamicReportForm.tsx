@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +14,8 @@ import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { usePatientHistory, getHistoricalComparison, getTrendIcon } from '@/hooks/usePatientHistory';
 import type { ReportType, Patient, TestField, TestCategory } from '@/types/database';
-import { Calculator, AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Calculator, AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { MEDICAL_HARD_LIMITS } from '@/lib/validation-schemas';
 
 interface DynamicReportFormProps {
   reportType: ReportType;
@@ -180,6 +182,12 @@ export const DynamicReportForm = ({
     const comparison = historicalComparison[field.name];
     const hasTrend = comparison && comparison.trend !== 'unknown';
 
+    // Check medical hard limits
+    const hardLimit = MEDICAL_HARD_LIMITS[field.name];
+    const currentValue = formValues[field.name];
+    const numValue = currentValue !== undefined && currentValue !== '' ? Number(currentValue) : null;
+    const exceedsHardLimit = hardLimit && numValue !== null && !isNaN(numValue) && (numValue < hardLimit.min || numValue > hardLimit.max);
+
     // Get trend icon component
     const TrendIcon = comparison?.trend === 'up' ? TrendingUp 
       : comparison?.trend === 'down' ? TrendingDown 
@@ -267,12 +275,21 @@ export const DynamicReportForm = ({
                     value={(formField.value as string | number) ?? ''}
                     placeholder={field.type === 'number' ? '' : `Enter ${field.label.toLowerCase()}`}
                     disabled={field.calculated}
-                    className={status === 'abnormal' ? 'border-destructive' : ''}
+                    className={cn(
+                      status === 'abnormal' && 'border-destructive',
+                      exceedsHardLimit && 'border-warning bg-warning/5'
+                    )}
                   />
                   {field.unit && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                       {field.unit}
                     </span>
+                  )}
+                  {exceedsHardLimit && (
+                    <div className="flex items-center gap-1 mt-1 text-xs text-warning">
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>Value outside physiological range ({hardLimit.min}–{hardLimit.max})</span>
+                    </div>
                   )}
                 </div>
               );

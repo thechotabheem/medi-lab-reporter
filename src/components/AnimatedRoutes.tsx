@@ -1,6 +1,7 @@
 import { useLocation, Routes, Route } from "react-router-dom";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import Dashboard from "@/pages/Dashboard";
 import CreateReport from "@/pages/CreateReport";
 import EditReport from "@/pages/EditReport";
@@ -15,7 +16,6 @@ import TemplateEditor from "@/pages/TemplateEditor";
 import Documentation from "@/pages/Documentation";
 import Install from "@/pages/Install";
 import CompareReports from "@/pages/CompareReports";
-
 import NotFound from "@/pages/NotFound";
 
 // Check for reduced motion preference
@@ -31,7 +31,6 @@ export function AnimatedRoutes() {
   const previousPathRef = useRef(location.pathname);
   const fallbackTimerRef = useRef<number | null>(null);
 
-  // Clear any pending fallback timer
   const clearFallbackTimer = useCallback(() => {
     if (fallbackTimerRef.current !== null) {
       clearTimeout(fallbackTimerRef.current);
@@ -39,7 +38,6 @@ export function AnimatedRoutes() {
     }
   }, []);
 
-  // Complete the transition to the new location
   const completeTransition = useCallback(() => {
     clearFallbackTimer();
     setDisplayLocation(location);
@@ -50,33 +48,27 @@ export function AnimatedRoutes() {
     if (location.pathname !== previousPathRef.current) {
       previousPathRef.current = location.pathname;
 
-      // If user prefers reduced motion, skip the exit animation entirely
       if (prefersReducedMotion()) {
         setDisplayLocation(location);
         setTransitionStage("enter");
         return;
       }
 
-      // Start exit animation
       setTransitionStage("exit");
 
-      // Fallback: if animationend doesn't fire within 300ms, force completion
       clearFallbackTimer();
       fallbackTimerRef.current = window.setTimeout(() => {
         completeTransition();
       }, 300);
     }
 
-    // Cleanup on unmount or when location changes again before animation ends
     return () => {
       clearFallbackTimer();
     };
   }, [location, clearFallbackTimer, completeTransition]);
 
   const handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
-    // Only react to this wrapper's own animation, not child animations
     if (event.target !== event.currentTarget) return;
-    // Only react to the exit animation completing
     if (event.animationName !== "page-exit") return;
 
     if (transitionStage === "exit") {
@@ -85,35 +77,46 @@ export function AnimatedRoutes() {
   };
 
   return (
-    <div
-      className={cn(
-        "transition-all duration-300 ease-out",
-        transitionStage === "enter" && "animate-page-enter",
-        transitionStage === "exit" && "animate-page-exit"
-      )}
-      onAnimationEnd={handleAnimationEnd}
-    >
-      <Routes location={displayLocation}>
-        {/* Render Dashboard directly at "/" to avoid initial redirect animation trap */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/install" element={<Install />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/reports/new" element={<CreateReport />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/reports/:id" element={<ReportView />} />
-        <Route path="/reports/:id/edit" element={<EditReport />} />
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/patients/new" element={<AddPatient />} />
-        <Route path="/patients/:id" element={<PatientDetail />} />
-        <Route path="/patients/:id/compare" element={<CompareReports />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/settings/clinic" element={<ClinicSettings />} />
-        <Route path="/settings/templates" element={<TemplateEditor />} />
-        
-        <Route path="/documentation" element={<Documentation />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
+    <>
+      {/* Skip to content link for a11y */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
+      >
+        Skip to main content
+      </a>
+
+      <div
+        className={cn(
+          "transition-all duration-300 ease-out pb-14 sm:pb-0",
+          transitionStage === "enter" && "animate-page-enter",
+          transitionStage === "exit" && "animate-page-exit"
+        )}
+        onAnimationEnd={handleAnimationEnd}
+      >
+        <div id="main-content">
+          <Routes location={displayLocation}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/install" element={<Install />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reports/new" element={<CreateReport />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/reports/:id" element={<ReportView />} />
+            <Route path="/reports/:id/edit" element={<EditReport />} />
+            <Route path="/patients" element={<Patients />} />
+            <Route path="/patients/new" element={<AddPatient />} />
+            <Route path="/patients/:id" element={<PatientDetail />} />
+            <Route path="/patients/:id/compare" element={<CompareReports />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/clinic" element={<ClinicSettings />} />
+            <Route path="/settings/templates" element={<TemplateEditor />} />
+            <Route path="/documentation" element={<Documentation />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </div>
+
+      <MobileBottomNav />
+    </>
   );
 }

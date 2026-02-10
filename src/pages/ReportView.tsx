@@ -56,17 +56,11 @@ import {
 import { format } from 'date-fns';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from '@/lib/report-templates';
+import { calculateAgeFromDOB } from '@/lib/utils';
 import '@/styles/print.css';
 
 const calculateAge = (dateOfBirth: string): string => {
-  const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  return `${age} years`;
+  return `${calculateAgeFromDOB(dateOfBirth)} years`;
 };
 
 export default function ReportView() {

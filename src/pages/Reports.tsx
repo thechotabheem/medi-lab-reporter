@@ -23,9 +23,12 @@ import {
   FileText,
   Calendar,
   User,
+  Download,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getReportTypeName } from '@/lib/report-templates';
+import { exportToCSV } from '@/lib/csv-export';
+import { toast } from 'sonner';
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -47,11 +50,35 @@ export default function Reports() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const handleExportCSV = () => {
+    if (!filteredReports?.length) return;
+    exportToCSV(
+      filteredReports.map((r) => ({
+        report_number: r.report_number,
+        patient: r.patient?.full_name || '',
+        type: getReportTypeName(r.report_type),
+        status: r.status,
+        test_date: format(new Date(r.test_date), 'yyyy-MM-dd'),
+        referring_doctor: r.referring_doctor || '',
+      })),
+      [
+        { key: 'report_number', label: 'Report #' },
+        { key: 'patient', label: 'Patient Name' },
+        { key: 'type', label: 'Report Type' },
+        { key: 'status', label: 'Status' },
+        { key: 'test_date', label: 'Test Date' },
+        { key: 'referring_doctor', label: 'Referring Doctor' },
+      ],
+      `reports-export-${new Date().toISOString().split('T')[0]}`
+    );
+    toast.success('Reports exported to CSV');
+  };
+
   return (
     <EnhancedPageLayout>
       <PageHeader
         title="Reports"
-        subtitle="View and manage lab reports"
+        subtitle={`View and manage lab reports${reports?.length ? ` (${reports.length})` : ''}`}
         icon={<ClipboardList className="h-5 w-5" />}
         showBack
         backPath="/dashboard"
@@ -59,7 +86,6 @@ export default function Reports() {
       
       <HeaderDivider />
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:py-8">
         {/* Filters */}
         <div className="flex flex-col gap-3 sm:gap-4 mb-6 animate-fade-in">
@@ -112,10 +138,18 @@ export default function Reports() {
               </Select>
             </div>
           </div>
-          <Button onClick={() => navigate('/reports/new')} className="w-full sm:w-auto sm:self-end">
-            <Plus className="h-4 w-4 mr-2" />
-            New Report
-          </Button>
+          <div className="flex gap-2 sm:self-end">
+            {filteredReports && filteredReports.length > 0 && (
+              <Button variant="outline" onClick={handleExportCSV}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            )}
+            <Button onClick={() => navigate('/reports/new')} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              New Report
+            </Button>
+          </div>
         </div>
 
         {/* Reports List */}
@@ -145,6 +179,10 @@ export default function Reports() {
                 className="group cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:scale-[1.01] animate-fade-in-up animate-pulse-glow card-gradient-overlay"
                 style={{ animationDelay: `${index * 30}ms` }}
                 onClick={() => navigate(`/reports/${report.id}`)}
+                role="button"
+                tabIndex={0}
+                aria-label={`${getReportTypeName(report.report_type)} for ${report.patient?.full_name}, ${report.status}`}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/reports/${report.id}`); } }}
               >
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center justify-between gap-3">

@@ -6,7 +6,6 @@ import { useWeather } from '@/hooks/useWeather';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-import { SparkleText } from '@/components/ui/sparkle-text';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList } from 'lucide-react';
 export default function Dashboard() {
@@ -91,34 +90,34 @@ export default function Dashboard() {
 
         {/* Card grids container - fills remaining viewport */}
         <div className="flex-1 flex flex-col gap-2 sm:gap-4 min-h-0">
-          {/* Quick Stats - Equal height cards */}
-          <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 min-h-0">
-            <div className="animate-fade-in-up animation-delay-100 h-full">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 sm:flex-1 sm:auto-rows-fr sm:min-h-0">
+            <div className="animate-fade-in-up animation-delay-100 sm:h-full">
               <StatCard title="Total Reports" value={statsLoading ? '-' : stats?.totalReports || 0} subtitle="All time" icon={FileText} onClick={() => navigate('/reports')} loading={statsLoading} glowEffect />
             </div>
-            <div className="animate-fade-in-up animation-delay-200 h-full">
+            <div className="animate-fade-in-up animation-delay-200 sm:h-full">
               <StatCard title="Patients" value={statsLoading ? '-' : stats?.totalPatients || 0} subtitle="Registered" icon={Users} onClick={() => navigate('/patients')} loading={statsLoading} glowEffect />
             </div>
-            <div className="animate-fade-in-up animation-delay-300 h-full">
+            <div className="animate-fade-in-up animation-delay-300 sm:h-full">
               <StatCard title="This Month" value={statsLoading ? '-' : stats?.monthlyReports || 0} subtitle="Reports created" icon={Activity} onClick={() => navigate('/reports')} loading={statsLoading} glowEffect />
             </div>
-            <div className="animate-fade-in-up animation-delay-400 h-full">
+            <div className="animate-fade-in-up animation-delay-400 sm:h-full">
               <StatCard title="Pending" value={statsLoading ? '-' : stats?.draftReports || 0} subtitle="Draft reports" icon={FileText} onClick={() => navigate('/reports?status=draft')} loading={statsLoading} glowEffect />
             </div>
           </div>
 
-          {/* Quick Actions - Equal height cards */}
-          <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-2 sm:gap-4 min-h-0">
-            <div className="animate-fade-in-up animation-delay-200 h-full">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 sm:flex-1 sm:auto-rows-fr sm:min-h-0">
+            <div className="animate-fade-in-up animation-delay-200 sm:h-full">
               <ActionCard title="New Report" description="Create a new lab report for a patient" icon={Plus} iconVariant="interactive" onClick={() => navigate('/reports/new')} glowEffect />
             </div>
-            <div className="animate-fade-in-up animation-delay-300 h-full">
+            <div className="animate-fade-in-up animation-delay-300 sm:h-full">
               <ActionCard title="View Reports" description="Browse and manage all lab reports" icon={ClipboardList} iconVariant="interactive" onClick={() => navigate('/reports')} glowEffect />
             </div>
-            <div className="animate-fade-in-up animation-delay-400 h-full">
+            <div className="animate-fade-in-up animation-delay-400 sm:h-full">
               <ActionCard title="Patients" description="Manage patient records and history" icon={Users} iconVariant="interactive" onClick={() => navigate('/patients')} glowEffect />
             </div>
-            <div className="animate-fade-in-up animation-delay-500 h-full">
+            <div className="animate-fade-in-up animation-delay-500 sm:h-full">
               <ActionCard title="Settings" description="Configure clinic branding and preferences" icon={Settings} iconVariant="interactive" onClick={() => navigate('/settings')} glowEffect />
             </div>
           </div>
