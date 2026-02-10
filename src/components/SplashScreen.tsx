@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { SparkleText } from '@/components/ui/sparkle-text';
 
 interface SplashScreenProps {
   onComplete: () => void;
   minDisplayTime?: number;
 }
 
+const ORBIT_DOTS = 6;
+const ORBIT_RADIUS = 80;
+const PROGRESS_RADIUS = 60;
+const CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS;
+
 export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreenProps) {
   const [isExiting, setIsExiting] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Animate progress bar
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
@@ -34,188 +37,191 @@ export function SplashScreen({ onComplete, minDisplayTime = 2000 }: SplashScreen
     };
   }, [minDisplayTime, onComplete]);
 
+  const dashOffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
+
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background transition-opacity duration-500 overflow-hidden",
-        isExiting && "opacity-0 pointer-events-none"
+        "fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background overflow-hidden",
+        "transition-all duration-500 ease-out",
+        isExiting && "opacity-0 scale-105 pointer-events-none"
       )}
     >
-      {/* Layer 1: Primary radial glow */}
-      <div 
+      {/* Background layers */}
+      <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse at center, hsl(162 84% 42% / 0.15) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse at center, hsl(162 84% 42% / 0.12) 0%, transparent 55%)',
         }}
       />
-
-      {/* Layer 2: Dot grid pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.04]"
+      <div
+        className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: `radial-gradient(circle at center, hsl(162 84% 42%) 1px, transparent 1px)`,
+          backgroundImage: 'radial-gradient(circle, hsl(162 84% 42%) 1px, transparent 1px)',
           backgroundSize: '24px 24px',
         }}
       />
-
-      {/* Layer 3: Vignette overlay */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse at center, transparent 40%, hsl(var(--background)) 100%)',
         }}
       />
 
-
       {/* Main content */}
-      <div className="relative flex flex-col items-center gap-6">
-        {/* Logo container with concentric rings */}
-        <div className="relative animate-float" style={{ animationDelay: '200ms' }}>
-          {/* Concentric glow rings */}
-          <div 
-            className="absolute inset-0 rounded-full"
+      <div className="relative flex flex-col items-center gap-5">
+
+        {/* Logo + orbital particles + progress ring container */}
+        <div className="relative flex items-center justify-center" style={{ width: 200, height: 200 }}>
+
+          {/* Orbital particle dots */}
+          {Array.from({ length: ORBIT_DOTS }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                animation: `orbit 4s linear infinite`,
+                animationDelay: `${i * (4 / ORBIT_DOTS)}s`,
+              }}
+            >
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: 6 - i * 0.4,
+                  height: 6 - i * 0.4,
+                  background: `hsl(162 84% ${50 + i * 5}%)`,
+                  boxShadow: `0 0 8px hsl(162 84% 42% / 0.6)`,
+                  top: '50%',
+                  left: '50%',
+                  marginTop: -3,
+                  marginLeft: ORBIT_RADIUS - 3,
+                }}
+              />
+            </div>
+          ))}
+
+          {/* SVG progress ring */}
+          <svg
+            className="absolute"
+            width={200}
+            height={200}
             style={{
-              background: 'radial-gradient(circle, hsl(162 84% 42% / 0.3) 0%, transparent 70%)',
-              transform: 'scale(2.5)',
-              animation: 'ring-pulse 3s ease-in-out infinite',
-            }}
-          />
-          <div 
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'radial-gradient(circle, hsl(162 84% 42% / 0.2) 0%, transparent 70%)',
-              transform: 'scale(2)',
-              animation: 'ring-pulse 3s ease-in-out infinite 0.5s',
-            }}
-          />
-          <div 
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'radial-gradient(circle, hsl(162 84% 42% / 0.4) 0%, transparent 70%)',
-              transform: 'scale(1.5)',
-              animation: 'ring-pulse 3s ease-in-out infinite 1s',
-            }}
-          />
-          
-          {/* Logo with scale entrance */}
-          <div 
-            className="relative w-28 h-28 md:w-36 md:h-36 flex items-center justify-center"
-            style={{
-              animation: 'scale-in 0.6s ease-out forwards',
-              animationDelay: '200ms',
+              animation: 'fade-in-up 0.5s ease-out forwards',
+              animationDelay: '800ms',
               opacity: 0,
             }}
           >
-            <img 
-              src="/icon.svg" 
-              alt="Lab Reporter" 
-              className="w-full h-full object-contain drop-shadow-[0_0_30px_hsl(162_84%_42%_/_0.6)]"
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            {/* Track */}
+            <circle
+              cx={100}
+              cy={100}
+              r={PROGRESS_RADIUS}
+              fill="none"
+              stroke="hsl(162 84% 42% / 0.1)"
+              strokeWidth={2}
+            />
+            {/* Progress */}
+            <circle
+              cx={100}
+              cy={100}
+              r={PROGRESS_RADIUS}
+              fill="none"
+              stroke="hsl(162 84% 42%)"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={dashOffset}
+              filter="url(#glow)"
+              style={{
+                transition: 'stroke-dashoffset 100ms ease-out',
+                transform: 'rotate(-90deg)',
+                transformOrigin: '50% 50%',
+              }}
+            />
+          </svg>
+
+          {/* Logo */}
+          <div
+            className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center"
+            style={{
+              animation: 'logo-enter 0.6s ease-out forwards, logo-pulse 3s ease-in-out infinite 0.8s',
+              opacity: 0,
+              animationDelay: '200ms',
+            }}
+          >
+            <img
+              src="/icon.svg"
+              alt="Lab Reporter"
+              className="w-full h-full object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 20px hsl(162 84% 42% / 0.5))',
+              }}
             />
           </div>
         </div>
 
-        {/* App name with shimmer effect */}
-        <div 
-          className="flex flex-col items-center gap-3"
+        {/* App name */}
+        <h1
+          className="text-4xl md:text-5xl font-bold text-gradient-primary tracking-tight"
           style={{
             animation: 'fade-in-up 0.5s ease-out forwards',
-            animationDelay: '400ms',
+            animationDelay: '300ms',
             opacity: 0,
           }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gradient-primary tracking-tight">
-            Lab Reporter
-          </h1>
-        </div>
+          Lab Reporter
+        </h1>
 
-        {/* Clinic name with SparkleText */}
-        <div
+        {/* Clinic name */}
+        <span
+          className="text-base md:text-lg text-muted-foreground font-medium"
           style={{
             animation: 'fade-in-up 0.5s ease-out forwards',
-            animationDelay: '600ms',
+            animationDelay: '500ms',
             opacity: 0,
           }}
         >
-          <span className="text-base md:text-lg text-muted-foreground font-medium">
-            Zia Clinic & Maternity Home
-          </span>
-        </div>
+          Zia Clinic & Maternity Home
+        </span>
 
-        {/* Professional tagline */}
-        <p 
+        {/* Tagline */}
+        <p
           className="text-xs md:text-sm text-muted-foreground/60 tracking-widest uppercase"
           style={{
             animation: 'fade-in-up 0.5s ease-out forwards',
-            animationDelay: '800ms',
+            animationDelay: '700ms',
             opacity: 0,
           }}
         >
           Professional Medical Lab Management
         </p>
-
-        {/* Animated progress bar */}
-        <div 
-          className="w-48 md:w-56 mt-4"
-          style={{
-            animation: 'fade-in-up 0.5s ease-out forwards',
-            animationDelay: '800ms',
-            opacity: 0,
-          }}
-        >
-          <div className="h-1 bg-secondary/30 rounded-full overflow-hidden backdrop-blur-sm border border-border/20">
-            <div 
-              className="h-full bg-primary rounded-full transition-all duration-100 ease-out"
-              style={{ 
-                width: `${progress}%`,
-                boxShadow: '0 0 12px hsl(162 84% 42% / 0.5), 0 0 4px hsl(162 84% 42% / 0.8)',
-              }}
-            />
-          </div>
-        </div>
       </div>
 
-      {/* Keyframes */}
       <style>{`
-        @keyframes shimmer-sweep {
-          0%, 100% {
-            background-position: 200% 0;
-          }
-          50% {
-            background-position: -200% 0;
-          }
+        @keyframes orbit {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
-        
-        @keyframes ring-pulse {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(var(--ring-scale, 1.5));
-          }
-          50% {
-            opacity: 0.6;
-            transform: scale(calc(var(--ring-scale, 1.5) * 1.1));
-          }
+        @keyframes logo-enter {
+          0% { opacity: 0; transform: scale(0.5); }
+          100% { opacity: 1; transform: scale(1); }
         }
-        
-        @keyframes scale-in {
-          0% {
-            opacity: 0;
-            transform: scale(0.8);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
+        @keyframes logo-pulse {
+          0%, 100% { filter: drop-shadow(0 0 20px hsl(162 84% 42% / 0.4)); }
+          50% { filter: drop-shadow(0 0 35px hsl(162 84% 42% / 0.7)); }
         }
-        
         @keyframes fade-in-up {
-          0% {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
