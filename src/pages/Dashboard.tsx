@@ -7,6 +7,8 @@ import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
+import { useDataFreshness } from '@/hooks/useDataFreshness';
 import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList } from 'lucide-react';
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function Dashboard() {
   const {
     weather
   } = useWeather();
+  const { dataSource, lastFetchedAt } = useDataFreshness('dashboard');
   const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
@@ -46,6 +49,7 @@ export default function Dashboard() {
                 <FlaskConical className="h-7 w-7 sm:h-8 sm:w-8" />
               </IconWrapper>
               <h1 className="font-bold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-foreground animate-breathe animation-delay-2000 cursor-default">Lab Reporter</h1>
+              <DataSourceBadge dataSource={dataSource} lastFetchedAt={lastFetchedAt} />
             </div>
           </div>
         </div>

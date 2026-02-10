@@ -58,6 +58,8 @@ import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from '@/lib/report-templates';
 import { calculateAgeFromDOB } from '@/lib/utils';
 import '@/styles/print.css';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
+import { useDataFreshness } from '@/hooks/useDataFreshness';
 
 const calculateAge = (dateOfBirth: string): string => {
   return `${calculateAgeFromDOB(dateOfBirth)} years`;
@@ -68,6 +70,7 @@ export default function ReportView() {
   const navigate = useNavigate();
   const { clinicId } = useClinic();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { dataSource, lastFetchedAt } = useDataFreshness('report-' + id);
 
   const deleteReport = useDeleteReport();
   const updateReport = useUpdateReport();
@@ -282,6 +285,7 @@ export default function ReportView() {
         subtitle={report.report_number}
         icon={<FileText className="h-5 w-5" />}
         showBack
+        badge={<DataSourceBadge dataSource={dataSource} lastFetchedAt={lastFetchedAt} />}
         actions={
           <div className="flex gap-1 sm:gap-2 print-hide">
             {/* Compare with other reports */}
