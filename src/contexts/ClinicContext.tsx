@@ -20,7 +20,13 @@ const ClinicContext = createContext<ClinicContextType | undefined>(undefined);
 export const useClinic = () => {
   const context = useContext(ClinicContext);
   if (context === undefined) {
-    throw new Error('useClinic must be used within a ClinicProvider');
+    // Fallback for when component renders before provider is ready (e.g. cache restore)
+    return {
+      clinic: null,
+      clinicId: DEFAULT_CLINIC_ID,
+      isLoading: true,
+      refreshClinic: async () => {},
+    } as ClinicContextType;
   }
   return context;
 };
