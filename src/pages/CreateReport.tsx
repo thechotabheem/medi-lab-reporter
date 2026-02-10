@@ -338,7 +338,7 @@ export default function CreateReport() {
       }
 
       // Generate report number
-      const reportNumber = `RPT-${Date.now().toString(36).toUpperCase()}`;
+      const reportNumber = `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
 
       // Determine report type and data
       let reportType: ReportType;

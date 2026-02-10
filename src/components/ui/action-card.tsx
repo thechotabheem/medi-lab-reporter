@@ -107,6 +107,10 @@ export function ActionCard({
           className
         )}
         onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        aria-label={`${title}${description ? `: ${description}` : ''}`}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}
       >
         {glowEffect && <Ripple ripples={ripples} />}
         <div
