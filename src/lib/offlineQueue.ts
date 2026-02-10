@@ -4,11 +4,13 @@ const STORE_NAME = 'pendingActions';
 
 export interface OfflineAction {
   id: string;
-  type: 'create-report' | 'create-patient';
+  type: 'create-report' | 'create-patient' | 'update-report' | 'update-patient';
   payload: Record<string, unknown>;
   createdAt: string;
   status: 'pending' | 'syncing' | 'failed';
   retryCount: number;
+  /** For updates, the entity ID */
+  entityId?: string;
 }
 
 function openDB(): Promise<IDBDatabase> {

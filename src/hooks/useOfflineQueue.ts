@@ -9,6 +9,7 @@ import {
   getPendingCount,
   type OfflineAction,
 } from '@/lib/offlineQueue';
+import { playSyncSound, triggerVibration, type SyncResult } from '@/lib/syncNotifications';
 
 const MAX_RETRIES = 3;
 
@@ -16,6 +17,8 @@ export function useOfflineQueue() {
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingActions, setPendingActions] = useState<OfflineAction[]>([]);
+  const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
+  const [showSyncPopup, setShowSyncPopup] = useState(false);
   const syncLockRef = useRef(false);
   const queryClient = useQueryClient();
 
@@ -61,7 +64,6 @@ export function useOfflineQueue() {
               .insert(action.payload as any);
             if (error) throw error;
           } else if (action.type === 'create-report') {
-            // If report has a new patient payload, create patient first
             const payload = action.payload as any;
             if (payload._newPatient) {
               const { data: newPatient, error: patientError } = await supabase
@@ -77,6 +79,26 @@ export function useOfflineQueue() {
               .from('reports')
               .insert(payload);
             if (error) throw error;
+          } else if (action.type === 'update-patient') {
+            const { _entityId, ...updateData } = action.payload as any;
+            const entityId = action.entityId || _entityId;
+            if (entityId) {
+              const { error } = await supabase
+                .from('patients')
+                .update(updateData)
+                .eq('id', entityId);
+              if (error) throw error;
+            }
+          } else if (action.type === 'update-report') {
+            const { _entityId, ...updateData } = action.payload as any;
+            const entityId = action.entityId || _entityId;
+            if (entityId) {
+              const { error } = await supabase
+                .from('reports')
+                .update(updateData)
+                .eq('id', entityId);
+              if (error) throw error;
+            }
           }
 
           await removeAction(action.id);
@@ -93,10 +115,20 @@ export function useOfflineQueue() {
 
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient'] });
       queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['report'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 
+      const result: SyncResult = { synced, failed };
+      setLastSyncResult(result);
+
       if (synced > 0) {
+        // Trigger sound & vibration
+        playSyncSound();
+        triggerVibration();
+        // Show popup
+        setShowSyncPopup(true);
         toast.success(`${synced} offline item${synced > 1 ? 's' : ''} synced successfully`);
       }
       if (failed > 0) {
@@ -110,6 +142,10 @@ export function useOfflineQueue() {
       await refreshCount();
     }
   }, [queryClient, refreshCount]);
+
+  const dismissSyncPopup = useCallback(() => {
+    setShowSyncPopup(false);
+  }, []);
 
   const discardAction = useCallback(async (id: string) => {
     await removeAction(id);
@@ -149,5 +185,8 @@ export function useOfflineQueue() {
     discardAction,
     retrySync,
     refreshCount,
+    lastSyncResult,
+    showSyncPopup,
+    dismissSyncPopup,
   };
 }

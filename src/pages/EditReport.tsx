@@ -21,6 +21,7 @@ import { getReportTypeName } from '@/lib/report-templates';
 import type { Patient, ReportType, Report } from '@/types/database';
 import { Check, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { enqueueAction } from '@/lib/offlineQueue';
 
 export default function EditReport() {
   const navigate = useNavigate();
@@ -85,6 +86,7 @@ export default function EditReport() {
   const handleSave = async (status: 'draft' | 'completed') => {
     if (!clinicId || !id || !report) return;
 
+    const shouldBeCombined = selectedTests.length > 1 || isCombinedReport;
     setIsSaving(true);
 
     try {
@@ -96,19 +98,31 @@ export default function EditReport() {
         : combinedReportData[selectedTests[0]] || {};
       const includedTests = shouldBeCombined ? selectedTests : null;
 
+      const updatePayload = {
+        report_type: reportType,
+        report_data: finalReportData as any,
+        included_tests: includedTests,
+        referring_doctor: reportDetails.referring_doctor || null,
+        clinical_notes: reportDetails.clinical_notes || null,
+        test_date: reportDetails.test_date,
+        status,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (!navigator.onLine) {
+        await enqueueAction('update-report', { ...updatePayload, _entityId: id });
+        setSuccessMessage({
+          title: 'Saved Offline!',
+          subtitle: 'Your changes will sync when connected',
+        });
+        setShowSuccess(true);
+        return;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: reportError } = await supabase
         .from('reports')
-        .update({
-          report_type: reportType,
-          report_data: finalReportData as any,
-          included_tests: includedTests,
-          referring_doctor: reportDetails.referring_doctor || null,
-          clinical_notes: reportDetails.clinical_notes || null,
-          test_date: reportDetails.test_date,
-          status,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', id);
 
       if (reportError) throw reportError;
@@ -131,6 +145,22 @@ export default function EditReport() {
       setShowSuccess(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
+      // Network error fallback
+      if (!navigator.onLine || (error instanceof Error && error.message.includes('fetch'))) {
+        await enqueueAction('update-report', {
+          report_type: shouldBeCombined ? 'combined' : selectedTests[0],
+          report_data: shouldBeCombined ? combinedReportData : combinedReportData[selectedTests[0]] || {},
+          included_tests: shouldBeCombined ? selectedTests : null,
+          referring_doctor: reportDetails.referring_doctor || null,
+          clinical_notes: reportDetails.clinical_notes || null,
+          test_date: reportDetails.test_date,
+          status,
+          _entityId: id,
+        } as any);
+        toast.success('Saved offline - will sync when connected');
+        navigate(`/reports/${id}`);
+        return;
+      }
       toast.error('Failed to save: ' + message);
     } finally {
       setIsSaving(false);
