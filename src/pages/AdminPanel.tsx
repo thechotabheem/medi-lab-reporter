@@ -307,16 +307,16 @@ export default function AdminPanel() {
                             </div>
                           </div>
 
-                          {u.id !== user?.id && (
-                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(u)}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                                setResetUserId(u.id); setResetUserName(u.full_name); setResetPassword(''); setResetOpen(true);
-                              }}>
-                                <KeyRound className="h-4 w-4" />
-                              </Button>
+                          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(u)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                              setResetUserId(u.id); setResetUserName(u.full_name); setResetPassword(''); setResetOpen(true);
+                            }}>
+                              <KeyRound className="h-4 w-4" />
+                            </Button>
+                            {u.id !== user?.id && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
@@ -338,8 +338,8 @@ export default function AdminPanel() {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
