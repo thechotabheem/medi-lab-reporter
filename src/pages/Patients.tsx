@@ -187,7 +187,7 @@ export default function Patients() {
                         {isPinned ? (
                           <Star className="h-4 w-4 text-primary fill-primary" />
                         ) : (
-                          <StarOff className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <StarOff className="h-4 w-4 text-muted-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" />
                         )}
                       </button>
                     </div>
