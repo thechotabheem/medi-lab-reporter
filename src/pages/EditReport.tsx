@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useLogActivity } from '@/hooks/useActivityLog';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ export default function EditReport() {
   const { id } = useParams<{ id: string }>();
   const { clinicId } = useClinic();
   const queryClient = useQueryClient();
+  const logActivity = useLogActivity();
 
   const [selectedTests, setSelectedTests] = useState<ReportType[]>([]);
   const [combinedReportData, setCombinedReportData] = useState<Record<string, Record<string, string | number | boolean | null>>>({});
@@ -110,6 +112,14 @@ export default function EditReport() {
         .eq('id', id);
 
       if (reportError) throw reportError;
+
+      // Log activity
+      logActivity({
+        action: 'updated',
+        entity_type: 'report',
+        entity_id: id,
+        entity_name: `Report ${report?.report_number || id}`,
+      });
 
       queryClient.invalidateQueries({ queryKey: ['reports'] });
       queryClient.invalidateQueries({ queryKey: ['report', id] });

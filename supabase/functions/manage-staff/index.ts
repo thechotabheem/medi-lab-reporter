@@ -90,6 +90,39 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "update") {
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "user_id required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Update auth user metadata (email, name)
+      const updatePayload: any = {};
+      if (email) updatePayload.email = email;
+      if (full_name) updatePayload.user_metadata = { full_name };
+
+      if (Object.keys(updatePayload).length > 0) {
+        const { error: updateErr } = await adminClient.auth.admin.updateUserById(user_id, updatePayload);
+        if (updateErr) throw updateErr;
+      }
+
+      // Update username on profile
+      if (username !== undefined) {
+        await adminClient.from("profiles").update({ username, ...(full_name ? { full_name } : {}), ...(email ? { email } : {}) }).eq("user_id", user_id);
+      } else if (full_name || email) {
+        const profileUpdate: any = {};
+        if (full_name) profileUpdate.full_name = full_name;
+        if (email) profileUpdate.email = email;
+        await adminClient.from("profiles").update(profileUpdate).eq("user_id", user_id);
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "reset-password") {
       if (!user_id || !password) {
         return new Response(JSON.stringify({ error: "user_id and password required" }), {
