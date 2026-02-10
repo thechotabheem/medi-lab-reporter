@@ -6,6 +6,7 @@ type Clinic = Tables<'clinics'>;
 
 // Default clinic ID - this is the static UUID for the single default clinic
 export const DEFAULT_CLINIC_ID = '00000000-0000-0000-0000-000000000001';
+const CLINIC_CACHE_KEY = 'lab-reporter-clinic-cache';
 
 interface ClinicContextType {
   clinic: Clinic | null;
@@ -25,7 +26,15 @@ export const useClinic = () => {
 };
 
 export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [clinic, setClinic] = useState<Clinic | null>(null);
+  const [clinic, setClinic] = useState<Clinic | null>(() => {
+    // Restore from localStorage for offline access
+    try {
+      const cached = localStorage.getItem(CLINIC_CACHE_KEY);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchClinic = async () => {
@@ -38,11 +47,18 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (error) {
         console.error('Error fetching clinic:', error);
-      } else {
+      } else if (data) {
         setClinic(data);
+        // Cache for offline use
+        try {
+          localStorage.setItem(CLINIC_CACHE_KEY, JSON.stringify(data));
+        } catch {
+          // Storage full
+        }
       }
     } catch (error) {
       console.error('Error fetching clinic:', error);
+      // Offline - cached data already loaded from state init
     } finally {
       setIsLoading(false);
     }

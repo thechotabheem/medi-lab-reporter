@@ -4,12 +4,12 @@ const STORE_NAME = 'pendingActions';
 
 export interface OfflineAction {
   id: string;
-  type: 'create-report' | 'create-patient' | 'update-report' | 'update-patient';
+  type: 'create-report' | 'create-patient' | 'update-report' | 'update-patient' | 'delete-report' | 'delete-patient';
   payload: Record<string, unknown>;
   createdAt: string;
   status: 'pending' | 'syncing' | 'failed';
   retryCount: number;
-  /** For updates, the entity ID */
+  /** For updates/deletes, the entity ID */
   entityId?: string;
 }
 

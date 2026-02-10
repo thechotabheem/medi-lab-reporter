@@ -64,6 +64,12 @@ export const useDeletePatient = () => {
 
   return useMutation({
     mutationFn: async (patientId: string) => {
+      if (!navigator.onLine) {
+        await enqueueAction('delete-patient', { _entityId: patientId });
+        toast.success('Delete saved offline - will sync when connected');
+        return;
+      }
+
       const { error } = await supabase
         .from('patients')
         .delete()
@@ -73,9 +79,16 @@ export const useDeletePatient = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      toast.success('Patient deleted successfully');
+      if (navigator.onLine) {
+        toast.success('Patient deleted successfully');
+      }
     },
-    onError: (error) => {
+    onError: async (error, patientId) => {
+      if (!navigator.onLine || error.message?.includes('fetch')) {
+        await enqueueAction('delete-patient', { _entityId: patientId });
+        toast.success('Delete saved offline - will sync when connected');
+        return;
+      }
       toast.error('Failed to delete patient: ' + error.message);
     },
   });

@@ -99,6 +99,24 @@ export function useOfflineQueue() {
                 .eq('id', entityId);
               if (error) throw error;
             }
+          } else if (action.type === 'delete-patient') {
+            const entityId = action.entityId || (action.payload as any)._entityId;
+            if (entityId) {
+              const { error } = await supabase
+                .from('patients')
+                .delete()
+                .eq('id', entityId);
+              if (error) throw error;
+            }
+          } else if (action.type === 'delete-report') {
+            const entityId = action.entityId || (action.payload as any)._entityId;
+            if (entityId) {
+              const { error } = await supabase
+                .from('reports')
+                .delete()
+                .eq('id', entityId);
+              if (error) throw error;
+            }
           }
 
           await removeAction(action.id);
