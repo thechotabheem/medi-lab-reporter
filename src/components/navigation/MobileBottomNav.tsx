@@ -1,17 +1,23 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, ClipboardList, Users, Settings } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { LayoutDashboard, ClipboardList, Users, Settings, ShieldCheck } from 'lucide-react';
 
-const navItems = [
+const baseNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', matchPaths: ['/', '/dashboard'] },
   { label: 'Reports', icon: ClipboardList, path: '/reports', matchPaths: ['/reports'] },
   { label: 'Patients', icon: Users, path: '/patients', matchPaths: ['/patients'] },
   { label: 'Settings', icon: Settings, path: '/settings', matchPaths: ['/settings'] },
 ];
 
+const adminNavItem = { label: 'Admin', icon: ShieldCheck, path: '/admin', matchPaths: ['/admin'] };
+
 export function MobileBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
+
+  const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems;
 
   const isActive = (item: typeof navItems[0]) =>
     item.matchPaths.some((p) => location.pathname === p || (p !== '/' && location.pathname.startsWith(p)));

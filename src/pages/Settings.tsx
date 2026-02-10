@@ -17,13 +17,14 @@ import {
   AlertTriangle,
   BookOpen,
   LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 import { ResetDataDialog } from '@/components/settings/ResetDataDialog';
 import { toast } from 'sonner';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut, user, isAdmin } = useAuth();
   const { settings: notificationSettings, updateSetting } = useNotificationSettings();
 
   const handleSignOut = async () => {
@@ -46,61 +47,83 @@ export default function Settings() {
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-3xl">
           <div className="space-y-4 sm:space-y-6">
-            {/* Clinic Settings */}
-            <FadeIn delay={100}>
-              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex items-center gap-3">
-                    <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
-                      <Building2 className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
-                    </IconWrapper>
-                    <div>
-                      <CardTitle className="text-base sm:text-lg">Clinic Settings</CardTitle>
-                      <CardDescription className="text-xs sm:text-sm">
-                        Configure clinic branding and details
-                      </CardDescription>
+            {/* Admin Panel - admin only */}
+            {isAdmin && (
+              <FadeIn delay={75}>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <IconWrapper variant="default" size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <ShieldCheck className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
+                      </IconWrapper>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg">Account Management</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                          Manage the 5 allowed accounts
+                        </CardDescription>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={() => navigate('/settings/clinic')}
-                  >
-                    Manage Clinic Settings
-                  </Button>
-                </CardContent>
-              </Card>
-            </FadeIn>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/admin')}>
+                      Manage Accounts
+                    </Button>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
 
-            {/* Template Customization */}
-            <FadeIn delay={150}>
-              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex items-center gap-3">
-                    <IconWrapper variant="default" size="default" className="transition-all duration-300 group-hover:scale-110">
-                      <FileText className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
-                    </IconWrapper>
-                    <div>
-                      <CardTitle className="text-base sm:text-lg">Report Templates</CardTitle>
-                      <CardDescription className="text-xs sm:text-sm">
-                        Customize test fields and normal ranges
-                      </CardDescription>
+            {/* Clinic Settings - admin only */}
+            {isAdmin && (
+              <FadeIn delay={100}>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <IconWrapper variant="secondary" size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <Building2 className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
+                      </IconWrapper>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg">Clinic Settings</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                          Configure clinic branding and details
+                        </CardDescription>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={() => navigate('/settings/templates')}
-                  >
-                    Customize Templates
-                  </Button>
-                </CardContent>
-              </Card>
-            </FadeIn>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/settings/clinic')}>
+                      Manage Clinic Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
+
+            {/* Template Customization - admin only */}
+            {isAdmin && (
+              <FadeIn delay={150}>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <IconWrapper variant="default" size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <FileText className="h-5 w-5 transition-all duration-300 group-hover:text-primary" />
+                      </IconWrapper>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg">Report Templates</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                          Customize test fields and normal ranges
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/settings/templates')}>
+                      Customize Templates
+                    </Button>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
 
             {/* Documentation */}
             <FadeIn delay={175}>
@@ -220,27 +243,29 @@ export default function Settings() {
               </Card>
             </FadeIn>
 
-            {/* Danger Zone - Reset Data */}
-            <FadeIn delay={300}>
-              <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-destructive/40 hover:shadow-lg border-destructive/20">
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex items-center gap-3">
-                    <IconWrapper variant="destructive" size="default" className="transition-all duration-300 group-hover:scale-110">
-                      <AlertTriangle className="h-5 w-5 transition-all duration-300 group-hover:text-destructive" />
-                    </IconWrapper>
-                    <div>
-                      <CardTitle className="text-base sm:text-lg text-destructive">Danger Zone</CardTitle>
-                      <CardDescription className="text-xs sm:text-sm">
-                        Reset all data (patients, reports)
-                      </CardDescription>
+            {/* Danger Zone - Reset Data (admin only) */}
+            {isAdmin && (
+              <FadeIn delay={300}>
+                <Card className="group animate-pulse-glow card-gradient-overlay transition-all duration-300 hover:border-destructive/40 hover:shadow-lg border-destructive/20">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <IconWrapper variant="destructive" size="default" className="transition-all duration-300 group-hover:scale-110">
+                        <AlertTriangle className="h-5 w-5 transition-all duration-300 group-hover:text-destructive" />
+                      </IconWrapper>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg text-destructive">Danger Zone</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                          Reset all data (patients, reports)
+                        </CardDescription>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0">
-                  <ResetDataDialog />
-                </CardContent>
-              </Card>
-            </FadeIn>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <ResetDataDialog />
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
           </div>
         </main>
       </PageTransition>

@@ -18,6 +18,7 @@ import TemplateEditor from "@/pages/TemplateEditor";
 import Documentation from "@/pages/Documentation";
 import Install from "@/pages/Install";
 import CompareReports from "@/pages/CompareReports";
+import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/NotFound";
 
 // Check for reduced motion preference
@@ -28,7 +29,7 @@ const prefersReducedMotion = () => {
 
 export function AnimatedRoutes() {
   const location = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isAdmin } = useAuth();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [transitionStage, setTransitionStage] = useState<"enter" | "exit">("enter");
   const previousPathRef = useRef(location.pathname);
@@ -128,8 +129,9 @@ export function AnimatedRoutes() {
             <Route path="/patients/:id" element={<PatientDetail />} />
             <Route path="/patients/:id/compare" element={<CompareReports />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/clinic" element={<ClinicSettings />} />
-            <Route path="/settings/templates" element={<TemplateEditor />} />
+            <Route path="/settings/clinic" element={isAdmin ? <ClinicSettings /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/settings/templates" element={isAdmin ? <TemplateEditor /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
