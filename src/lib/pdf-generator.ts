@@ -27,6 +27,8 @@ interface ClinicWithBranding {
   border_style?: string | null;
   secondary_color?: string | null;
   contact_display_format?: string | null;
+  pdf_style?: string | null;
+  logo_watermark_enabled?: boolean | null;
 }
 
 interface GeneratePDFOptions {
@@ -188,6 +190,9 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   const signatureTitleRight = clinic?.signature_title_right || 'Pathologist';
   const borderStyle = clinic?.border_style || 'simple';
   const contactDisplayFormat = clinic?.contact_display_format || 'inline';
+  const pdfStyle = clinic?.pdf_style || 'modern';
+  const isClassic = pdfStyle === 'classic';
+  const logoWatermarkEnabled = clinic?.logo_watermark_enabled ?? false;
   
   const COLORS = {
     ...DEFAULT_COLORS,
@@ -204,19 +209,39 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
 
   const pageNumbers: { x: number; y: number; page: number }[] = [];
 
-  // ── Watermark ──
+  // ── Watermark (text or logo) ──
   const drawWatermark = (pageNum: number) => {
-    if (!clinic?.watermark_text) return;
     doc.setPage(pageNum);
-    doc.saveGraphicsState();
-    doc.setFontSize(50);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(220, 220, 220);
-    doc.text(clinic.watermark_text.toUpperCase(), pageWidth / 2, pageHeight / 2, {
-      align: 'center',
-      angle: 45,
-    });
-    doc.restoreGraphicsState();
+    
+    // Logo watermark – faint centered logo on every page
+    if (logoWatermarkEnabled && logoBase64) {
+      doc.saveGraphicsState();
+      try {
+        const wmSize = 80;
+        const wmX = (pageWidth - wmSize) / 2;
+        const wmY = (pageHeight - wmSize) / 2;
+        // jsPDF doesn't have native opacity for images, so we draw it normally
+        // but at a large size in the center – the logo itself should be recognizable
+        (doc as any).setGState(new (doc as any).GState({ opacity: 0.06 }));
+        doc.addImage(logoBase64, 'AUTO', wmX, wmY, wmSize, wmSize);
+      } catch {
+        // Logo watermark failed
+      }
+      doc.restoreGraphicsState();
+    }
+    
+    // Text watermark
+    if (clinic?.watermark_text) {
+      doc.saveGraphicsState();
+      doc.setFontSize(50);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(220, 220, 220);
+      doc.text(clinic.watermark_text.toUpperCase(), pageWidth / 2, pageHeight / 2, {
+        align: 'center',
+        angle: 45,
+      });
+      doc.restoreGraphicsState();
+    }
   };
 
   // ── Header ──
@@ -225,74 +250,127 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     let yPos = MARGIN;
 
     if (isFirstPage) {
-      // Left-aligned letterhead style
-      let textStartX = MARGIN;
-      
-      if (logoBase64) {
-        try {
-          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 2, 18, 18);
-          textStartX = MARGIN + 22;
-        } catch {
-          // Logo failed
+      if (isClassic) {
+        // ── CLASSIC STYLE: centered, traditional, formal ──
+        if (logoBase64) {
+          try {
+            doc.addImage(logoBase64, 'AUTO', (pageWidth - 20) / 2, yPos - 2, 20, 20);
+            yPos += 18;
+          } catch { /* */ }
         }
-      }
 
-      // Clinic name beside logo
-      doc.setFontSize(20 * fontSizeMultiplier);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...COLORS.primaryDark);
-      doc.text(clinic?.name || 'Medical Laboratory', textStartX, yPos + 6);
+        doc.setFontSize(22 * fontSizeMultiplier);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...COLORS.primaryDark);
+        doc.text(clinic?.name || 'Medical Laboratory', pageWidth / 2, yPos, { align: 'center' });
+        yPos += 7;
 
-      // Tagline below name
-      if (clinic?.tagline) {
-        doc.setFontSize(9 * fontSizeMultiplier);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(...COLORS.textMuted);
-        doc.text(clinic.tagline, textStartX, yPos + 12);
-      }
-
-      yPos += (clinic?.tagline ? 18 : 14);
-
-      // Header text
-      if (clinic?.header_text) {
-        doc.setFontSize(8 * fontSizeMultiplier);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...COLORS.textMuted);
-        const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - MARGIN * 2);
-        doc.text(headerLines, MARGIN, yPos);
-        yPos += headerLines.length * 3.5 + 2;
-      }
-
-      // Contact info – single subtle line with pipe separators
-      if (contactDisplayFormat !== 'hidden' && (clinic?.address || clinic?.phone || clinic?.email || clinic?.website)) {
-        doc.setFontSize(7.5 * fontSizeMultiplier);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...COLORS.label);
-        
-        const contactParts = [clinic?.address, clinic?.phone, clinic?.email, clinic?.website].filter(Boolean);
-        
-        if (contactDisplayFormat === 'stacked') {
-          contactParts.forEach((part) => {
-            doc.text(part as string, MARGIN, yPos);
-            yPos += 3.5;
-          });
-        } else {
-          doc.text(contactParts.join('  ·  '), MARGIN, yPos);
+        if (clinic?.tagline) {
+          doc.setFontSize(10 * fontSizeMultiplier);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(...COLORS.textMuted);
+          doc.text(clinic.tagline, pageWidth / 2, yPos, { align: 'center' });
           yPos += 5;
         }
-      }
 
-      // Elegant double-line divider: accent top, light gray bottom
-      if (borderStyle !== 'none') {
-        yPos += 2;
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(0.8);
-        doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+        if (clinic?.header_text) {
+          doc.setFontSize(8 * fontSizeMultiplier);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...COLORS.textMuted);
+          const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - MARGIN * 2 - 20);
+          doc.text(headerLines, pageWidth / 2, yPos, { align: 'center' });
+          yPos += headerLines.length * 3.5 + 2;
+        }
+
+        if (contactDisplayFormat !== 'hidden' && (clinic?.address || clinic?.phone || clinic?.email || clinic?.website)) {
+          doc.setFontSize(7.5 * fontSizeMultiplier);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...COLORS.label);
+          const contactParts = [clinic?.address, clinic?.phone, clinic?.email, clinic?.website].filter(Boolean);
+          if (contactDisplayFormat === 'stacked') {
+            contactParts.forEach((part) => {
+              doc.text(part as string, pageWidth / 2, yPos, { align: 'center' });
+              yPos += 3.5;
+            });
+          } else {
+            doc.text(contactParts.join('  |  '), pageWidth / 2, yPos, { align: 'center' });
+            yPos += 5;
+          }
+        }
+
+        // Classic thick colored divider
+        if (borderStyle !== 'none') {
+          yPos += 2;
+          doc.setDrawColor(...COLORS.primary);
+          doc.setLineWidth(1.5);
+          doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+          if (borderStyle === 'double') {
+            yPos += 2;
+            doc.setLineWidth(0.5);
+            doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+          }
+        }
+      } else {
+        // ── MODERN STYLE: left-aligned letterhead ──
+        let textStartX = MARGIN;
         
-        yPos += 1.5;
-        doc.setDrawColor(...COLORS.borderLight);
-        doc.setLineWidth(0.3);
-        doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+        if (logoBase64) {
+          try {
+            doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 2, 18, 18);
+            textStartX = MARGIN + 22;
+          } catch { /* */ }
+        }
+
+        doc.setFontSize(20 * fontSizeMultiplier);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...COLORS.primaryDark);
+        doc.text(clinic?.name || 'Medical Laboratory', textStartX, yPos + 6);
+
+        if (clinic?.tagline) {
+          doc.setFontSize(9 * fontSizeMultiplier);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(...COLORS.textMuted);
+          doc.text(clinic.tagline, textStartX, yPos + 12);
+        }
+
+        yPos += (clinic?.tagline ? 18 : 14);
+
+        if (clinic?.header_text) {
+          doc.setFontSize(8 * fontSizeMultiplier);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...COLORS.textMuted);
+          const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - MARGIN * 2);
+          doc.text(headerLines, MARGIN, yPos);
+          yPos += headerLines.length * 3.5 + 2;
+        }
+
+        if (contactDisplayFormat !== 'hidden' && (clinic?.address || clinic?.phone || clinic?.email || clinic?.website)) {
+          doc.setFontSize(7.5 * fontSizeMultiplier);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...COLORS.label);
+          const contactParts = [clinic?.address, clinic?.phone, clinic?.email, clinic?.website].filter(Boolean);
+          if (contactDisplayFormat === 'stacked') {
+            contactParts.forEach((part) => {
+              doc.text(part as string, MARGIN, yPos);
+              yPos += 3.5;
+            });
+          } else {
+            doc.text(contactParts.join('  ·  '), MARGIN, yPos);
+            yPos += 5;
+          }
+        }
+
+        // Elegant double-line divider
+        if (borderStyle !== 'none') {
+          yPos += 2;
+          doc.setDrawColor(...COLORS.primary);
+          doc.setLineWidth(0.8);
+          doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+          yPos += 1.5;
+          doc.setDrawColor(...COLORS.borderLight);
+          doc.setLineWidth(0.3);
+          doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+        }
       }
     } else {
       // Compact continuation header
@@ -355,95 +433,108 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   const hasHeaderText = !!clinic?.header_text;
   const hasContact = contactDisplayFormat !== 'hidden' && !!(clinic?.address || clinic?.phone || clinic?.email || clinic?.website);
   
-  headerEndY += (hasTagline ? 18 : 14); // name + tagline
+  if (isClassic && logoBase64) headerEndY += 18; // logo above name
+  headerEndY += (hasTagline ? 18 : 14);
   if (hasHeaderText) headerEndY += 6;
   if (hasContact) headerEndY += (contactDisplayFormat === 'stacked' ? 14 : 5);
   headerEndY += 6; // divider space
   
   yPos = headerEndY + 6;
 
-  // ============ REPORT TITLE – subtle left-accent strip ============
+  // ============ REPORT TITLE ============
   
   const isCombined = report.report_type === 'combined';
   const reportTitle = isCombined && report.included_tests
     ? `Combined Report — ${report.included_tests.map(t => getReportTypeName(t as ReportType)).join(', ')}`
     : getReportTypeName(report.report_type);
   
-  // Left accent strip (3px wide)
-  doc.setFillColor(...COLORS.primary);
-  doc.rect(MARGIN, yPos, 2.5, 8, 'F');
-  
-  doc.setFontSize((isCombined ? 10 : 11) * fontSizeMultiplier);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.text);
-  doc.text(reportTitle, MARGIN + 6, yPos + 5.5, { maxWidth: pageWidth / 2 });
-  
-  // Report number on right
-  doc.setFontSize(9 * fontSizeMultiplier);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.textMuted);
-  doc.text(`#${report.report_number}`, pageWidth - MARGIN, yPos + 5.5, { align: 'right' });
-  yPos += 14;
+  if (isClassic) {
+    // Classic: full-width colored bar
+    doc.setFillColor(...COLORS.primary);
+    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 10, 'F');
+    doc.setFontSize((isCombined ? 10 : 12) * fontSizeMultiplier);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.white);
+    doc.text(reportTitle, MARGIN + 5, yPos + 7, { maxWidth: pageWidth / 2 - MARGIN });
+    doc.setFontSize(10 * fontSizeMultiplier);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Report #: ${report.report_number}`, pageWidth - MARGIN - 5, yPos + 7, { align: 'right' });
+    yPos += 15;
+  } else {
+    // Modern: subtle left-accent strip
+    doc.setFillColor(...COLORS.primary);
+    doc.rect(MARGIN, yPos, 2.5, 8, 'F');
+    doc.setFontSize((isCombined ? 10 : 11) * fontSizeMultiplier);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.text);
+    doc.text(reportTitle, MARGIN + 6, yPos + 5.5, { maxWidth: pageWidth / 2 });
+    doc.setFontSize(9 * fontSizeMultiplier);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(`#${report.report_number}`, pageWidth - MARGIN, yPos + 5.5, { align: 'right' });
+    yPos += 14;
+  }
 
-  // ============ PATIENT & REPORT INFO – open layout with accent border ============
+  // ============ PATIENT & REPORT INFO ============
   
-  // Thin accent-colored left border strip
-  doc.setFillColor(...COLORS.primary);
-  doc.rect(MARGIN, yPos, 1.5, 28, 'F');
+  if (isClassic) {
+    // Classic: filled rectangle with border
+    doc.setFillColor(...COLORS.background);
+    doc.setDrawColor(...COLORS.border);
+    doc.setLineWidth(0.3);
+    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 24, 'FD');
+  } else {
+    // Modern: thin accent-colored left border strip
+    doc.setFillColor(...COLORS.primary);
+    doc.rect(MARGIN, yPos, 1.5, 28, 'F');
+  }
   
-  const leftCol = MARGIN + 6;
+  const leftCol = isClassic ? MARGIN + 5 : MARGIN + 6;
   const leftValCol = leftCol + 26;
   const rightCol = pageWidth / 2 + 5;
   const rightValCol = rightCol + 24;
   let infoY = yPos + 5;
   const rowGap = 6;
 
-  // Labels (8pt, muted)
   doc.setFontSize(8 * fontSizeMultiplier);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.label);
 
-  // Row 1
   doc.text('Patient Name', leftCol, infoY);
   doc.text('Report No.', rightCol, infoY);
-  // Row 2
   doc.text('Age / Gender', leftCol, infoY + rowGap);
   doc.text('Test Date', rightCol, infoY + rowGap);
-  // Row 3
   if (showPatientId) {
     doc.text('Patient ID', leftCol, infoY + rowGap * 2);
   }
   doc.text('Status', rightCol, infoY + rowGap * 2);
-  // Row 4
   doc.text('Ref. Doctor', leftCol, infoY + rowGap * (showPatientId ? 3 : 2));
   doc.text('Report Date', rightCol, infoY + rowGap * 3);
 
-  // Values (9pt, dark, semi-bold)
   doc.setFontSize(9 * fontSizeMultiplier);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.text);
 
   doc.text(patient.full_name, leftValCol, infoY);
   doc.text(report.report_number, rightValCol, infoY);
-  
   doc.text(`${calculateAge(patient.date_of_birth)} / ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`, leftValCol, infoY + rowGap);
   doc.text(format(new Date(report.test_date), 'dd MMM yyyy'), rightValCol, infoY + rowGap);
-  
   if (showPatientId) {
     doc.text(patient.patient_id_number || '—', leftValCol, infoY + rowGap * 2);
   }
   doc.text(report.status.charAt(0).toUpperCase() + report.status.slice(1), rightValCol, infoY + rowGap * 2);
-  
   doc.text(report.referring_doctor || '—', leftValCol, infoY + rowGap * (showPatientId ? 3 : 2));
   doc.text(format(new Date(report.created_at), 'dd MMM yyyy'), rightValCol, infoY + rowGap * 3);
 
-  // Subtle dotted separator between left and right columns
-  doc.setDrawColor(...COLORS.borderLight);
-  doc.setLineDashPattern([1, 1.5], 0);
-  doc.setLineWidth(0.2);
-  const midX = pageWidth / 2;
-  doc.line(midX, yPos + 1, midX, yPos + 27);
-  doc.setLineDashPattern([], 0);
+  // Column separator
+  if (!isClassic) {
+    doc.setDrawColor(...COLORS.borderLight);
+    doc.setLineDashPattern([1, 1.5], 0);
+    doc.setLineWidth(0.2);
+    const midX = pageWidth / 2;
+    doc.line(midX, yPos + 1, midX, yPos + 27);
+    doc.setLineDashPattern([], 0);
+  }
 
   yPos += 34;
 
@@ -557,14 +648,24 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       yPos = MARGIN + 15;
     }
 
-    // Category Header – left-accent strip + bold name on white
-    doc.setFillColor(...COLORS.primary);
-    doc.rect(MARGIN, yPos, 2.5, 7, 'F');
-    
-    doc.setFontSize(9.5 * fontSizeMultiplier);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.text);
-    doc.text(category.name.toUpperCase(), MARGIN + 6, yPos + 5);
+    // Category Header
+    if (isClassic) {
+      // Classic: full-color bar
+      doc.setFillColor(...COLORS.primary);
+      doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 7, 'F');
+      doc.setFontSize(10 * fontSizeMultiplier);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.white);
+      doc.text(category.name.toUpperCase(), MARGIN + 3, yPos + 5);
+    } else {
+      // Modern: left-accent strip
+      doc.setFillColor(...COLORS.primary);
+      doc.rect(MARGIN, yPos, 2.5, 7, 'F');
+      doc.setFontSize(9.5 * fontSizeMultiplier);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.text);
+      doc.text(category.name.toUpperCase(), MARGIN + 6, yPos + 5);
+    }
     yPos += 10;
 
     // Build table data
@@ -602,9 +703,16 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       startY: yPos,
       head: [['Test', 'Result', 'Unit', 'Reference Range', 'Status']],
       body: tableData,
-      theme: 'striped',
+      theme: isClassic ? 'grid' : 'striped',
       showHead: 'everyPage',
-      headStyles: {
+      headStyles: isClassic ? {
+        fillColor: COLORS.primaryDark,
+        textColor: COLORS.white,
+        fontSize: 8 * fontSizeMultiplier,
+        fontStyle: 'bold',
+        halign: 'center',
+        cellPadding: 2.5,
+      } : {
         fillColor: COLORS.tableHeaderBg,
         textColor: [60, 60, 60] as [number, number, number],
         fontSize: 8 * fontSizeMultiplier,
@@ -615,9 +723,9 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       },
       bodyStyles: {
         fontSize: 8.5 * fontSizeMultiplier,
-        cellPadding: 3,
+        cellPadding: isClassic ? 2.5 : 3,
         textColor: COLORS.text,
-        lineWidth: 0,
+        lineWidth: isClassic ? undefined : 0,
       },
       columnStyles: {
         0: { cellWidth: 52, fontStyle: 'bold' },
@@ -629,16 +737,16 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       alternateRowStyles: {
         fillColor: COLORS.tableStripeBg,
       },
-      // No vertical lines – modern clean look
-      tableLineColor: [255, 255, 255] as [number, number, number],
-      tableLineWidth: 0,
-      // Thin horizontal separators only
-      didParseCell: (data) => {
-        if (data.section === 'body') {
-          data.cell.styles.lineColor = [235, 235, 235] as [number, number, number];
-          data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0.15, left: 0 } as any;
-        }
-      },
+      tableLineColor: isClassic ? (COLORS.border as [number, number, number]) : ([255, 255, 255] as [number, number, number]),
+      tableLineWidth: isClassic ? 0.1 : 0,
+      ...(isClassic ? {} : {
+        didParseCell: (data: any) => {
+          if (data.section === 'body') {
+            data.cell.styles.lineColor = [235, 235, 235] as [number, number, number];
+            data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0.15, left: 0 };
+          }
+        },
+      }),
       margin: { left: MARGIN, right: MARGIN, top: MARGIN + 15, bottom: FOOTER_HEIGHT + 5 },
       didDrawPage: (data) => {
         const pageNum = doc.getNumberOfPages();

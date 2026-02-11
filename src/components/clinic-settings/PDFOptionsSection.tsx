@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-import { FileDown, QrCode, Eye, Image, AlertTriangle, IdCard, Contact } from 'lucide-react';
+import { FileDown, QrCode, Eye, Image, AlertTriangle, IdCard, Contact, Palette, Stamp } from 'lucide-react';
 
 interface PDFOptionsSectionProps {
   formData: {
@@ -15,6 +15,8 @@ interface PDFOptionsSectionProps {
     watermark_text: string;
     enable_qr_code: boolean;
     contact_display_format: string;
+    pdf_style: string;
+    logo_watermark_enabled: boolean;
   };
   onChange: (field: string, value: string | boolean) => void;
 }
@@ -37,6 +39,22 @@ export function PDFOptionsSection({ formData, onChange }: PDFOptionsSectionProps
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="pdf_style" className="text-sm">Report Style</Label>
+            <Select
+              value={formData.pdf_style}
+              onValueChange={(value) => onChange('pdf_style', value)}
+            >
+              <SelectTrigger id="pdf_style">
+                <SelectValue placeholder="Select style" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="modern">Modern (clean, minimal)</SelectItem>
+                <SelectItem value="classic">Classic (traditional, formal)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="page_size" className="text-sm">Page Size</Label>
             <Select
@@ -134,7 +152,7 @@ export function PDFOptionsSection({ formData, onChange }: PDFOptionsSectionProps
             />
           </div>
 
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-2 border-b border-border/50">
             <div className="space-y-0.5">
               <Label className="text-sm flex items-center gap-2">
                 <QrCode className="h-4 w-4" />
@@ -147,6 +165,22 @@ export function PDFOptionsSection({ formData, onChange }: PDFOptionsSectionProps
             <Switch
               checked={formData.enable_qr_code}
               onCheckedChange={(checked) => onChange('enable_qr_code', checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-2">
+            <div className="space-y-0.5">
+              <Label className="text-sm flex items-center gap-2">
+                <Stamp className="h-4 w-4" />
+                Logo Watermark
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Show clinic logo as a faint watermark on every page
+              </p>
+            </div>
+            <Switch
+              checked={formData.logo_watermark_enabled}
+              onCheckedChange={(checked) => onChange('logo_watermark_enabled', checked)}
             />
           </div>
         </div>

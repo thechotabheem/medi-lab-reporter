@@ -105,6 +105,8 @@ interface ClinicData {
   show_patient_id: boolean;
   border_style: string;
   contact_display_format: string;
+  pdf_style: string;
+  logo_watermark_enabled: boolean;
 }
 
 const defaultFormData: ClinicData = {
@@ -130,6 +132,8 @@ const defaultFormData: ClinicData = {
   show_patient_id: true,
   border_style: 'simple',
   contact_display_format: 'inline',
+  pdf_style: 'modern',
+  logo_watermark_enabled: false,
 };
 
 export default function ClinicSettings() {
@@ -164,6 +168,8 @@ export default function ClinicSettings() {
     border_style: formData.border_style,
     secondary_color: formData.secondary_color,
     contact_display_format: formData.contact_display_format,
+    pdf_style: formData.pdf_style,
+    logo_watermark_enabled: formData.logo_watermark_enabled,
   });
 
   const handlePreviewPDF = async () => {
@@ -230,6 +236,8 @@ export default function ClinicSettings() {
             show_patient_id: (data as any).show_patient_id ?? true,
             border_style: (data as any).border_style || 'simple',
             contact_display_format: (data as any).contact_display_format || 'inline',
+            pdf_style: (data as any).pdf_style || 'modern',
+            logo_watermark_enabled: (data as any).logo_watermark_enabled ?? false,
           });
         }
       } catch (error: any) {
@@ -282,6 +290,8 @@ export default function ClinicSettings() {
           show_patient_id: formData.show_patient_id,
           border_style: formData.border_style || 'simple',
           contact_display_format: formData.contact_display_format || 'inline',
+          pdf_style: formData.pdf_style || 'modern',
+          logo_watermark_enabled: formData.logo_watermark_enabled,
         } as any)
         .eq('id', clinicId);
 

@@ -76,8 +76,10 @@ export type Database = {
           header_text: string | null
           id: string
           logo_url: string | null
+          logo_watermark_enabled: boolean | null
           name: string
           page_size: string | null
+          pdf_style: string | null
           phone: string | null
           secondary_color: string | null
           show_abnormal_summary: boolean | null
@@ -104,8 +106,10 @@ export type Database = {
           header_text?: string | null
           id?: string
           logo_url?: string | null
+          logo_watermark_enabled?: boolean | null
           name: string
           page_size?: string | null
+          pdf_style?: string | null
           phone?: string | null
           secondary_color?: string | null
           show_abnormal_summary?: boolean | null
@@ -132,8 +136,10 @@ export type Database = {
           header_text?: string | null
           id?: string
           logo_url?: string | null
+          logo_watermark_enabled?: boolean | null
           name?: string
           page_size?: string | null
+          pdf_style?: string | null
           phone?: string | null
           secondary_color?: string | null
           show_abnormal_summary?: boolean | null
