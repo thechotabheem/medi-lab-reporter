@@ -1,52 +1,27 @@
 
 
-# PDF Report Layout Restructuring
+# Use Uploaded Logo in PDF Reports
 
 ## Overview
-Restructure the PDF report to match the specified layout with a cleaner, more traditional medical report format.
+Copy the uploaded Zia Clinic logo into the project and set it as the default/fallback logo used in PDF reports, so reports always show this logo even if no custom logo has been uploaded via the clinic settings.
 
-## Key Layout Changes
+## Changes
 
-### 1. Header Section (Logo Left, Contact Right)
-- Logo area on the **left** side
-- Address, Phone, Email aligned to the **right** side (stacked vertically)
-- Horizontal divider line below
+### 1. Copy Logo to Project
+- Copy `user-uploads://report-logo.png` to `public/images/report-logo.png` so it's accessible as a static asset
 
-### 2. Patient Information Block
-Reorganized 2-column grid with these specific field positions:
-- **Left column**: Name, Age/Gender, Referring Dr, Report Date
-- **Right column**: Patient ID, Report No, Collection Date, Status
-- Section title: "PATIENT INFORMATION"
+### 2. Update PDF Generator (`src/lib/pdf-generator.ts`)
+- Add a fallback: when no `clinic.logo_url` is set, use `/images/report-logo.png` as the default logo
+- This ensures the Zia Clinic logo appears on all reports automatically
 
-### 3. Test Results Table
-- Stays the same with columns: Test, Result, Unit, Range, Status
-- Section title: "TEST RESULTS"
-
-### 4. Signature Section (Simplified)
-- Only **one** signature line: "Lab Technician's Signature"
-- Single horizontal line with label underneath
-- Removed the second (Pathologist) signature from default layout
-
-### 5. Comments and Notes (Moved After Results)
-- Currently clinical notes appear **before** the test results table
-- Move them to **after** the signature section
-- Centered section title "COMMENTS & NOTES" with content area below
-
-### 6. Footer (Simplified)
-- Single centered line: "Generated: [Date]"
-- Replaces the current page number + footer text approach
+### 3. Also Remove Contact Display Format Setting
+- Since it was discussed earlier, this is a good time to clean up the now-unused "Contact Display Format" dropdown from `PDFOptionsSection.tsx` and the related state in `ClinicSettings.tsx`
 
 ## Technical Details
 
-### File Modified
-- `src/lib/pdf-generator.ts` -- Rework the following functions/sections:
-  - **`drawHeader()`**: Logo left, contact details right-aligned (address, phone, email stacked on right)
-  - **Patient Info block** (lines ~478-539): Reorder fields to match the specified grid, add "PATIENT INFORMATION" section title
-  - **Clinical Notes** (lines ~541-556): Move this block to after the signature section
-  - **Signature section** (lines ~762-801): Simplify to a single "Lab Technician's Signature" line
-  - **Footer** (lines ~404-423): Replace with centered "Generated: [Date]" text
-  - These changes apply to **both** Modern and Classic styles
-
-### No other files affected
-The PDF generator is self-contained; preview thumbnails will automatically reflect the new layout.
+### Files Modified
+- **`public/images/report-logo.png`** -- New file (copied from upload)
+- **`src/lib/pdf-generator.ts`** -- Add default logo fallback path when `logo_url` is empty
+- **`src/components/clinic-settings/PDFOptionsSection.tsx`** -- Remove Contact Display Format dropdown
+- **`src/pages/ClinicSettings.tsx`** -- Remove `contact_display_format` from form state
 
