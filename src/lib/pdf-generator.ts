@@ -15,7 +15,6 @@ interface ClinicWithBranding {
   watermark_text?: string | null;
   enable_qr_code?: boolean;
   accent_color?: string | null;
-  // New branding options
   tagline?: string | null;
   website?: string | null;
   font_size?: string | null;
@@ -34,8 +33,8 @@ interface GeneratePDFOptions {
   report: Report;
   patient: Patient;
   clinic?: ClinicWithBranding | null;
-  reportUrl?: string; // URL for QR code
-  customTemplate?: ReportTemplate | null; // Custom template with customizations applied
+  reportUrl?: string;
+  customTemplate?: ReportTemplate | null;
 }
 
 // Helper to parse hex color to RGB
@@ -51,7 +50,6 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [0, 150, 136]; // Default teal
 };
 
-// Helper to darken a color
 const darkenColor = (rgb: [number, number, number], factor: number = 0.8): [number, number, number] => {
   return [
     Math.round(rgb[0] * factor),
@@ -60,23 +58,36 @@ const darkenColor = (rgb: [number, number, number], factor: number = 0.8): [numb
   ];
 };
 
-// Default colors
+const lightenColor = (rgb: [number, number, number], factor: number = 0.15): [number, number, number] => {
+  return [
+    Math.round(rgb[0] + (255 - rgb[0]) * factor),
+    Math.round(rgb[1] + (255 - rgb[1]) * factor),
+    Math.round(rgb[2] + (255 - rgb[2]) * factor),
+  ];
+};
+
 const DEFAULT_COLORS = {
   primary: [0, 150, 136] as [number, number, number],
   primaryDark: [0, 121, 107] as [number, number, number],
-  destructive: [220, 38, 38] as [number, number, number],
+  primaryLight: [224, 242, 240] as [number, number, number],
+  destructive: [200, 40, 40] as [number, number, number],
   success: [22, 163, 74] as [number, number, number],
-  text: [30, 30, 30] as [number, number, number],
-  textMuted: [100, 100, 100] as [number, number, number],
-  border: [200, 200, 200] as [number, number, number],
+  text: [40, 40, 40] as [number, number, number],
+  textMuted: [120, 120, 120] as [number, number, number],
+  label: [100, 100, 100] as [number, number, number],
+  border: [210, 210, 210] as [number, number, number],
+  borderLight: [230, 230, 230] as [number, number, number],
   background: [248, 250, 252] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
+  tableHeaderBg: [245, 245, 245] as [number, number, number],
+  tableStripeBg: [252, 252, 253] as [number, number, number],
+  alertAmber: [255, 251, 235] as [number, number, number],
+  alertAmberBorder: [217, 119, 6] as [number, number, number],
 };
 
-// Page margins and constants
-const MARGIN = 15;
-const HEADER_HEIGHT = 35;
-const FOOTER_HEIGHT = 20;
+// Increased margins for more whitespace
+const MARGIN = 18;
+const FOOTER_HEIGHT = 18;
 
 const getValueStatus = (
   value: number | string | null | undefined,
@@ -122,7 +133,7 @@ const formatNormalRange = (
     max = field.normalRange.max;
   }
 
-  if (min !== undefined && max !== undefined) return `${min} - ${max}`;
+  if (min !== undefined && max !== undefined) return `${min} – ${max}`;
   if (min !== undefined) return `> ${min}`;
   if (max !== undefined) return `< ${max}`;
   return '-';
@@ -138,10 +149,9 @@ const calculateAge = (dateOfBirth: string): string => {
     age--;
   }
   
-  return `${age} years`;
+  return `${age} yrs`;
 };
 
-// Load image and convert to base64
 const loadImageAsBase64 = async (url: string): Promise<string | null> => {
   try {
     const response = await fetch(url);
@@ -160,307 +170,302 @@ const loadImageAsBase64 = async (url: string): Promise<string | null> => {
 };
 
 export const generateReportPDF = async ({ report, patient, clinic, reportUrl, customTemplate }: GeneratePDFOptions): Promise<jsPDF> => {
-  // Determine page format based on clinic settings
   const pageFormat = clinic?.page_size === 'letter' ? 'letter' : clinic?.page_size === 'legal' ? 'legal' : 'a4';
   const doc = new jsPDF({ format: pageFormat });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   
-  // Get colors from clinic accent color or use defaults
   const accentColor = clinic?.accent_color ? hexToRgb(clinic.accent_color) : DEFAULT_COLORS.primary;
   const accentColorDark = darkenColor(accentColor);
+  const accentColorLight = lightenColor(accentColor, 0.85);
   const secondaryColor = clinic?.secondary_color ? hexToRgb(clinic.secondary_color) : DEFAULT_COLORS.border;
   
-  // Determine font size multiplier
   const fontSizeMultiplier = clinic?.font_size === 'small' ? 0.9 : clinic?.font_size === 'large' ? 1.1 : 1;
-  
-  // Show logo on continuation pages
   const showLogoOnAllPages = clinic?.show_logo_on_all_pages ?? true;
-  
-  // Show abnormal summary
   const showAbnormalSummary = clinic?.show_abnormal_summary ?? true;
-  
-  // Show patient ID
   const showPatientId = clinic?.show_patient_id ?? true;
-  
-  // Signature titles
   const signatureTitleLeft = clinic?.signature_title_left || 'Lab Technician';
   const signatureTitleRight = clinic?.signature_title_right || 'Pathologist';
-  
-  // Border style
   const borderStyle = clinic?.border_style || 'simple';
-  
-  // Contact display format
   const contactDisplayFormat = clinic?.contact_display_format || 'inline';
   
   const COLORS = {
     ...DEFAULT_COLORS,
     primary: accentColor,
     primaryDark: accentColorDark,
+    primaryLight: accentColorLight,
     border: secondaryColor,
   };
   
-  // Pre-load logo if available
   let logoBase64: string | null = null;
   if (clinic?.logo_url) {
     logoBase64 = await loadImageAsBase64(clinic.logo_url);
   }
 
-  // Page tracking for "Page X of Y"
   const pageNumbers: { x: number; y: number; page: number }[] = [];
 
-  // Function to draw watermark on a page
+  // ── Watermark ──
   const drawWatermark = (pageNum: number) => {
     if (!clinic?.watermark_text) return;
-    
     doc.setPage(pageNum);
     doc.saveGraphicsState();
-    
-    // Set watermark style
     doc.setFontSize(50);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(200, 200, 200); // Light gray
-    
-    // Draw diagonal watermark
-    const text = clinic.watermark_text.toUpperCase();
-    const textWidth = doc.getTextWidth(text);
-    
-    // Center the watermark
-    const centerX = pageWidth / 2;
-    const centerY = pageHeight / 2;
-    
-    // Rotate and draw
-    doc.text(text, centerX, centerY, {
+    doc.setTextColor(220, 220, 220);
+    doc.text(clinic.watermark_text.toUpperCase(), pageWidth / 2, pageHeight / 2, {
       align: 'center',
       angle: 45,
     });
-    
     doc.restoreGraphicsState();
   };
+
+  // ── Header ──
   const drawHeader = (pageNum: number, isFirstPage: boolean) => {
     doc.setPage(pageNum);
     let yPos = MARGIN;
 
     if (isFirstPage) {
-      // Full header on first page
-      // Logo + Clinic Name
-      let nameStartX = pageWidth / 2;
+      // Left-aligned letterhead style
+      let textStartX = MARGIN;
       
       if (logoBase64) {
         try {
-          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 5, 20, 20);
-          nameStartX = (pageWidth + 25) / 2;
-        } catch {
-          // Logo failed, continue without
-        }
-      }
-
-      doc.setFontSize(22 * fontSizeMultiplier);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...COLORS.primaryDark);
-      doc.text(clinic?.name || 'Medical Laboratory', nameStartX, yPos + 5, { align: 'center' });
-      yPos += 10;
-
-      // Tagline (if provided)
-      if (clinic?.tagline) {
-        doc.setFontSize(10 * fontSizeMultiplier);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(...COLORS.textMuted);
-        doc.text(clinic.tagline, pageWidth / 2, yPos, { align: 'center' });
-        yPos += 5;
-      }
-
-      // Header Text
-      if (clinic?.header_text) {
-        doc.setFontSize(10 * fontSizeMultiplier);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(...COLORS.textMuted);
-        const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - MARGIN * 2 - 30);
-        doc.text(headerLines, pageWidth / 2, yPos, { align: 'center' });
-        yPos += headerLines.length * 4 + 2;
-      }
-
-      // Contact Info based on display format
-      if (contactDisplayFormat !== 'hidden' && (clinic?.address || clinic?.phone || clinic?.email || clinic?.website)) {
-        doc.setFontSize(8 * fontSizeMultiplier);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...COLORS.textMuted);
-        
-        const contactParts = [clinic?.address, clinic?.phone, clinic?.email, clinic?.website].filter(Boolean);
-        
-        if (contactDisplayFormat === 'stacked') {
-          // Multiple lines
-          contactParts.forEach((part) => {
-            doc.text(part as string, pageWidth / 2, yPos, { align: 'center' });
-            yPos += 4;
-          });
-        } else {
-          // Inline (single line)
-          doc.text(contactParts.join('  |  '), pageWidth / 2, yPos, { align: 'center' });
-          yPos += 6;
-        }
-      }
-
-      // Decorative Header Line based on border style
-      if (borderStyle !== 'none') {
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(1.5);
-        doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
-        
-        if (borderStyle === 'double') {
-          yPos += 2;
-          doc.setLineWidth(0.5);
-          doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
-        }
-      }
-    } else {
-      // Compact header for continuation pages
-      if (showLogoOnAllPages && logoBase64) {
-        try {
-          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 3, 12, 12);
+          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 2, 18, 18);
+          textStartX = MARGIN + 22;
         } catch {
           // Logo failed
         }
       }
-      
-      doc.setFontSize(12 * fontSizeMultiplier);
+
+      // Clinic name beside logo
+      doc.setFontSize(20 * fontSizeMultiplier);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...COLORS.primaryDark);
-      const headerX = (showLogoOnAllPages && logoBase64) ? MARGIN + 15 : MARGIN;
+      doc.text(clinic?.name || 'Medical Laboratory', textStartX, yPos + 6);
+
+      // Tagline below name
+      if (clinic?.tagline) {
+        doc.setFontSize(9 * fontSizeMultiplier);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(...COLORS.textMuted);
+        doc.text(clinic.tagline, textStartX, yPos + 12);
+      }
+
+      yPos += (clinic?.tagline ? 18 : 14);
+
+      // Header text
+      if (clinic?.header_text) {
+        doc.setFontSize(8 * fontSizeMultiplier);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...COLORS.textMuted);
+        const headerLines = doc.splitTextToSize(clinic.header_text, pageWidth - MARGIN * 2);
+        doc.text(headerLines, MARGIN, yPos);
+        yPos += headerLines.length * 3.5 + 2;
+      }
+
+      // Contact info – single subtle line with pipe separators
+      if (contactDisplayFormat !== 'hidden' && (clinic?.address || clinic?.phone || clinic?.email || clinic?.website)) {
+        doc.setFontSize(7.5 * fontSizeMultiplier);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...COLORS.label);
+        
+        const contactParts = [clinic?.address, clinic?.phone, clinic?.email, clinic?.website].filter(Boolean);
+        
+        if (contactDisplayFormat === 'stacked') {
+          contactParts.forEach((part) => {
+            doc.text(part as string, MARGIN, yPos);
+            yPos += 3.5;
+          });
+        } else {
+          doc.text(contactParts.join('  ·  '), MARGIN, yPos);
+          yPos += 5;
+        }
+      }
+
+      // Elegant double-line divider: accent top, light gray bottom
+      if (borderStyle !== 'none') {
+        yPos += 2;
+        doc.setDrawColor(...COLORS.primary);
+        doc.setLineWidth(0.8);
+        doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+        
+        yPos += 1.5;
+        doc.setDrawColor(...COLORS.borderLight);
+        doc.setLineWidth(0.3);
+        doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
+      }
+    } else {
+      // Compact continuation header
+      if (showLogoOnAllPages && logoBase64) {
+        try {
+          doc.addImage(logoBase64, 'AUTO', MARGIN, yPos - 2, 10, 10);
+        } catch { /* */ }
+      }
+      
+      const headerX = (showLogoOnAllPages && logoBase64) ? MARGIN + 13 : MARGIN;
+      doc.setFontSize(11 * fontSizeMultiplier);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.primaryDark);
       doc.text(clinic?.name || 'Medical Laboratory', headerX, yPos + 5);
       
-      doc.setFontSize(9 * fontSizeMultiplier);
+      doc.setFontSize(8 * fontSizeMultiplier);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...COLORS.textMuted);
       doc.text(`Report #: ${report.report_number}`, pageWidth - MARGIN, yPos + 5, { align: 'right' });
       
-      // Simple line
-      yPos += 10;
+      yPos += 9;
       if (borderStyle !== 'none') {
         doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(0.5);
+        doc.setLineWidth(0.4);
         doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
       }
     }
   };
 
-  // Function to draw footer on a page
+  // ── Footer ──
   const drawFooter = (pageNum: number) => {
     doc.setPage(pageNum);
     const footerY = pageHeight - FOOTER_HEIGHT;
     
-    // Footer line
-    doc.setDrawColor(...COLORS.primary);
-    doc.setLineWidth(0.5);
+    // Thin line
+    doc.setDrawColor(...COLORS.borderLight);
+    doc.setLineWidth(0.3);
     doc.line(MARGIN, footerY, pageWidth - MARGIN, footerY);
     
-    // Footer text
+    // Footer text centered
     if (clinic?.footer_text) {
       doc.setFontSize(7);
       doc.setFont('helvetica', 'italic');
-      doc.setTextColor(...COLORS.textMuted);
+      doc.setTextColor(...COLORS.label);
       doc.text(clinic.footer_text, pageWidth / 2, footerY + 5, { align: 'center' });
     }
 
-    // Store position for page number (will be filled in later)
-    pageNumbers.push({ x: pageWidth / 2, y: footerY + 12, page: pageNum });
+    // Page number right-aligned
+    pageNumbers.push({ x: pageWidth - MARGIN, y: footerY + (clinic?.footer_text ? 10 : 5), page: pageNum });
   };
 
   let yPos = MARGIN;
 
   // ============ FIRST PAGE HEADER ============
   drawHeader(1, true);
-  yPos = MARGIN + HEADER_HEIGHT;
-
-  // ============ REPORT TITLE BAR ============
   
-  // Determine report title
+  // Calculate dynamic header end position
+  let headerEndY = MARGIN;
+  const hasTagline = !!clinic?.tagline;
+  const hasHeaderText = !!clinic?.header_text;
+  const hasContact = contactDisplayFormat !== 'hidden' && !!(clinic?.address || clinic?.phone || clinic?.email || clinic?.website);
+  
+  headerEndY += (hasTagline ? 18 : 14); // name + tagline
+  if (hasHeaderText) headerEndY += 6;
+  if (hasContact) headerEndY += (contactDisplayFormat === 'stacked' ? 14 : 5);
+  headerEndY += 6; // divider space
+  
+  yPos = headerEndY + 6;
+
+  // ============ REPORT TITLE – subtle left-accent strip ============
+  
   const isCombined = report.report_type === 'combined';
   const reportTitle = isCombined && report.included_tests
-    ? `Combined Report (${report.included_tests.map(t => getReportTypeName(t as ReportType)).join(', ')})`
+    ? `Combined Report — ${report.included_tests.map(t => getReportTypeName(t as ReportType)).join(', ')}`
     : getReportTypeName(report.report_type);
   
+  // Left accent strip (3px wide)
   doc.setFillColor(...COLORS.primary);
-  doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 10, 'F');
-  doc.setFontSize(isCombined ? 10 : 12);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.white);
-  doc.text(reportTitle, MARGIN + 5, yPos + 7, { maxWidth: pageWidth / 2 - MARGIN });
+  doc.rect(MARGIN, yPos, 2.5, 8, 'F');
   
-  // Report number on right
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Report #: ${report.report_number}`, pageWidth - MARGIN - 5, yPos + 7, { align: 'right' });
-  yPos += 15;
-
-  // ============ PATIENT & REPORT INFO ============
-  
-  doc.setFillColor(...COLORS.background);
-  doc.setDrawColor(...COLORS.border);
-  doc.setLineWidth(0.3);
-  doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 24, 'FD');
-
-  const leftCol = MARGIN + 5;
-  const rightCol = pageWidth / 2 + 5;
-  let infoY = yPos + 5;
-
-  doc.setFontSize(8 * fontSizeMultiplier);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.textMuted);
-
-  // Left column labels
-  doc.text('Patient Name:', leftCol, infoY);
-  doc.text('Age / Gender:', leftCol, infoY + 6);
-  if (showPatientId) {
-    doc.text('Patient ID:', leftCol, infoY + 12);
-  }
-  doc.text('Ref. Doctor:', leftCol, infoY + (showPatientId ? 18 : 12));
-
-  // Right column labels
-  doc.text('Report No.:', rightCol, infoY);
-  doc.text('Test Date:', rightCol, infoY + 6);
-  doc.text('Status:', rightCol, infoY + 12);
-  doc.text('Report Date:', rightCol, infoY + 18);
-
-  // Values - Left column
+  doc.setFontSize((isCombined ? 10 : 11) * fontSizeMultiplier);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.text);
-  doc.text(patient.full_name, leftCol + 28, infoY);
-  doc.text(`${calculateAge(patient.date_of_birth)} / ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`, leftCol + 28, infoY + 6);
+  doc.text(reportTitle, MARGIN + 6, yPos + 5.5, { maxWidth: pageWidth / 2 });
+  
+  // Report number on right
+  doc.setFontSize(9 * fontSizeMultiplier);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text(`#${report.report_number}`, pageWidth - MARGIN, yPos + 5.5, { align: 'right' });
+  yPos += 14;
+
+  // ============ PATIENT & REPORT INFO – open layout with accent border ============
+  
+  // Thin accent-colored left border strip
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(MARGIN, yPos, 1.5, 28, 'F');
+  
+  const leftCol = MARGIN + 6;
+  const leftValCol = leftCol + 26;
+  const rightCol = pageWidth / 2 + 5;
+  const rightValCol = rightCol + 24;
+  let infoY = yPos + 5;
+  const rowGap = 6;
+
+  // Labels (8pt, muted)
+  doc.setFontSize(8 * fontSizeMultiplier);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.label);
+
+  // Row 1
+  doc.text('Patient Name', leftCol, infoY);
+  doc.text('Report No.', rightCol, infoY);
+  // Row 2
+  doc.text('Age / Gender', leftCol, infoY + rowGap);
+  doc.text('Test Date', rightCol, infoY + rowGap);
+  // Row 3
   if (showPatientId) {
-    doc.text(patient.patient_id_number || '-', leftCol + 28, infoY + 12);
+    doc.text('Patient ID', leftCol, infoY + rowGap * 2);
   }
-  doc.text(report.referring_doctor || '-', leftCol + 28, infoY + (showPatientId ? 18 : 12));
+  doc.text('Status', rightCol, infoY + rowGap * 2);
+  // Row 4
+  doc.text('Ref. Doctor', leftCol, infoY + rowGap * (showPatientId ? 3 : 2));
+  doc.text('Report Date', rightCol, infoY + rowGap * 3);
 
-  // Values - Right column
-  doc.text(report.report_number, rightCol + 28, infoY);
-  doc.text(format(new Date(report.test_date), 'dd MMM yyyy'), rightCol + 28, infoY + 6);
-  doc.text(report.status.charAt(0).toUpperCase() + report.status.slice(1), rightCol + 28, infoY + 12);
-  doc.text(format(new Date(report.created_at), 'dd MMM yyyy'), rightCol + 28, infoY + 18);
+  // Values (9pt, dark, semi-bold)
+  doc.setFontSize(9 * fontSizeMultiplier);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
 
-  yPos += 30;
+  doc.text(patient.full_name, leftValCol, infoY);
+  doc.text(report.report_number, rightValCol, infoY);
+  
+  doc.text(`${calculateAge(patient.date_of_birth)} / ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`, leftValCol, infoY + rowGap);
+  doc.text(format(new Date(report.test_date), 'dd MMM yyyy'), rightValCol, infoY + rowGap);
+  
+  if (showPatientId) {
+    doc.text(patient.patient_id_number || '—', leftValCol, infoY + rowGap * 2);
+  }
+  doc.text(report.status.charAt(0).toUpperCase() + report.status.slice(1), rightValCol, infoY + rowGap * 2);
+  
+  doc.text(report.referring_doctor || '—', leftValCol, infoY + rowGap * (showPatientId ? 3 : 2));
+  doc.text(format(new Date(report.created_at), 'dd MMM yyyy'), rightValCol, infoY + rowGap * 3);
+
+  // Subtle dotted separator between left and right columns
+  doc.setDrawColor(...COLORS.borderLight);
+  doc.setLineDashPattern([1, 1.5], 0);
+  doc.setLineWidth(0.2);
+  const midX = pageWidth / 2;
+  doc.line(midX, yPos + 1, midX, yPos + 27);
+  doc.setLineDashPattern([], 0);
+
+  yPos += 34;
 
   // ============ CLINICAL NOTES ============
   
   if (report.clinical_notes) {
-    doc.setFontSize(9);
+    doc.setFontSize(8 * fontSizeMultiplier);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.primary);
+    doc.setTextColor(...COLORS.label);
     doc.text('CLINICAL NOTES', MARGIN, yPos);
     yPos += 4;
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.text);
-    doc.setFontSize(9);
+    doc.setFontSize(8.5 * fontSizeMultiplier);
     const notesLines = doc.splitTextToSize(report.clinical_notes, pageWidth - MARGIN * 2);
     doc.text(notesLines, MARGIN, yPos);
-    yPos += notesLines.length * 4 + 6;
+    yPos += notesLines.length * 4 + 8;
   }
 
-  // ============ ABNORMAL VALUES SUMMARY ============
+  // ============ RESOLVE TEMPLATE & DATA ============
   
-  // Use custom template if provided, otherwise fall back to default
-  // For combined reports, build template from included_tests
   const isCombinedReport = report.report_type === 'combined';
   let template: ReportTemplate;
   
@@ -472,13 +477,13 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     template = reportTemplates[report.report_type];
   }
   
-  // For combined reports, flatten the namespaced data
   const rawReportData = report.report_data as Record<string, unknown>;
   const reportData = isCombinedReport && report.included_tests
     ? flattenCombinedReportData(rawReportData, report.included_tests)
     : rawReportData;
   
-  // Collect abnormal values
+  // ============ COLLECT ABNORMAL VALUES ============
+  
   const abnormalValues: { label: string; value: string; range: string }[] = [];
   for (const category of template.categories) {
     for (const field of category.fields) {
@@ -496,8 +501,9 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     }
   }
 
+  // ============ ABNORMAL SUMMARY – soft amber/yellow ============
+
   if (showAbnormalSummary && abnormalValues.length > 0) {
-    // Check if we need a new page
     if (yPos > pageHeight - FOOTER_HEIGHT - 50) {
       drawFooter(doc.getNumberOfPages());
       doc.addPage();
@@ -505,30 +511,35 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       yPos = MARGIN + 15;
     }
 
-    doc.setFillColor(254, 242, 242); // Light red background
-    doc.setDrawColor(...COLORS.destructive);
-    doc.setLineWidth(0.5);
+    const alertHeight = Math.min(abnormalValues.length * 4.5 + 11, 38);
     
-    const alertHeight = Math.min(abnormalValues.length * 5 + 12, 40);
-    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, alertHeight, 'FD');
+    // Soft amber background
+    doc.setFillColor(...COLORS.alertAmber);
+    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, alertHeight, 'F');
     
-    doc.setFontSize(9 * fontSizeMultiplier);
+    // Thin red left border
+    doc.setFillColor(...COLORS.destructive);
+    doc.rect(MARGIN, yPos, 1.5, alertHeight, 'F');
+    
+    doc.setFontSize(8.5 * fontSizeMultiplier);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.destructive);
-    doc.text(`ABNORMAL VALUES DETECTED (${abnormalValues.length})`, MARGIN + 5, yPos + 5);
+    doc.setTextColor(...COLORS.alertAmberBorder);
+    doc.text(`Abnormal Values (${abnormalValues.length})`, MARGIN + 5, yPos + 5);
     
-    doc.setFontSize(8 * fontSizeMultiplier);
+    doc.setFontSize(7.5 * fontSizeMultiplier);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.text);
     let alertY = yPos + 10;
     abnormalValues.slice(0, 5).forEach((item) => {
-      doc.text(`• ${item.label}: ${item.value} (Ref: ${item.range})`, MARGIN + 5, alertY);
+      doc.text(`• ${item.label}: ${item.value}  (Ref: ${item.range})`, MARGIN + 5, alertY);
       alertY += 4;
     });
     if (abnormalValues.length > 5) {
-      doc.text(`... and ${abnormalValues.length - 5} more`, MARGIN + 5, alertY);
+      doc.setTextColor(...COLORS.textMuted);
+      doc.text(`+ ${abnormalValues.length - 5} more`, MARGIN + 5, alertY);
     }
     
-    yPos += alertHeight + 6;
+    yPos += alertHeight + 10;
   }
 
   // ============ TEST RESULTS TABLES ============
@@ -539,7 +550,6 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     );
     if (categoryFields.length === 0) continue;
 
-    // Check if we need a new page for category header
     if (yPos > pageHeight - FOOTER_HEIGHT - 40) {
       drawFooter(doc.getNumberOfPages());
       doc.addPage();
@@ -547,14 +557,15 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       yPos = MARGIN + 15;
     }
 
-    // Category Header
+    // Category Header – left-accent strip + bold name on white
     doc.setFillColor(...COLORS.primary);
-    doc.rect(MARGIN, yPos, pageWidth - MARGIN * 2, 7, 'F');
-    doc.setFontSize(10);
+    doc.rect(MARGIN, yPos, 2.5, 7, 'F');
+    
+    doc.setFontSize(9.5 * fontSizeMultiplier);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.white);
-    doc.text(category.name.toUpperCase(), MARGIN + 3, yPos + 5);
-    yPos += 9;
+    doc.setTextColor(...COLORS.text);
+    doc.text(category.name.toUpperCase(), MARGIN + 6, yPos + 5);
+    yPos += 10;
 
     // Build table data
     const tableData: (string | { content: string; styles: object })[][] = [];
@@ -570,17 +581,17 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
         field.label,
         {
           content: displayValue,
-          styles: isAbnormal ? { textColor: COLORS.destructive, fontStyle: 'bold' } : {},
+          styles: isAbnormal ? { textColor: COLORS.destructive } : {},
         },
-        field.unit || '-',
+        field.unit || '—',
         normalRange,
         {
-          content: status === 'unknown' ? '-' : isAbnormal ? 'HIGH/LOW' : 'Normal',
+          content: status === 'unknown' ? '—' : isAbnormal ? '● Abnormal' : 'Normal',
           styles: isAbnormal 
-            ? { textColor: COLORS.destructive, fontStyle: 'bold' } 
+            ? { textColor: COLORS.destructive, fontSize: 7.5 * fontSizeMultiplier } 
             : status === 'normal' 
-              ? { textColor: COLORS.success } 
-              : {},
+              ? { textColor: COLORS.success, fontSize: 7.5 * fontSizeMultiplier } 
+              : { fontSize: 7.5 * fontSizeMultiplier },
         },
       ];
 
@@ -591,36 +602,45 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       startY: yPos,
       head: [['Test', 'Result', 'Unit', 'Reference Range', 'Status']],
       body: tableData,
-      theme: 'grid',
+      theme: 'striped',
       showHead: 'everyPage',
       headStyles: {
-        fillColor: COLORS.primaryDark,
-        textColor: COLORS.white,
+        fillColor: COLORS.tableHeaderBg,
+        textColor: [60, 60, 60] as [number, number, number],
         fontSize: 8 * fontSizeMultiplier,
         fontStyle: 'bold',
-        halign: 'center',
-        cellPadding: 2,
+        halign: 'left',
+        cellPadding: 3,
+        lineWidth: 0,
       },
       bodyStyles: {
-        fontSize: 8 * fontSizeMultiplier,
-        cellPadding: 2,
+        fontSize: 8.5 * fontSizeMultiplier,
+        cellPadding: 3,
         textColor: COLORS.text,
+        lineWidth: 0,
       },
       columnStyles: {
-        0: { cellWidth: 50, fontStyle: 'bold' },
-        1: { halign: 'center', cellWidth: 30 },
-        2: { halign: 'center', cellWidth: 25 },
-        3: { halign: 'center', cellWidth: 40 },
-        4: { halign: 'center', cellWidth: 25 },
+        0: { cellWidth: 52, fontStyle: 'bold' },
+        1: { halign: 'center', cellWidth: 28 },
+        2: { halign: 'center', cellWidth: 22 },
+        3: { halign: 'center', cellWidth: 38 },
+        4: { halign: 'center', cellWidth: 28 },
       },
       alternateRowStyles: {
-        fillColor: [250, 250, 250],
+        fillColor: COLORS.tableStripeBg,
       },
-      tableLineColor: borderStyle === 'none' ? [255, 255, 255] : COLORS.border,
-      tableLineWidth: borderStyle === 'none' ? 0 : 0.1,
+      // No vertical lines – modern clean look
+      tableLineColor: [255, 255, 255] as [number, number, number],
+      tableLineWidth: 0,
+      // Thin horizontal separators only
+      didParseCell: (data) => {
+        if (data.section === 'body') {
+          data.cell.styles.lineColor = [235, 235, 235] as [number, number, number];
+          data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0.15, left: 0 } as any;
+        }
+      },
       margin: { left: MARGIN, right: MARGIN, top: MARGIN + 15, bottom: FOOTER_HEIGHT + 5 },
       didDrawPage: (data) => {
-        // Draw header and footer on new pages created by the table
         const pageNum = doc.getNumberOfPages();
         if (data.pageNumber > 1) {
           drawHeader(pageNum, false);
@@ -628,54 +648,48 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       },
     });
 
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc as any).lastAutoTable.finalY + 12;
   }
 
   // ============ SIGNATURE SECTION ============
 
-  // Check if we need a new page for signatures
-  if (yPos > pageHeight - FOOTER_HEIGHT - 45) {
+  if (yPos > pageHeight - FOOTER_HEIGHT - 50) {
     drawFooter(doc.getNumberOfPages());
     doc.addPage();
     drawHeader(doc.getNumberOfPages(), false);
     yPos = MARGIN + 15;
   }
 
-  // Separator line
-  doc.setDrawColor(...COLORS.border);
-  doc.setLineWidth(0.3);
-  doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
-  yPos += 10;
+  yPos += 6;
 
-  // Signature boxes
-  const signatureWidth = (pageWidth - MARGIN * 2 - 20) / 2;
-  
-  doc.setFontSize(8 * fontSizeMultiplier);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.textMuted);
+  const signatureWidth = (pageWidth - MARGIN * 2 - 30) / 2;
   
   // Left signature
-  doc.text(signatureTitleLeft, MARGIN, yPos);
-  doc.setDrawColor(...COLORS.textMuted);
-  doc.setLineDashPattern([2, 2], 0);
-  doc.line(MARGIN, yPos + 12, MARGIN + signatureWidth, yPos + 12);
-  doc.text('Signature', MARGIN, yPos + 16);
-  doc.text('Date: ____________', MARGIN, yPos + 22);
-
-  // Right signature  
-  doc.text(signatureTitleRight, pageWidth - MARGIN - signatureWidth, yPos);
-  doc.line(pageWidth - MARGIN - signatureWidth, yPos + 12, pageWidth - MARGIN, yPos + 12);
-  doc.text('Signature', pageWidth - MARGIN - signatureWidth, yPos + 16);
-  doc.text('Date: ____________', pageWidth - MARGIN - signatureWidth, yPos + 22);
-
-  doc.setLineDashPattern([], 0);
-  yPos += 30;
-
-  // End of Report marker (before footer)
-  doc.setFontSize(8);
+  doc.setFontSize(8 * fontSizeMultiplier);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primary);
-  doc.text('--- End of Report ---', pageWidth / 2, yPos, { align: 'center' });
+  doc.setTextColor(...COLORS.text);
+  doc.text(signatureTitleLeft, MARGIN, yPos);
+  
+  yPos += 14;
+  
+  // Solid thin lines instead of dashed
+  doc.setDrawColor(...COLORS.border);
+  doc.setLineWidth(0.4);
+  doc.line(MARGIN, yPos, MARGIN + signatureWidth, yPos);
+  doc.line(pageWidth - MARGIN - signatureWidth, yPos, pageWidth - MARGIN, yPos);
+  
+  // Role labels below the line
+  doc.setFontSize(7.5 * fontSizeMultiplier);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.label);
+  doc.text('Signature & Date', MARGIN, yPos + 5);
+  doc.text('Signature & Date', pageWidth - MARGIN - signatureWidth, yPos + 5);
+
+  // Right title (above the line, same row as left)
+  doc.setFontSize(8 * fontSizeMultiplier);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
+  doc.text(signatureTitleRight, pageWidth - MARGIN - signatureWidth, yPos - 14);
 
   // ============ DRAW ALL FOOTERS AND WATERMARKS ============
   const totalPages = doc.getNumberOfPages();
@@ -684,13 +698,13 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     drawWatermark(i);
   }
 
-  // ============ ADD PAGE NUMBERS ============
+  // ============ ADD PAGE NUMBERS (right-aligned) ============
   for (const pn of pageNumbers) {
     doc.setPage(pn.page);
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.textMuted);
-    doc.text(`Page ${pn.page} of ${totalPages}`, pn.x, pn.y, { align: 'center' });
+    doc.setTextColor(...COLORS.label);
+    doc.text(`Page ${pn.page} of ${totalPages}`, pn.x, pn.y, { align: 'right' });
   }
 
   return doc;
@@ -704,12 +718,10 @@ export const sharePDFViaWhatsApp = async (doc: jsPDF, patientPhone?: string) => 
   const pdfBlob = doc.output('blob');
   const pdfUrl = URL.createObjectURL(pdfBlob);
   
-  // For web, we can only open WhatsApp with a message, not attach files directly
   const message = encodeURIComponent('Your lab report is ready. Please check the attached document.');
   const phone = patientPhone?.replace(/\D/g, '') || '';
   
   window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   
-  // Clean up
   URL.revokeObjectURL(pdfUrl);
 };
