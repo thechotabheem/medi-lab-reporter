@@ -31,6 +31,8 @@ interface PDFPreviewThumbnailProps {
     border_style?: string;
     secondary_color?: string;
     contact_display_format?: string;
+    pdf_style?: string;
+    logo_watermark_enabled?: boolean;
   };
   clinicId: string;
   onOpenFullPreview: () => void;
@@ -152,6 +154,8 @@ export function PDFPreviewThumbnail({ clinicBranding, clinicId, onOpenFullPrevie
     clinicBranding.show_abnormal_summary,
     clinicBranding.show_patient_id,
     clinicBranding.contact_display_format,
+    clinicBranding.pdf_style,
+    clinicBranding.logo_watermark_enabled,
   ]);
 
   // Cleanup URL on unmount
