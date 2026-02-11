@@ -203,9 +203,8 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   };
   
   let logoBase64: string | null = null;
-  if (clinic?.logo_url) {
-    logoBase64 = await loadImageAsBase64(clinic.logo_url);
-  }
+  const logoSource = clinic?.logo_url || '/images/report-logo.png';
+  logoBase64 = await loadImageAsBase64(logoSource);
 
   // Page numbers removed – footer now shows only "Generated: [Date]"
 
