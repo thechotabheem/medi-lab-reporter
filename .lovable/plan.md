@@ -1,115 +1,72 @@
 
 
-# Offline-First Enhancements for Lab Reporter
+# Professional PDF Report Redesign
 
-## Overview
-This plan adds two major features to eliminate offline limitations: (1) an IndexedDB-based offline queue that lets users create reports and patients without internet, automatically syncing when connectivity returns, and (2) a data source indicator showing whether displayed data is live or from cache.
+## Problem
+The current PDF layout is cluttered and visually overwhelming -- dense information blocks, uniform styling, and lack of visual hierarchy make it look unprofessional.
 
----
+## Design Philosophy
+Clean, modern medical report with generous whitespace, subtle color accents, and clear visual hierarchy. Inspired by premium pathology lab reports.
 
-## Feature 1: Offline Data Queue with IndexedDB
+## Key Changes
 
-### How it works
-When a user creates a report or adds a patient while offline, instead of failing, the app saves the action to an IndexedDB queue. When the connection is restored, all queued actions are automatically synced to the server in order.
+### 1. Refined Header (Letterhead Style)
+- Left-aligned logo with clinic name beside it (not centered)
+- Tagline in a smaller, elegant font below the name
+- Contact info in a single subtle line with pipe separators
+- Replace thick colored divider with a thin, elegant double-line rule (accent color top line, light gray bottom line)
 
-### New files
+### 2. Patient Information Block
+- Replace the cramped filled rectangle with a clean, open 2-column layout using subtle dotted separators
+- Use label: value pairs with proper spacing (no background fill)
+- Add a thin accent-colored left border strip for visual distinction
+- More breathing room between rows (6pt instead of 4pt)
 
-**`src/lib/offlineQueue.ts`** - Core IndexedDB queue manager
-- Opens/creates an IndexedDB database (`lab-reporter-offline`) with an `pendingActions` object store
-- Each queued action stores: `id`, `type` (create-report, create-patient), `payload`, `createdAt`, `status`
-- Provides functions: `enqueueAction()`, `getPendingActions()`, `removeAction()`, `getPendingCount()`
+### 3. Report Title Bar
+- Replace the full-width solid color bar with a more subtle left-accent strip + bold text
+- Smaller, more refined styling -- the title shouldn't scream
 
-**`src/hooks/useOfflineQueue.ts`** - React hook for offline queue
-- Wraps the IndexedDB manager with React state
-- Listens to online/offline events
-- On reconnect: processes the queue sequentially, calling Supabase for each action
-- Provides `pendingCount` and `isSyncing` state
-- Shows toast notifications: "X items synced successfully" or error details for failures
+### 4. Test Results Tables
+- Remove the full-color category header bar; replace with a left-accent strip + bold category name on white
+- Use a cleaner "striped" theme instead of "grid" -- remove vertical grid lines for a modern look
+- Increase cell padding for readability (3pt instead of 2pt)
+- Table header: light gray background instead of dark colored fill; dark text instead of white
+- Subtle alternating row colors (white / very light gray)
+- Abnormal values: red text only (no bold everywhere), with a small red dot indicator
 
-**`src/components/OfflineSyncStatus.tsx`** - Sync status indicator
-- Small floating badge (bottom-right area, above mobile nav) showing pending queue count
-- Animated sync icon when actively syncing
-- Clicking opens a small panel listing queued items with option to retry or discard
+### 5. Abnormal Summary
+- Softer alert box: light amber/yellow background instead of harsh red, with a thin left red border
+- More compact and less alarming presentation
 
-### Modified files
+### 6. Signature Section
+- Cleaner layout with more vertical space
+- Solid thin lines instead of dashed
+- Titles above the line, role below
 
-**`src/pages/CreateReport.tsx`** - `handleSave()` function (~line 305)
-- Wrap the Supabase insert in a try-catch
-- If offline (navigator.onLine === false) or network error occurs, enqueue the action to IndexedDB instead
-- Show toast: "Saved offline - will sync when connected"
-- Still clear the draft and navigate to dashboard
+### 7. Footer
+- Simpler footer: page numbers right-aligned, footer text centered
+- Remove "End of Report" marker (unnecessary)
 
-**`src/pages/AddPatient.tsx`** - `handleSubmit()` function (~line 56)
-- Same pattern: detect offline state, enqueue patient creation to IndexedDB
-- Show appropriate offline-saved toast
-
-**`src/hooks/useReports.ts`** - Merge offline pending reports into the displayed list
-- After fetching from Supabase, append any pending offline reports (marked with a "pending sync" badge)
-
-**`src/hooks/usePatients.ts`** - Same merge for offline pending patients
-
-**`src/App.tsx`** - Add the `OfflineSyncStatus` component and initialize the sync listener
-
----
-
-## Feature 2: Cache vs Live Data Indicator
-
-### How it works
-A small, unobtrusive indicator on data-fetching pages shows whether the displayed data came from a live server response or from the service worker cache.
-
-### New files
-
-**`src/hooks/useDataFreshness.ts`** - Hook to detect data source
-- Intercepts/wraps fetch responses to check for the service worker cache
-- Uses the `Date` header and response timing to determine if data is fresh or cached
-- Returns `dataSource: 'live' | 'cache' | 'offline'` and `lastFetchedAt` timestamp
-
-**`src/components/DataSourceBadge.tsx`** - Visual indicator component
-- Small pill badge in page headers: green dot + "Live" or amber dot + "Cached"  
-- Tooltip shows last fetched timestamp
-- When offline, shows "Offline mode" with the cached data timestamp
-
-### Modified files
-
-**`src/components/ui/page-header.tsx`** - Add optional `dataSource` prop to render the `DataSourceBadge` inline with the title
-
-**Pages that fetch data** (Dashboard, Reports, Patients, PatientDetail, ReportView):
-- Pass the data freshness status to their `PageHeader` component
-
----
+### 8. General Typography & Spacing
+- Increase base margins from 15mm to 18mm for more whitespace
+- Consistent 10pt body text, 8pt labels
+- More vertical spacing between sections (10-12pt gaps instead of 6pt)
 
 ## Technical Details
 
-### IndexedDB Schema
-```text
-Database: lab-reporter-offline (version 1)
-Store: pendingActions
-  - keyPath: id (auto-generated UUID)
-  - Indexes: type, createdAt
-  - Fields: { id, type, payload, createdAt, status, retryCount }
-```
+### Files Modified
+- `src/lib/pdf-generator.ts` -- Complete rework of the drawing functions:
+  - `drawHeader()` -- New left-aligned letterhead layout with elegant divider
+  - Patient info section -- Open layout with accent border strip
+  - Report title -- Subtle accent strip instead of full-color bar
+  - Category headers -- Left-accent strip with white background
+  - `autoTable` call -- Switch from `grid` to `striped` theme, remove vertical lines, increase padding, use light gray header
+  - Abnormal summary -- Softer yellow/amber styling
+  - Signature section -- Cleaner solid lines with more whitespace
+  - Footer -- Simplified, remove "End of Report"
+  - Increase `MARGIN` from 15 to 18
+  - Increase spacing between all sections
 
-### Sync Strategy
-```text
-Online event detected
-  --> Lock queue (prevent duplicate processing)
-  --> Process actions oldest-first
-  --> For each action:
-      - Attempt Supabase insert
-      - On success: remove from queue, invalidate React Query cache
-      - On failure: increment retryCount, skip (try next)
-  --> Show summary toast
-  --> Unlock queue
-```
-
-### Cache Detection Approach
-- Use `performance.getEntriesByType('resource')` to check if Supabase API responses were served from the service worker cache (transferSize === 0 indicates cached)
-- Fallback: compare response timing (< 10ms typically means cached)
-
-### Edge Cases Handled
-- Duplicate prevention: queue items get unique IDs; sync checks for duplicates via report_number
-- Patient creation during offline report: if report references a new patient, patient is created first during sync
-- Queue persistence: IndexedDB survives app restarts, browser closes
-- Conflict resolution: server data always wins; offline items are marked if they fail to sync
-- Max retry: after 3 failed sync attempts, item is flagged for manual review
+### No Other Files Affected
+The PDF generator is self-contained. The preview thumbnails (`PDFPreviewThumbnail`, `ReportPreviewThumbnail`) will automatically reflect the new design since they call `generateReportPDF`.
 
