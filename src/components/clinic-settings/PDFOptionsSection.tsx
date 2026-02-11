@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
-import { FileDown, QrCode, Eye, Image, AlertTriangle, IdCard, Contact, Palette, Stamp } from 'lucide-react';
+import { FileDown, QrCode, Eye, Image, AlertTriangle, IdCard, Palette, Stamp } from 'lucide-react';
 
 interface PDFOptionsSectionProps {
   formData: {
@@ -14,7 +14,6 @@ interface PDFOptionsSectionProps {
     show_patient_id: boolean;
     watermark_text: string;
     enable_qr_code: boolean;
-    contact_display_format: string;
     pdf_style: string;
     logo_watermark_enabled: boolean;
   };
@@ -72,22 +71,6 @@ export function PDFOptionsSection({ formData, onChange }: PDFOptionsSectionProps
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="contact_display_format" className="text-sm">Contact Display</Label>
-            <Select
-              value={formData.contact_display_format}
-              onValueChange={(value) => onChange('contact_display_format', value)}
-            >
-              <SelectTrigger id="contact_display_format">
-                <SelectValue placeholder="Select format" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="inline">Inline (single line)</SelectItem>
-                <SelectItem value="stacked">Stacked (multiple lines)</SelectItem>
-                <SelectItem value="hidden">Hidden</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="space-y-2">
