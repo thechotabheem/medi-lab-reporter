@@ -1,72 +1,52 @@
 
 
-# Professional PDF Report Redesign
+# PDF Report Layout Restructuring
 
-## Problem
-The current PDF layout is cluttered and visually overwhelming -- dense information blocks, uniform styling, and lack of visual hierarchy make it look unprofessional.
+## Overview
+Restructure the PDF report to match the specified layout with a cleaner, more traditional medical report format.
 
-## Design Philosophy
-Clean, modern medical report with generous whitespace, subtle color accents, and clear visual hierarchy. Inspired by premium pathology lab reports.
+## Key Layout Changes
 
-## Key Changes
-
-### 1. Refined Header (Letterhead Style)
-- Left-aligned logo with clinic name beside it (not centered)
-- Tagline in a smaller, elegant font below the name
-- Contact info in a single subtle line with pipe separators
-- Replace thick colored divider with a thin, elegant double-line rule (accent color top line, light gray bottom line)
+### 1. Header Section (Logo Left, Contact Right)
+- Logo area on the **left** side
+- Address, Phone, Email aligned to the **right** side (stacked vertically)
+- Horizontal divider line below
 
 ### 2. Patient Information Block
-- Replace the cramped filled rectangle with a clean, open 2-column layout using subtle dotted separators
-- Use label: value pairs with proper spacing (no background fill)
-- Add a thin accent-colored left border strip for visual distinction
-- More breathing room between rows (6pt instead of 4pt)
+Reorganized 2-column grid with these specific field positions:
+- **Left column**: Name, Age/Gender, Referring Dr, Report Date
+- **Right column**: Patient ID, Report No, Collection Date, Status
+- Section title: "PATIENT INFORMATION"
 
-### 3. Report Title Bar
-- Replace the full-width solid color bar with a more subtle left-accent strip + bold text
-- Smaller, more refined styling -- the title shouldn't scream
+### 3. Test Results Table
+- Stays the same with columns: Test, Result, Unit, Range, Status
+- Section title: "TEST RESULTS"
 
-### 4. Test Results Tables
-- Remove the full-color category header bar; replace with a left-accent strip + bold category name on white
-- Use a cleaner "striped" theme instead of "grid" -- remove vertical grid lines for a modern look
-- Increase cell padding for readability (3pt instead of 2pt)
-- Table header: light gray background instead of dark colored fill; dark text instead of white
-- Subtle alternating row colors (white / very light gray)
-- Abnormal values: red text only (no bold everywhere), with a small red dot indicator
+### 4. Signature Section (Simplified)
+- Only **one** signature line: "Lab Technician's Signature"
+- Single horizontal line with label underneath
+- Removed the second (Pathologist) signature from default layout
 
-### 5. Abnormal Summary
-- Softer alert box: light amber/yellow background instead of harsh red, with a thin left red border
-- More compact and less alarming presentation
+### 5. Comments and Notes (Moved After Results)
+- Currently clinical notes appear **before** the test results table
+- Move them to **after** the signature section
+- Centered section title "COMMENTS & NOTES" with content area below
 
-### 6. Signature Section
-- Cleaner layout with more vertical space
-- Solid thin lines instead of dashed
-- Titles above the line, role below
-
-### 7. Footer
-- Simpler footer: page numbers right-aligned, footer text centered
-- Remove "End of Report" marker (unnecessary)
-
-### 8. General Typography & Spacing
-- Increase base margins from 15mm to 18mm for more whitespace
-- Consistent 10pt body text, 8pt labels
-- More vertical spacing between sections (10-12pt gaps instead of 6pt)
+### 6. Footer (Simplified)
+- Single centered line: "Generated: [Date]"
+- Replaces the current page number + footer text approach
 
 ## Technical Details
 
-### Files Modified
-- `src/lib/pdf-generator.ts` -- Complete rework of the drawing functions:
-  - `drawHeader()` -- New left-aligned letterhead layout with elegant divider
-  - Patient info section -- Open layout with accent border strip
-  - Report title -- Subtle accent strip instead of full-color bar
-  - Category headers -- Left-accent strip with white background
-  - `autoTable` call -- Switch from `grid` to `striped` theme, remove vertical lines, increase padding, use light gray header
-  - Abnormal summary -- Softer yellow/amber styling
-  - Signature section -- Cleaner solid lines with more whitespace
-  - Footer -- Simplified, remove "End of Report"
-  - Increase `MARGIN` from 15 to 18
-  - Increase spacing between all sections
+### File Modified
+- `src/lib/pdf-generator.ts` -- Rework the following functions/sections:
+  - **`drawHeader()`**: Logo left, contact details right-aligned (address, phone, email stacked on right)
+  - **Patient Info block** (lines ~478-539): Reorder fields to match the specified grid, add "PATIENT INFORMATION" section title
+  - **Clinical Notes** (lines ~541-556): Move this block to after the signature section
+  - **Signature section** (lines ~762-801): Simplify to a single "Lab Technician's Signature" line
+  - **Footer** (lines ~404-423): Replace with centered "Generated: [Date]" text
+  - These changes apply to **both** Modern and Classic styles
 
-### No Other Files Affected
-The PDF generator is self-contained. The preview thumbnails (`PDFPreviewThumbnail`, `ReportPreviewThumbnail`) will automatically reflect the new design since they call `generateReportPDF`.
+### No other files affected
+The PDF generator is self-contained; preview thumbnails will automatically reflect the new layout.
 
