@@ -8,6 +8,7 @@ import { Building2 } from 'lucide-react';
 interface BasicInfoSectionProps {
   formData: {
     name: string;
+    doctor_name: string;
     phone: string;
     email: string;
     address: string;
@@ -41,6 +42,16 @@ export function BasicInfoSection({ formData, onChange }: BasicInfoSectionProps) 
             onChange={(e) => onChange('name', e.target.value)}
             placeholder="Your Clinic Name"
             required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="doctor_name" className="text-sm">Doctor / Owner Name</Label>
+          <Input
+            id="doctor_name"
+            value={formData.doctor_name}
+            onChange={(e) => onChange('doctor_name', e.target.value)}
+            placeholder="Dr. John Smith"
           />
         </div>
 

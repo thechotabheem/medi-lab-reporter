@@ -1,0 +1,1 @@
+ALTER TABLE public.clinics ADD COLUMN doctor_name text NULL;

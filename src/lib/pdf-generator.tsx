@@ -31,6 +31,7 @@ interface ClinicWithBranding {
   contact_display_format?: string | null;
   pdf_style?: string | null;
   logo_watermark_enabled?: boolean | null;
+  doctor_name?: string | null;
 }
 
 interface GeneratePDFOptions {

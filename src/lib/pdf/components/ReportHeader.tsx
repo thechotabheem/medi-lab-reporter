@@ -7,6 +7,7 @@ interface ReportHeaderProps {
   clinicPhone?: string | null;
   clinicEmail?: string | null;
   clinicName?: string;
+  doctorName?: string | null;
   isFirstPage: boolean;
   showLogoOnAllPages?: boolean;
   reportNumber?: string;
@@ -19,6 +20,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
   clinicPhone,
   clinicEmail,
   clinicName,
+  doctorName,
   isFirstPage,
   showLogoOnAllPages = true,
   reportNumber,
@@ -38,8 +40,13 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
           )}
           {/* Clinic info - right half */}
           <View style={{ width: logoBase64 ? '50%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 10 }}>
+            {doctorName && (
+              <Text style={[tw('text-white font-bold'), { fontSize: 14 * fontSizeMultiplier, marginBottom: 2 }]}>
+                {doctorName}
+              </Text>
+            )}
             {clinicName && (
-              <Text style={[tw('text-white font-bold'), { fontSize: 14 * fontSizeMultiplier, marginBottom: 4 }]}>
+              <Text style={[tw('text-white'), { fontSize: 10 * fontSizeMultiplier, marginBottom: 4 }]}>
                 {clinicName}
               </Text>
             )}

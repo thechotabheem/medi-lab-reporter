@@ -69,6 +69,7 @@ export type Database = {
           contact_display_format: string | null
           created_at: string
           created_by: string | null
+          doctor_name: string | null
           email: string | null
           enable_qr_code: boolean | null
           font_size: string | null
@@ -99,6 +100,7 @@ export type Database = {
           contact_display_format?: string | null
           created_at?: string
           created_by?: string | null
+          doctor_name?: string | null
           email?: string | null
           enable_qr_code?: boolean | null
           font_size?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           contact_display_format?: string | null
           created_at?: string
           created_by?: string | null
+          doctor_name?: string | null
           email?: string | null
           enable_qr_code?: boolean | null
           font_size?: string | null
