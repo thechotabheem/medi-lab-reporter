@@ -123,23 +123,13 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           <ClinicalNotesBox notes={report.clinical_notes} fontSizeMultiplier={fontSizeMultiplier} />
         )}
 
-        {/* Signature line */}
-        <View style={[tw('flex-row justify-end mt-6'), { paddingRight: 0 }]}>
-          <View style={{ alignItems: 'center' }}>
-            <View style={{ width: 150, borderBottomWidth: 0.4, borderBottomColor: '#282828', marginBottom: 3 }} />
-            <View style={{ fontSize: 9 * fontSizeMultiplier, color: '#282828' }}>
-              {/* @ts-ignore */}
-              <View><View /></View>
-            </View>
-          </View>
-        </View>
-
         {/* Footer - fixed at bottom */}
         <ReportFooter
           pageNumber={1}
           totalPages={1}
           clinicAddress={clinic?.address}
           accentColorDark={accentColorDark}
+          isLastPage={true}
         />
       </Page>
     </Document>

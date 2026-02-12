@@ -47,6 +47,9 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
           </View>
         </View>
 
+        {/* Accent line below header */}
+        <View style={{ height: 2, backgroundColor: accentColorDark || '#009688' }} />
+
         {/* Patient Report heading */}
         <Text style={[tw('text-center font-bold mt-2'), { fontSize: 18 * fontSizeMultiplier, color: '#282828' }]}>
           Patient Report
