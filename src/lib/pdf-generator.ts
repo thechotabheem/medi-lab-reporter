@@ -265,26 +265,22 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     let y = MARGIN;
 
     if (isFirstPage) {
-      // Logo on the left (large)
+      // Logo on the left (large, matching sample proportions)
+      const logoHeight = 28;
+      const logoWidth = 55;
       if (logoBase64) {
         try {
-          const logoSize = 40;
-          doc.addImage(logoBase64, 'AUTO', MARGIN, y - 2, logoSize, logoSize);
+          doc.addImage(logoBase64, 'AUTO', MARGIN, y, logoWidth, logoHeight);
         } catch { /* */ }
       }
 
-      // Right side: Clinic name (bold, large, teal) + contact info
+      // Right side: Contact info only (clinic name is in the logo)
       const rightX = pageWidth - MARGIN;
-      doc.setFontSize(20 * fontSizeMultiplier);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...COLORS.primaryDark);
-      doc.text(clinic?.name || 'Medical Laboratory', rightX, y + 10, { align: 'right' });
-
       doc.setFontSize(11 * fontSizeMultiplier);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...COLORS.label);
 
-      let contactY = y + 18;
+      let contactY = y + 8;
       if (clinic?.phone) {
         doc.text(`Contact: ${clinic.phone}`, rightX, contactY, { align: 'right' });
         contactY += 6;
@@ -294,7 +290,7 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
         contactY += 6;
       }
 
-      y += 42;
+      y += 32;
 
       // Single thin teal divider line
       doc.setDrawColor(...COLORS.primary);
