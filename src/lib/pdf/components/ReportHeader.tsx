@@ -31,11 +31,11 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
     return (
       <View>
         {/* Dark azure header bar */}
-        <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 90, borderRadius: 4, paddingVertical: 2, paddingLeft: 10, paddingRight: 10 }]}>
+        <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 110, borderRadius: 4, paddingVertical: 2, paddingLeft: 10, paddingRight: 10 }]}>
           {/* Logo - 60% width, fills header */}
           {logoBase64 && (
             <View style={{ width: '60%', justifyContent: 'center' }}>
-              <Image src={logoBase64} style={{ height: 88, objectFit: 'contain', objectPosition: 'left' }} />
+              <Image src={logoBase64} style={{ height: 106, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
           {/* Clinic info - 40% */}
