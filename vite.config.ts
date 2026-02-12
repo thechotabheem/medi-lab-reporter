@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,json}"],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
         // Force new service worker to activate immediately
         skipWaiting: true,
         clientsClaim: true,
@@ -58,7 +59,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "supabase-api-cache",
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 300, // 5 minutes
+                maxAgeSeconds: 300,
               },
               networkTimeoutSeconds: 10,
               cacheableResponse: {
@@ -74,7 +75,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -89,7 +90,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "images-cache",
               expiration: {
                 maxEntries: 60,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },
