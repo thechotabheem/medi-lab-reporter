@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Page, View } from '@react-pdf/renderer';
 import { tw } from './tw-config';
-import { darkenColor, loadImageAsBase64 } from './utils';
+import { darkenColor } from './utils';
 import {
   ReportHeader,
   PatientInfoBox,
@@ -123,7 +123,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           <ClinicalNotesBox notes={report.clinical_notes} fontSizeMultiplier={fontSizeMultiplier} />
         )}
 
-        {/* Footer - fixed at bottom */}
+        {/* Footer */}
         <ReportFooter
           pageNumber={1}
           totalPages={1}
