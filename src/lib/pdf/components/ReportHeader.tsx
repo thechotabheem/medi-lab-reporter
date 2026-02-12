@@ -32,14 +32,14 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
       <View>
         {/* Dark azure header bar */}
         <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 90, borderRadius: 4, padding: 5 }]}>
-          {/* Logo - left half */}
+          {/* Logo - 60% width */}
           {logoBase64 && (
-            <View style={{ width: '50%', justifyContent: 'center' }}>
-              <Image src={logoBase64} style={{ height: 80, objectFit: 'contain', objectPosition: 'left' }} />
+            <View style={{ width: '60%', justifyContent: 'center' }}>
+              <Image src={logoBase64} style={{ height: 85, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
-          {/* Clinic info - right half */}
-          <View style={{ width: logoBase64 ? '50%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 10 }}>
+          {/* Clinic info - 40% */}
+          <View style={{ width: logoBase64 ? '40%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 10 }}>
             {doctorName && (
               <Text style={[tw('text-white font-bold'), { fontSize: 14 * fontSizeMultiplier, marginBottom: 2 }]}>
                 {doctorName}
