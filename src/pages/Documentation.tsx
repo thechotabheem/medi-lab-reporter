@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { useClinic } from '@/contexts/ClinicContext';
-import { generatePRDPDF } from '@/lib/prd-pdf-generator';
+import { generatePRDPDF } from '@/lib/prd-pdf-generator.tsx';
 import { EnhancedPageLayout } from '@/components/ui/enhanced-page-layout';
 
 const Documentation = () => {
@@ -15,12 +15,17 @@ const Documentation = () => {
   const handleDownloadPRD = async () => {
     setIsGenerating(true);
     try {
-      const doc = await generatePRDPDF({
+      const blob = await generatePRDPDF({
         clinic: clinic ? { name: clinic.name, logo_url: clinic.logo_url } : null,
       });
       
       const fileName = `MedLab-Reporter-PRD-${new Date().toISOString().split('T')[0]}.pdf`;
-      doc.save(fileName);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
       
       toast({
         title: 'PDF Downloaded',

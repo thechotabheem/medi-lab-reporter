@@ -18,7 +18,7 @@ import {
   PDFOptionsSection,
   PDFPreviewThumbnail,
 } from '@/components/clinic-settings';
-import { generateReportPDF } from '@/lib/pdf-generator';
+import { generateReportPDF } from '@/lib/pdf-generator.tsx';
 import type { Report, Patient } from '@/types/database';
 
 // Sample data for comprehensive preview
@@ -176,14 +176,13 @@ export default function ClinicSettings() {
       const { mockPatient, mockReport } = createMockData(clinicId);
       const clinicBranding = getClinicBranding();
 
-      const doc = await generateReportPDF({
+      const pdfBlob = await generateReportPDF({
         report: mockReport,
         patient: mockPatient,
         clinic: clinicBranding,
       });
 
       // Open PDF in new tab
-      const pdfBlob = doc.output('blob');
       const pdfUrl = URL.createObjectURL(pdfBlob);
       window.open(pdfUrl, '_blank');
       

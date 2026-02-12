@@ -43,8 +43,8 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { Report, Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
-import { downloadComparisonPDF, shareComparisonPDFViaWhatsApp } from '@/lib/comparison-pdf-generator';
-import { downloadMultiComparisonPDF, shareMultiComparisonPDFViaWhatsApp } from '@/lib/multi-comparison-pdf-generator';
+import { downloadComparisonPDF, shareComparisonPDFViaWhatsApp } from '@/lib/comparison-pdf-generator.tsx';
+import { downloadMultiComparisonPDF, shareMultiComparisonPDFViaWhatsApp } from '@/lib/multi-comparison-pdf-generator.tsx';
 
 type ComparisonMode = 'dual' | 'multi';
 
