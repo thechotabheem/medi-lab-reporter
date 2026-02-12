@@ -24,9 +24,17 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
 
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} fixed>
-      {/* Authorized Signature (last page only) */}
+      {/* Page badge (left) + Authorized Signature (right) on the same row */}
       {isLastPage && (
-        <View style={[tw('flex-row justify-end'), { paddingRight: 15, marginBottom: 8 }]}>
+        <View style={[tw('flex-row items-end justify-between'), { paddingHorizontal: 15, marginBottom: 6 }]}>
+          {/* Page badge */}
+          <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
+            <Text style={[tw('text-white font-bold'), { fontSize: 8 }]}>
+              Page # {pageNumber}/{totalPages}
+            </Text>
+          </View>
+
+          {/* Authorized Signature */}
           <View style={{ alignItems: 'center' }}>
             <View style={{ width: 150, borderBottomWidth: 0.4, borderBottomColor: '#282828', marginBottom: 3 }} />
             <Text style={{ fontSize: 9, color: '#282828' }}>Authorized Signature</Text>
@@ -34,14 +42,16 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
         </View>
       )}
 
-      {/* Page badge */}
-      <View style={[tw('flex-row items-end'), { paddingHorizontal: 15, marginBottom: 2 }]}>
-        <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
-          <Text style={[tw('text-white font-bold'), { fontSize: 8 }]}>
-            Page # {pageNumber}/{totalPages}
-          </Text>
+      {/* If not last page, just show the page badge */}
+      {!isLastPage && (
+        <View style={[tw('flex-row items-end'), { paddingHorizontal: 15, marginBottom: 2 }]}>
+          <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
+            <Text style={[tw('text-white font-bold'), { fontSize: 8 }]}>
+              Page # {pageNumber}/{totalPages}
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Full-width accent footer bar */}
       <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 25 }]}>

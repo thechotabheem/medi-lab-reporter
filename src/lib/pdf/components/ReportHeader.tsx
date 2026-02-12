@@ -30,8 +30,8 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
   if (isFirstPage) {
     return (
       <View>
-        {/* Dark azure header bar */}
-        <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 90, borderRadius: 4, padding: 5 }]}>
+        {/* Header row: logo left, doctor/clinic info right — white background */}
+        <View style={[tw('flex-row'), { minHeight: 80, paddingBottom: 8 }]}>
           {/* Logo - left half */}
           {logoBase64 && (
             <View style={{ width: '50%', justifyContent: 'center' }}>
@@ -39,37 +39,27 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
             </View>
           )}
           {/* Clinic info - right half */}
-          <View style={{ width: logoBase64 ? '50%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 10 }}>
+          <View style={{ width: logoBase64 ? '50%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 4 }}>
             {doctorName && (
-              <Text style={[tw('text-white font-bold'), { fontSize: 14 * fontSizeMultiplier, marginBottom: 2 }]}>
+              <Text style={[tw('font-bold'), { fontSize: 16 * fontSizeMultiplier, color: accentColorDark, marginBottom: 3 }]}>
                 {doctorName}
               </Text>
             )}
-            {clinicName && (
-              <Text style={[tw('text-white'), { fontSize: 10 * fontSizeMultiplier, marginBottom: 4 }]}>
-                {clinicName}
-              </Text>
-            )}
             {clinicPhone && (
-              <Text style={[tw('text-white'), { fontSize: 10 * fontSizeMultiplier }]}>
+              <Text style={{ fontSize: 11 * fontSizeMultiplier, color: '#505050', marginBottom: 2 }}>
                 Contact: {clinicPhone}
               </Text>
             )}
             {clinicEmail && (
-              <Text style={[tw('text-white'), { fontSize: 10 * fontSizeMultiplier, marginTop: 3 }]}>
+              <Text style={{ fontSize: 11 * fontSizeMultiplier, color: '#505050' }}>
                 {clinicEmail}
               </Text>
             )}
           </View>
         </View>
 
-        {/* Accent line */}
+        {/* Accent divider line */}
         <View style={{ height: 2, backgroundColor: accentColorDark }} />
-
-        {/* Patient Report heading */}
-        <Text style={[tw('text-center font-bold mt-2'), { fontSize: 18 * fontSizeMultiplier, color: '#282828' }]}>
-          Patient Report
-        </Text>
       </View>
     );
   }
