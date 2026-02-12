@@ -88,6 +88,8 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
         />
 
         {/* Patient info */}
+
+        {/* Patient info */}
         <PatientInfoBox
           patient={patient}
           report={report}
