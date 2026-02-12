@@ -381,8 +381,8 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   // ============ PATIENT INFORMATION BOX (rounded, no vertical divider) ============
   const leftCol = MARGIN + 6;
   const rightCol = pageWidth / 2 + 6;
-  const rowGap = 7;
-  const boxPadTop = 7;
+  const rowGap = 8;
+  const boxPadTop = 8;
 
   // Calculate box height based on number of rows
   const numLeftRows = showPatientId ? 4 : 3;
@@ -397,7 +397,7 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   // NO vertical divider line - matching sample
 
   let infoY = boxY + boxPadTop;
-  doc.setFontSize(11 * fontSizeMultiplier);
+  doc.setFontSize(12 * fontSizeMultiplier);
 
   // Helper to draw "Label: Value" in regular weight (matching sample style)
   const drawInfoPair = (label: string, value: string, x: number, y: number) => {
@@ -454,13 +454,13 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
     }
 
     // Category Header – centered bold text with full-width line below (matching sample)
-    doc.setFontSize(14 * fontSizeMultiplier);
+    doc.setFontSize(16 * fontSizeMultiplier);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.text);
-    doc.text(category.name, pageWidth / 2, yPos + 5, { align: 'center' });
-    yPos += 8;
+    doc.text(category.name, pageWidth / 2, yPos + 6, { align: 'center' });
+    yPos += 10;
     doc.setDrawColor(...COLORS.primaryDark);
-    doc.setLineWidth(0.8);
+    doc.setLineWidth(1);
     doc.line(MARGIN, yPos, pageWidth - MARGIN, yPos);
     yPos += 5;
 
@@ -495,7 +495,7 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       startY: yPos,
       head: [['Test Name', 'Reference Range', 'Unit', 'Result', 'Status']],
       body: tableData,
-      theme: 'plain',
+      theme: 'grid',
       showHead: 'everyPage',
       headStyles: {
         fillColor: COLORS.primaryDark,
@@ -504,8 +504,8 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
         fontStyle: 'bold',
         halign: 'center',
         cellPadding: 4,
-        lineColor: COLORS.primaryDark,
-        lineWidth: 0.1,
+        lineColor: COLORS.borderLight,
+        lineWidth: 0.3,
       },
       bodyStyles: {
         fontSize: 10 * fontSizeMultiplier,
@@ -513,7 +513,7 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
         textColor: COLORS.text,
         halign: 'center',
         lineColor: COLORS.borderLight,
-        lineWidth: { bottom: 0.3, top: 0, left: 0.3, right: 0.3 },
+        lineWidth: 0.3,
       },
       columnStyles: {
         0: { cellWidth: 50, halign: 'center' }, // Test Name
