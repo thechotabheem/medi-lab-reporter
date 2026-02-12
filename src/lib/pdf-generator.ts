@@ -261,27 +261,36 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   };
 
   // ── Header ──
+  const DARK_AZURE: [number, number, number] = [0, 51, 102];
+
   const drawHeader = (pageNum: number, isFirstPage: boolean): number => {
     doc.setPage(pageNum);
     let y = MARGIN;
 
     if (isFirstPage) {
-      // Logo on the left (large, matching sample proportions)
-      const logoHeight = 28;
-      const logoWidth = 55;
+      const headerHeight = 36;
+      const headerContentWidth = pageWidth - MARGIN * 2;
+
+      // Dark azure header background (full width with margins)
+      doc.setFillColor(...DARK_AZURE);
+      doc.roundedRect(MARGIN, y, headerContentWidth, headerHeight, 2, 2, 'F');
+
+      // Logo covers left half of header
+      const logoWidth = headerContentWidth / 2;
+      const logoHeight = headerHeight - 4;
       if (logoBase64) {
         try {
-          doc.addImage(logoBase64, 'AUTO', MARGIN, y, logoWidth, logoHeight);
+          doc.addImage(logoBase64, 'AUTO', MARGIN + 2, y + 2, logoWidth, logoHeight);
         } catch { /* */ }
       }
 
-      // Right side: Contact info only (clinic name is in the logo)
-      const rightX = pageWidth - MARGIN;
-      doc.setFontSize(11 * fontSizeMultiplier);
+      // Right side: Contact info (white text on dark azure)
+      const rightX = pageWidth - MARGIN - 4;
+      doc.setFontSize(10 * fontSizeMultiplier);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...COLORS.label);
+      doc.setTextColor(...COLORS.white);
 
-      let contactY = y + 8;
+      let contactY = y + 14;
       if (clinic?.phone) {
         doc.text(`Contact: ${clinic.phone}`, rightX, contactY, { align: 'right' });
         contactY += 6;
@@ -291,13 +300,7 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
         contactY += 6;
       }
 
-      y += 32;
-
-      // Single thin teal divider line
-      doc.setDrawColor(...COLORS.primary);
-      doc.setLineWidth(0.8);
-      doc.line(MARGIN, y, pageWidth - MARGIN, y);
-      y += 10;
+      y += headerHeight + 6;
 
       // "Patient Report" centered heading
       doc.setFontSize(18 * fontSizeMultiplier);
