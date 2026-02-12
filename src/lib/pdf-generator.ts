@@ -101,7 +101,8 @@ const getDetailedValueStatus = (
   gender: Gender
 ): DetailedStatus => {
   if (value === null || value === undefined || value === '') return 'unknown';
-  if (typeof value !== 'number') return 'unknown';
+  const numValue = typeof value === 'number' ? value : parseFloat(String(value));
+  if (isNaN(numValue)) return 'unknown';
   if (!field.normalRange) return 'unknown';
 
   let min: number | undefined;
@@ -116,11 +117,11 @@ const getDetailedValueStatus = (
     max = field.normalRange.max;
   }
 
-  if (min !== undefined && value < min) {
-    return value < min * 0.7 ? 'Low-Critical' : 'Low-Abnormal';
+  if (min !== undefined && numValue < min) {
+    return numValue < min * 0.7 ? 'Low-Critical' : 'Low-Abnormal';
   }
-  if (max !== undefined && value > max) {
-    return value > max * 1.3 ? 'High-Critical' : 'High-Abnormal';
+  if (max !== undefined && numValue > max) {
+    return numValue > max * 1.3 ? 'High-Critical' : 'High-Abnormal';
   }
   return 'Normal';
 };
@@ -378,32 +379,40 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
   // ============ FIRST PAGE HEADER ============
   yPos = drawHeader(1, true);
 
-  // ============ PATIENT INFORMATION BOX (rounded, no vertical divider) ============
-  const leftCol = MARGIN + 6;
-  const rightCol = pageWidth / 2 + 6;
-  const rowGap = 8;
-  const boxPadTop = 8;
+  // ============ PATIENT INFORMATION BOX (rounded, with vertical divider) ============
+  const boxMidX = pageWidth / 2;
+  const leftCol = MARGIN + 8;
+  const rightCol = boxMidX + 8;
+  const rowGap = 7;
+  const boxPadTop = 10;
 
   // Calculate box height based on number of rows
   const numLeftRows = showPatientId ? 4 : 3;
-  const boxHeight = boxPadTop + numLeftRows * rowGap + 4;
+  const boxHeight = boxPadTop + numLeftRows * rowGap + 6;
   const boxY = yPos;
   
-  // Rounded bordered rectangle (no fill, just border)
+  // Rounded bordered rectangle
   doc.setDrawColor(...COLORS.border);
   doc.setLineWidth(0.5);
   doc.roundedRect(MARGIN, boxY, pageWidth - MARGIN * 2, boxHeight, 3, 3, 'S');
 
-  // NO vertical divider line - matching sample
+  // Vertical divider line in center
+  doc.setDrawColor(...COLORS.border);
+  doc.setLineWidth(0.3);
+  doc.line(boxMidX, boxY + 3, boxMidX, boxY + boxHeight - 3);
 
   let infoY = boxY + boxPadTop;
-  doc.setFontSize(12 * fontSizeMultiplier);
+  doc.setFontSize(13 * fontSizeMultiplier);
 
-  // Helper to draw "Label: Value" in regular weight (matching sample style)
+  // Helper to draw "Label: Value" with bold label
   const drawInfoPair = (label: string, value: string, x: number, y: number) => {
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.text);
-    doc.text(`${label}: ${value}`, x, y);
+    const labelText = `${label}: `;
+    doc.text(labelText, x, y);
+    const labelWidth = doc.getTextWidth(labelText);
+    doc.setFont('helvetica', 'normal');
+    doc.text(value, x + labelWidth, y);
   };
 
   // Left column
@@ -503,13 +512,13 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
         fontSize: 10 * fontSizeMultiplier,
         fontStyle: 'bold',
         halign: 'center',
-        cellPadding: 4,
+        cellPadding: 3,
         lineColor: COLORS.borderLight,
         lineWidth: 0.3,
       },
       bodyStyles: {
         fontSize: 10 * fontSizeMultiplier,
-        cellPadding: 4,
+        cellPadding: 2.5,
         textColor: COLORS.text,
         halign: 'center',
         lineColor: COLORS.borderLight,
