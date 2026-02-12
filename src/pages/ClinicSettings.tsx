@@ -84,6 +84,7 @@ const createMockData = (clinicId: string) => {
 
 interface ClinicData {
   name: string;
+  doctor_name: string;
   phone: string;
   email: string;
   address: string;
@@ -110,6 +111,7 @@ interface ClinicData {
 
 const defaultFormData: ClinicData = {
   name: '',
+  doctor_name: '',
   phone: '',
   email: '',
   address: '',
@@ -167,6 +169,7 @@ export default function ClinicSettings() {
     secondary_color: formData.secondary_color,
     pdf_style: formData.pdf_style,
     logo_watermark_enabled: formData.logo_watermark_enabled,
+    doctor_name: formData.doctor_name,
   });
 
   const handlePreviewPDF = async () => {
@@ -210,6 +213,7 @@ export default function ClinicSettings() {
 
         if (data) {
           setFormData({
+            doctor_name: (data as any).doctor_name || '',
             name: data.name || '',
             phone: data.phone || '',
             email: data.email || '',
@@ -263,6 +267,7 @@ export default function ClinicSettings() {
       const { error } = await supabase
         .from('clinics')
         .update({
+          doctor_name: formData.doctor_name || null,
           name: formData.name,
           phone: formData.phone || null,
           email: formData.email || null,

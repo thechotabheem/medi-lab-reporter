@@ -41,6 +41,7 @@ interface ReportDocumentProps {
     contact_display_format?: string | null;
     pdf_style?: string | null;
     logo_watermark_enabled?: boolean | null;
+    doctor_name?: string | null;
   } | null;
   template: ReportTemplate;
   reportData: Record<string, unknown>;
@@ -78,6 +79,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           clinicPhone={clinic?.phone}
           clinicEmail={clinic?.email}
           clinicName={clinic?.name}
+          doctorName={clinic?.doctor_name}
           isFirstPage={true}
           showLogoOnAllPages={showLogoOnAllPages}
           reportNumber={report.report_number}
