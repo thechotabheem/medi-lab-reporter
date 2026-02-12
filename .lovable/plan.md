@@ -1,119 +1,68 @@
-
-
-# Migration from jsPDF to @react-pdf/renderer + react-pdf-tailwind
+# Match PDF Layout to Sample CBC Report
 
 ## Overview
 
-Replace the imperative jsPDF-based PDF generation system with a declarative React component approach using `@react-pdf/renderer` and `react-pdf-tailwind`. This gives you JSX-based PDF layouts styled with Tailwind-like classes, making future PDF design changes much easier and more maintainable.
+Fine-tune the existing React-PDF components to exactly match the sample CBC report layout. The current code is already close, but there are several specific differences that need fixing.
 
-## Scope of Changes
+## Changes Needed
 
-### Files to Rewrite (PDF generators)
-1. `src/lib/pdf-generator.ts` -- Main report PDF (631 lines)
-2. `src/lib/comparison-pdf-generator.ts` -- Dual comparison PDF (467 lines)
-3. `src/lib/multi-comparison-pdf-generator.ts` -- Multi-report comparison PDF (467 lines)
-4. `src/lib/prd-pdf-generator.ts` -- PRD documentation PDF (762 lines)
+### 1. ReportHeader -- Add clinic name and accent line
 
-### Files to Update (consumers)
-5. `src/pages/ReportView.tsx` -- Download/share report
-6. `src/pages/CreateReport.tsx` -- Preview/export during creation
-7. `src/pages/ClinicSettings.tsx` -- Full preview dialog
-8. `src/pages/CompareReports.tsx` -- Comparison download/share
-9. `src/components/reports/ReportPreviewThumbnail.tsx` -- Live preview thumbnail
-10. `src/components/clinic-settings/PDFPreviewThumbnail.tsx` -- Clinic settings preview
+The sample shows **"Dr Touseef-ur-Rehman Zia"** in bold white text on the right side of the header, above the contact details. The current code only shows phone and email. Also, a thin accent/gradient line appears below the dark azure header box.
 
-### New Packages to Install
-- `@react-pdf/renderer` -- React-based PDF rendering engine
-- `react-pdf-tailwind` -- Tailwind CSS adapter for @react-pdf/renderer
+**File:** `src/lib/pdf/components/ReportHeader.tsx`
 
-### Packages to Remove
-- `jspdf`
-- `jspdf-autotable`
+- Add a thin colored accent line (2px, using the accent color) below the header rectangle
 
----
+### 3. TestResultsTable -- Thicker borders, better spacing
 
-## Implementation Plan
+The sample has more visible cell borders than the current 0.3pt. The table also has slightly more padding.
 
-### Step 1: Create shared PDF utilities and Tailwind config
+**File:** `src/lib/pdf/components/TestResultsTable.tsx`
 
-Create `src/lib/pdf/tw-config.ts` with the react-pdf-tailwind `createTw()` setup containing your color palette (dark azure, accent colors, status colors, etc.).
+- Increase border width from 0.3 to 0.5-0.7 for more visible grid lines
+- Adjust cell padding to match the sample's spacing
+- Ensure header row padding matches
 
-Create `src/lib/pdf/utils.ts` with shared helpers: `hexToRgb`, `calculateAge`, `formatNormalRange`, `getDetailedValueStatus`, `loadImageAsBase64`, etc.
+### 4. PatientInfoBox -- Larger text, thicker border
 
-### Step 2: Build reusable PDF layout components
+The sample has slightly bolder/larger patient info text and a more visible border around the box.
 
-Create `src/lib/pdf/components/` with shared React PDF components:
-- `ReportHeader` -- Dark azure header with logo (left half) and contact info (right, white text)
-- `PatientInfoBox` -- Rounded bordered patient details with vertical divider
-- `TestResultsTable` -- Table with columns: Test Name, Reference Range, Unit, Result, Status (color-coded)
-- `CategoryHeader` -- Bold centered heading with divider line
-- `ClinicalNotesBox` -- Bordered notes section
-- `ReportFooter` -- Page badge, teal bar with address and timestamp, signature line
-- `Watermark` -- Text or logo watermark overlay
+**File:** `src/lib/pdf/components/PatientInfoBox.tsx`
 
-### Step 3: Rebuild the main report PDF
+- Increase base font size from 11 to ~13pt to match the sample
+- Increase border width from 0.5 to ~1pt for a more visible box outline
+- Increase vertical divider thickness slightly
 
-Create `src/lib/pdf/ReportDocument.tsx` as a React component using `<Document>`, `<Page>`, `<View>`, `<Text>`, `<Image>` from @react-pdf/renderer, styled with `react-pdf-tailwind`.
+### 5. ReportDocument -- Fix broken signature section
 
-The layout will replicate the current design:
-- Dark azure header with logo covering left half
-- "Patient Report" centered heading
-- Patient info box with rounded corners and vertical center divider
-- Category headers with divider lines
-- Test results tables with grid borders and color-coded status text
-- Clinical notes box
-- Authorized signature line
-- Footer with page badge, address bar, and timestamp
+The current signature section in `ReportDocument.tsx` has a broken `<View>` structure with empty nested Views instead of the "Authorized Signature" text. This should be removed since the footer component already handles the signature.
 
-### Step 4: Update the main generator API
+**File:** `src/lib/pdf/ReportDocument.tsx`
 
-Rewrite `src/lib/pdf-generator.ts` to:
-- Export `generateReportPDF()` that renders `<ReportDocument>` to a blob using `pdf().toBlob()`
-- Keep the same function signature so consumers don't break
-- Return a blob instead of a jsPDF instance
-- Update `downloadPDF()` and `sharePDFViaWhatsApp()` to work with blobs
+- Remove the broken inline signature block (lines 127-135)
+- Pass `isLastPage={true}` to `ReportFooter` so it renders the "Authorized Signature" line
 
-### Step 5: Rebuild comparison PDFs
+### 6. CategoryHeader -- Match divider color
 
-Rewrite `src/lib/comparison-pdf-generator.ts` and `src/lib/multi-comparison-pdf-generator.ts` using the same React PDF component pattern. Keep existing function signatures.
-
-### Step 6: Rebuild PRD PDF
-
-Rewrite `src/lib/prd-pdf-generator.ts` similarly.
-
-### Step 7: Update all consumers
-
-Update the 6 consumer files to work with the new blob-based API:
-- `ReportView.tsx`, `CreateReport.tsx`, `ClinicSettings.tsx` -- adjust download/preview to use blob URLs
-- `CompareReports.tsx` -- adjust comparison download/share
-- `ReportPreviewThumbnail.tsx`, `PDFPreviewThumbnail.tsx` -- render blob URL in iframe (same approach, just different source)
+The sample's category divider line uses the accent color. This is already implemented, so this just needs verification that the accent color flows through correctly.
 
 ---
 
 ## Technical Details
 
-### API Change
+### Files Modified
 
-The current API returns a `jsPDF` instance. The new API will return a `Blob`:
 
-```text
-// Before (jsPDF)
-const doc: jsPDF = await generateReportPDF(options);
-doc.save('filename.pdf');           // download
-doc.output('blob');                 // get blob
+| File                                          | Change                                                 | &nbsp; |
+| --------------------------------------------- | ------------------------------------------------------ | ------ |
+| `src/lib/pdf/components/ReportHeader.tsx`     | Add accent line below header                           | &nbsp; |
+| &nbsp;                                        | &nbsp;                                                 | &nbsp; |
+| `src/lib/pdf/components/TestResultsTable.tsx` | Increase border thickness and cell padding             | &nbsp; |
+| `src/lib/pdf/components/PatientInfoBox.tsx`   | Increase font size and border visibility               | &nbsp; |
+| `src/lib/pdf/ReportDocument.tsx`              | Remove broken signature block, enable footer signature | &nbsp; |
 
-// After (@react-pdf/renderer)
-const blob: Blob = await generateReportPDF(options);
-saveAs(blob, 'filename.pdf');      // download using URL.createObjectURL
-```
 
-The `downloadPDF` and `sharePDFViaWhatsApp` helper functions will be updated internally so most consumer code stays similar.
+### No New Dependencies
 
-### Preview Thumbnails
-
-The iframe-based preview approach will continue to work -- we generate a blob URL from the rendered PDF and display it in an iframe, exactly as before.
-
-### Key Benefit
-
-PDF layouts become JSX components with Tailwind-like styling, making them dramatically easier to read, modify, and maintain compared to the current imperative jsPDF coordinate-based approach.
-
+All changes are styling/layout adjustments within existing components.
