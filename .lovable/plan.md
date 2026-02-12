@@ -1,77 +1,119 @@
 
 
-# Fine-Tune PDF Layout to Exactly Match Sample CBC Report
+# Migration from jsPDF to @react-pdf/renderer + react-pdf-tailwind
 
 ## Overview
-After comparing the generated PDF with the sample CBC report screenshot pixel-by-pixel, several spacing, sizing, and styling adjustments are needed to achieve an exact match.
 
-## Specific Differences Found
+Replace the imperative jsPDF-based PDF generation system with a declarative React component approach using `@react-pdf/renderer` and `react-pdf-tailwind`. This gives you JSX-based PDF layouts styled with Tailwind-like classes, making future PDF design changes much easier and more maintainable.
 
-### 1. Logo Size -- Too Small
-- **Current**: Logo is 26mm square
-- **Sample**: Logo is significantly larger, approximately 40mm tall (the logo image includes "ZIA CLINIC & MATERNITY HOME" text)
-- **Fix**: Increase logo size to ~40mm, maintaining aspect ratio
+## Scope of Changes
 
-### 2. Header Right Side -- Font Sizes Off
-- **Current**: Clinic name at 16pt, contact info at 8pt
-- **Sample**: Doctor/clinic name is much larger (~18-20pt bold teal), contact and email are ~10pt
-- **Fix**: Increase clinic name to 20pt, contact info to 10pt
+### Files to Rewrite (PDF generators)
+1. `src/lib/pdf-generator.ts` -- Main report PDF (631 lines)
+2. `src/lib/comparison-pdf-generator.ts` -- Dual comparison PDF (467 lines)
+3. `src/lib/multi-comparison-pdf-generator.ts` -- Multi-report comparison PDF (467 lines)
+4. `src/lib/prd-pdf-generator.ts` -- PRD documentation PDF (762 lines)
 
-### 3. Patient Information Box -- Too Compact
-- **Current**: Box height is 32mm, text at 8.5pt, row gap 6.5mm
-- **Sample**: Box is taller (~40mm), text is larger (~11pt), more vertical breathing room, and there is a vertical divider line between left and right columns
-- **Fix**: Increase box height to 40mm, text to 11pt, row gap to 8mm, add a center vertical divider line
+### Files to Update (consumers)
+5. `src/pages/ReportView.tsx` -- Download/share report
+6. `src/pages/CreateReport.tsx` -- Preview/export during creation
+7. `src/pages/ClinicSettings.tsx` -- Full preview dialog
+8. `src/pages/CompareReports.tsx` -- Comparison download/share
+9. `src/components/reports/ReportPreviewThumbnail.tsx` -- Live preview thumbnail
+10. `src/components/clinic-settings/PDFPreviewThumbnail.tsx` -- Clinic settings preview
 
-### 4. Category Header -- Should NOT Be a Filled Teal Bar
-- **Current**: Full-width teal filled rectangle with white text
-- **Sample**: Category name is centered black/dark bold text (like "CBC (Complete Blood Count)") with a thin horizontal line below it -- no filled background
-- **Fix**: Replace the filled teal bar with centered bold text + thin line separator
+### New Packages to Install
+- `@react-pdf/renderer` -- React-based PDF rendering engine
+- `react-pdf-tailwind` -- Tailwind CSS adapter for @react-pdf/renderer
 
-### 5. Table Styling -- Needs Adjustments
-- **Current**: 8.5pt body text, 2.5 cell padding, alternating stripe rows
-- **Sample**: Larger text (~10pt), more cell padding (~4-5), NO alternating row colors (clean white background), all cells center-aligned
-- **Fix**: Increase font sizes, padding, remove alternate row stripes, center-align all columns
+### Packages to Remove
+- `jspdf`
+- `jspdf-autotable`
 
-### 6. Table Column Widths -- Need Rebalancing
-- **Current**: Test Name 50, Ref Range 35, Unit 22, Result 28, Status 30
-- **Sample**: Columns appear more evenly distributed with Test Name being wider
-- **Fix**: Auto-distribute columns more evenly across the page width
+---
 
-### 7. Clinical Notes Label -- Should Be Teal, Not Black
-- **Current**: "Clinical Notes:-" in dark text color
-- **Sample**: "Clinical Notes:-" appears in teal/green accent color
-- **Fix**: Change label text color to accent color
+## Implementation Plan
 
-### 8. Footer Bar -- "Report Generated On" in a Separate Badge
-- **Current**: Plain white text inline on the right side of the teal bar
-- **Sample**: "Report Generated On:" with the date appears in a small box/badge overlaid on the right side of the footer bar. Address text appears bold.
-- **Fix**: Make address text bold. Style "Report Generated On" as a small badge/box on the right
+### Step 1: Create shared PDF utilities and Tailwind config
 
-### 9. Signature Line Positioning
-- **Current**: Signature line 22mm above footer bar
-- **Sample**: Signature line appears closer to the footer, with "Authorized Signature" centered below the line on the right side
-- **Fix**: Adjust vertical position and center the text under the line
+Create `src/lib/pdf/tw-config.ts` with the react-pdf-tailwind `createTw()` setup containing your color palette (dark azure, accent colors, status colors, etc.).
 
-### 10. Logo Watermark Support
-- Already implemented in code (logo_watermark_enabled flag). No changes needed -- just verify it works on multi-page reports.
+Create `src/lib/pdf/utils.ts` with shared helpers: `hexToRgb`, `calculateAge`, `formatNormalRange`, `getDetailedValueStatus`, `loadImageAsBase64`, etc.
+
+### Step 2: Build reusable PDF layout components
+
+Create `src/lib/pdf/components/` with shared React PDF components:
+- `ReportHeader` -- Dark azure header with logo (left half) and contact info (right, white text)
+- `PatientInfoBox` -- Rounded bordered patient details with vertical divider
+- `TestResultsTable` -- Table with columns: Test Name, Reference Range, Unit, Result, Status (color-coded)
+- `CategoryHeader` -- Bold centered heading with divider line
+- `ClinicalNotesBox` -- Bordered notes section
+- `ReportFooter` -- Page badge, teal bar with address and timestamp, signature line
+- `Watermark` -- Text or logo watermark overlay
+
+### Step 3: Rebuild the main report PDF
+
+Create `src/lib/pdf/ReportDocument.tsx` as a React component using `<Document>`, `<Page>`, `<View>`, `<Text>`, `<Image>` from @react-pdf/renderer, styled with `react-pdf-tailwind`.
+
+The layout will replicate the current design:
+- Dark azure header with logo covering left half
+- "Patient Report" centered heading
+- Patient info box with rounded corners and vertical center divider
+- Category headers with divider lines
+- Test results tables with grid borders and color-coded status text
+- Clinical notes box
+- Authorized signature line
+- Footer with page badge, address bar, and timestamp
+
+### Step 4: Update the main generator API
+
+Rewrite `src/lib/pdf-generator.ts` to:
+- Export `generateReportPDF()` that renders `<ReportDocument>` to a blob using `pdf().toBlob()`
+- Keep the same function signature so consumers don't break
+- Return a blob instead of a jsPDF instance
+- Update `downloadPDF()` and `sharePDFViaWhatsApp()` to work with blobs
+
+### Step 5: Rebuild comparison PDFs
+
+Rewrite `src/lib/comparison-pdf-generator.ts` and `src/lib/multi-comparison-pdf-generator.ts` using the same React PDF component pattern. Keep existing function signatures.
+
+### Step 6: Rebuild PRD PDF
+
+Rewrite `src/lib/prd-pdf-generator.ts` similarly.
+
+### Step 7: Update all consumers
+
+Update the 6 consumer files to work with the new blob-based API:
+- `ReportView.tsx`, `CreateReport.tsx`, `ClinicSettings.tsx` -- adjust download/preview to use blob URLs
+- `CompareReports.tsx` -- adjust comparison download/share
+- `ReportPreviewThumbnail.tsx`, `PDFPreviewThumbnail.tsx` -- render blob URL in iframe (same approach, just different source)
+
+---
 
 ## Technical Details
 
-### File Modified: `src/lib/pdf-generator.ts`
+### API Change
 
-All changes are in this single file:
+The current API returns a `jsPDF` instance. The new API will return a `Blob`:
 
-1. **Line ~274**: Change `logoSize = 26` to `logoSize = 40`
-2. **Line ~282**: Change font size from `16` to `20` for clinic name
-3. **Line ~288**: Change contact font size from `8` to `10`
-4. **Line ~305**: Adjust `y += 28` to `y += 42` to account for larger logo
-5. **Lines ~399-440**: Increase patient box height from 32 to 40, font size from 8.5 to 11, row gap from 6.5 to 8, add vertical center divider line
-6. **Lines ~474-481**: Replace filled teal bar category header with centered bold text + thin line
-7. **Lines ~524-546**: Increase table body font size to 10, cell padding to 4, remove `alternateRowStyles`, center-align all columns
-8. **Line ~582**: Change "Clinical Notes:-" text color to accent color
-9. **Lines ~348-383**: Style footer address as bold, add badge styling for "Report Generated On"
-10. **Lines ~599-610**: Adjust signature position and center text under the line
+```text
+// Before (jsPDF)
+const doc: jsPDF = await generateReportPDF(options);
+doc.save('filename.pdf');           // download
+doc.output('blob');                 // get blob
 
-### Multi-Page Verification
-The existing `didDrawPage` callback and footer loop already handle multi-page reports. The watermark loop at the end (lines 613-616) applies to all pages. These changes don't affect pagination logic.
+// After (@react-pdf/renderer)
+const blob: Blob = await generateReportPDF(options);
+saveAs(blob, 'filename.pdf');      // download using URL.createObjectURL
+```
+
+The `downloadPDF` and `sharePDFViaWhatsApp` helper functions will be updated internally so most consumer code stays similar.
+
+### Preview Thumbnails
+
+The iframe-based preview approach will continue to work -- we generate a blob URL from the rendered PDF and display it in an iframe, exactly as before.
+
+### Key Benefit
+
+PDF layouts become JSX components with Tailwind-like styling, making them dramatically easier to read, modify, and maintain compared to the current imperative jsPDF coordinate-based approach.
 
