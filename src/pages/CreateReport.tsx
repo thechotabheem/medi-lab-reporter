@@ -24,7 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
 import { isCustomTemplateCode, getReportSaveParams } from '@/lib/template-utils';
-import { generateReportPDF, downloadPDF } from '@/lib/pdf-generator';
+import { generateReportPDF, downloadPDF } from '@/lib/pdf-generator.tsx';
 import { ageToDateOfBirth } from '@/lib/utils';
 import type { Patient, Report, ReportType } from '@/types/database';
 import { Check, Save, Layers, Eye, Download } from 'lucide-react';
@@ -253,13 +253,12 @@ export default function CreateReport() {
         .eq('id', clinicId)
         .single();
 
-      const pdf = await generateReportPDF({
+      const pdfBlob = await generateReportPDF({
         report,
         patient,
         clinic: clinicData,
       });
 
-      const pdfBlob = pdf.output('blob');
       const pdfUrl = URL.createObjectURL(pdfBlob);
       window.open(pdfUrl, '_blank');
     } catch (error) {
@@ -287,13 +286,13 @@ export default function CreateReport() {
         .eq('id', clinicId)
         .single();
 
-      const pdf = await generateReportPDF({
+      const pdfBlob = await generateReportPDF({
         report,
         patient,
         clinic: clinicData,
       });
 
-      downloadPDF(pdf, `${patient.full_name}_Report_${report.report_number}.pdf`);
+      downloadPDF(pdfBlob, `${patient.full_name}_Report_${report.report_number}.pdf`);
       toast.success('PDF exported successfully');
     } catch (error) {
       console.error('Export error:', error);

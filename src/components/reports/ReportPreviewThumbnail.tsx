@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, RefreshCw, Maximize2 } from 'lucide-react';
-import { generateReportPDF } from '@/lib/pdf-generator';
+import { generateReportPDF } from '@/lib/pdf-generator.tsx';
 import { supabase } from '@/integrations/supabase/client';
 import type { Report, Patient } from '@/types/database';
 
@@ -37,13 +37,12 @@ export function ReportPreviewThumbnail({
         .eq('id', clinicId)
         .single();
 
-      const doc = await generateReportPDF({
+      const blob = await generateReportPDF({
         report,
         patient,
         clinic: clinicData,
       });
 
-      const blob = doc.output('blob');
       const url = URL.createObjectURL(blob);
       
       // Clean up previous URL

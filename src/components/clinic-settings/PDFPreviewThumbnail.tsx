@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, RefreshCw, Maximize2 } from 'lucide-react';
-import { generateReportPDF } from '@/lib/pdf-generator';
+import { generateReportPDF } from '@/lib/pdf-generator.tsx';
 import type { Report, Patient } from '@/types/database';
 
 interface PDFPreviewThumbnailProps {
@@ -111,18 +111,12 @@ export function PDFPreviewThumbnail({ clinicBranding, clinicId, onOpenFullPrevie
     try {
       const { mockPatient, mockReport } = createMockData(clinicId);
 
-      const doc = await generateReportPDF({
+      const blob = await generateReportPDF({
         report: mockReport,
         patient: mockPatient,
         clinic: clinicBranding,
       });
 
-      // Convert first page to image
-      const pdfData = doc.output('datauristring');
-      
-      // Create a canvas to render PDF page as image
-      // We'll use the PDF data URI directly for the iframe preview
-      const blob = doc.output('blob');
       const url = URL.createObjectURL(blob);
       
       // Clean up previous URL

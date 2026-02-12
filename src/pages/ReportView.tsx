@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useClinic } from '@/contexts/ClinicContext';
 import { useUpdateReport, useDeleteReport } from '@/hooks/useReportMutations';
 import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
-import { generateReportPDF, downloadPDF, sharePDFViaWhatsApp } from '@/lib/pdf-generator';
+import { generateReportPDF, downloadPDF, sharePDFViaWhatsApp } from '@/lib/pdf-generator.tsx';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -121,13 +121,13 @@ export default function ReportView() {
     if (!report?.patient) return;
     setIsGeneratingPDF(true);
     try {
-      const doc = await generateReportPDF({ 
+      const blob = await generateReportPDF({ 
         report, 
         patient: report.patient, 
         clinic,
-        customTemplate: template, // Pass customized template
+        customTemplate: template,
       });
-      downloadPDF(doc, `${report.report_number}.pdf`);
+      downloadPDF(blob, `${report.report_number}.pdf`);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     } finally {
@@ -139,13 +139,13 @@ export default function ReportView() {
     if (!report?.patient) return;
     setIsGeneratingPDF(true);
     try {
-      const doc = await generateReportPDF({ 
+      const blob = await generateReportPDF({ 
         report, 
         patient: report.patient, 
         clinic,
-        customTemplate: template, // Pass customized template
+        customTemplate: template,
       });
-      await sharePDFViaWhatsApp(doc, report.patient.phone || undefined);
+      await sharePDFViaWhatsApp(blob, report.patient.phone || undefined);
     } catch (error) {
       console.error('Failed to share PDF:', error);
     } finally {
