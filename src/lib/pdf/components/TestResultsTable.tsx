@@ -12,7 +12,7 @@ interface TestResultsTableProps {
   accentColorDark?: string;
 }
 
-const BORDER = { borderWidth: 0.3, borderColor: '#e6e6e6' };
+const BORDER = { borderWidth: 0.7, borderColor: '#d2d2d2' };
 
 export const TestResultsTable: React.FC<TestResultsTableProps> = ({
   fields,
@@ -34,19 +34,19 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
     <View style={tw('mt-1')}>
       {/* Header row */}
       <View style={[tw('flex-row'), { backgroundColor: accentColorDark }]}>
-        <View style={[BORDER, { width: '28%', padding: 3 }]}>
+        <View style={[BORDER, { width: '28%', padding: 4 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs }]}>Test Name</Text>
         </View>
-        <View style={[BORDER, { width: '22%', padding: 3 }]}>
+        <View style={[BORDER, { width: '22%', padding: 4 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs }]}>Reference Range</Text>
         </View>
-        <View style={[BORDER, { width: '14%', padding: 3 }]}>
+        <View style={[BORDER, { width: '14%', padding: 4 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs }]}>Unit</Text>
         </View>
-        <View style={[BORDER, { width: '16%', padding: 3 }]}>
+        <View style={[BORDER, { width: '16%', padding: 4 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs }]}>Result</Text>
         </View>
-        <View style={[BORDER, { width: '20%', padding: 3 }]}>
+        <View style={[BORDER, { width: '20%', padding: 4 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs }]}>Status</Text>
         </View>
       </View>
@@ -61,19 +61,19 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
 
         return (
           <View key={field.name} style={[tw('flex-row'), idx % 2 === 1 ? { backgroundColor: '#fcfcfd' } : {}]}>
-            <View style={[BORDER, { width: '28%', padding: 2.5 }]}>
+            <View style={[BORDER, { width: '28%', padding: 3.5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828' }]}>{field.label}</Text>
             </View>
-            <View style={[BORDER, { width: '22%', padding: 2.5 }]}>
+            <View style={[BORDER, { width: '22%', padding: 3.5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828' }]}>{normalRange}</Text>
             </View>
-            <View style={[BORDER, { width: '14%', padding: 2.5 }]}>
+            <View style={[BORDER, { width: '14%', padding: 3.5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828' }]}>{field.unit || '—'}</Text>
             </View>
-            <View style={[BORDER, { width: '16%', padding: 2.5 }]}>
+            <View style={[BORDER, { width: '16%', padding: 3.5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828' }]}>{displayValue}</Text>
             </View>
-            <View style={[BORDER, { width: '20%', padding: 2.5 }]}>
+            <View style={[BORDER, { width: '20%', padding: 3.5 }]}>
               <Text style={[tw('text-center font-bold'), { fontSize: fs, color: statusColor }]}>
                 {status === 'unknown' ? '—' : status}
               </Text>
