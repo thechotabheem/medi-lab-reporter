@@ -18,15 +18,13 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
   totalPages,
   clinicAddress,
   accentColorDark = '#006450',
-  signatureTitleLeft,
-  signatureTitleRight,
   isLastPage = false,
 }) => {
   const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
 
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} fixed>
-      {/* Signature line (only on last page conceptually, but we render on every page for the fixed footer) */}
+      {/* Authorized Signature (last page only) */}
       {isLastPage && (
         <View style={[tw('flex-row justify-end'), { paddingRight: 15, marginBottom: 8 }]}>
           <View style={{ alignItems: 'center' }}>
@@ -45,7 +43,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
         </View>
       </View>
 
-      {/* Full-width dark teal footer bar */}
+      {/* Full-width accent footer bar */}
       <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 25 }]}>
         {clinicAddress && (
           <Text style={[tw('text-white font-bold flex-1'), { fontSize: 7 }]}>

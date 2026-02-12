@@ -1,6 +1,6 @@
 import type { Gender } from '@/types/database';
 
-export type DetailedStatus = 'Normal' | 'Low' | 'High' | 'Low-Critical' | 'High-Critical' | 'unknown';
+export type DetailedStatus = 'Normal' | 'Low-Abnormal' | 'High-Abnormal' | 'Low-Critical' | 'High-Critical' | 'unknown';
 
 export const hexToRgb = (hex: string): string => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -44,10 +44,10 @@ export const getDetailedValueStatus = (
   }
 
   if (min !== undefined && numValue < min) {
-    return numValue < min * 0.7 ? 'Low-Critical' : 'Low';
+    return numValue < min * 0.7 ? 'Low-Critical' : 'Low-Abnormal';
   }
   if (max !== undefined && numValue > max) {
-    return numValue > max * 1.3 ? 'High-Critical' : 'High';
+    return numValue > max * 1.3 ? 'High-Critical' : 'High-Abnormal';
   }
   return 'Normal';
 };
@@ -95,8 +95,8 @@ export const loadImageAsBase64 = async (url: string): Promise<string | null> => 
 export const getStatusColor = (status: DetailedStatus): string => {
   switch (status) {
     case 'Normal': return '#16a34a';
-    case 'Low':
-    case 'High': return '#c88200';
+    case 'Low-Abnormal':
+    case 'High-Abnormal': return '#c88200';
     case 'Low-Critical':
     case 'High-Critical': return '#c82828';
     default: return '#787878';
