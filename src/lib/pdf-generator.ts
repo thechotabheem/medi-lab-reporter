@@ -300,7 +300,14 @@ export const generateReportPDF = async ({ report, patient, clinic, reportUrl, cu
       doc.setDrawColor(...COLORS.primary);
       doc.setLineWidth(0.8);
       doc.line(MARGIN, y, pageWidth - MARGIN, y);
-      y += 6;
+      y += 10;
+
+      // "Patient Report" centered heading
+      doc.setFontSize(18 * fontSizeMultiplier);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.text);
+      doc.text('Patient Report', pageWidth / 2, y, { align: 'center' });
+      y += 8;
 
       return y;
     } else {
