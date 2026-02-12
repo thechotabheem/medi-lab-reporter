@@ -39,19 +39,19 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
             </View>
           )}
           {/* Clinic info - 40% */}
-          <View style={{ width: logoBase64 ? '40%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 10 }}>
+          <View style={{ width: logoBase64 ? '40%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 6 }}>
             {doctorName && (
-              <Text style={[tw('text-white font-bold'), { fontSize: 14 * fontSizeMultiplier, marginBottom: 2 }]}>
+              <Text style={[tw('text-white font-bold'), { fontSize: 16 * fontSizeMultiplier, marginBottom: 4 }]}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={[tw('text-white'), { fontSize: 10 * fontSizeMultiplier }]}>
+              <Text style={[tw('text-white'), { fontSize: 12 * fontSizeMultiplier }]}>
                 Contact: {clinicPhone}
               </Text>
             )}
             {clinicEmail && (
-              <Text style={[tw('text-white'), { fontSize: 10 * fontSizeMultiplier, marginTop: 3 }]}>
+              <Text style={[tw('text-white'), { fontSize: 12 * fontSizeMultiplier, marginTop: 5 }]}>
                 {clinicEmail}
               </Text>
             )}
