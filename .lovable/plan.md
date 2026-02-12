@@ -1,120 +1,77 @@
 
 
-# Match PDF Layout to Sample CBC Report
+# Fine-Tune PDF Layout to Exactly Match Sample CBC Report
 
 ## Overview
-Restructure the PDF generator to exactly replicate the style and layout from the uploaded sample CBC report. This involves significant changes to the header, patient info, table structure, status styling, footer, and signature placement.
+After comparing the generated PDF with the sample CBC report screenshot pixel-by-pixel, several spacing, sizing, and styling adjustments are needed to achieve an exact match.
 
-## Visual Differences Identified
+## Specific Differences Found
 
-### Current Layout vs Sample Layout
+### 1. Logo Size -- Too Small
+- **Current**: Logo is 26mm square
+- **Sample**: Logo is significantly larger, approximately 40mm tall (the logo image includes "ZIA CLINIC & MATERNITY HOME" text)
+- **Fix**: Increase logo size to ~40mm, maintaining aspect ratio
 
-1. **Header**: Current has clinic name as text next to logo. Sample has the logo image (which includes the clinic name/branding) on the left, and doctor name + contact info stacked on the right. A thick teal gradient divider separates the header from content.
+### 2. Header Right Side -- Font Sizes Off
+- **Current**: Clinic name at 16pt, contact info at 8pt
+- **Sample**: Doctor/clinic name is much larger (~18-20pt bold teal), contact and email are ~10pt
+- **Fix**: Increase clinic name to 20pt, contact info to 10pt
 
-2. **Report Title**: Current has a colored bar or accent strip with report type. Sample uses a centered "Patient Report" heading above the patient info box -- no separate report-type bar.
+### 3. Patient Information Box -- Too Compact
+- **Current**: Box height is 32mm, text at 8.5pt, row gap 6.5mm
+- **Sample**: Box is taller (~40mm), text is larger (~11pt), more vertical breathing room, and there is a vertical divider line between left and right columns
+- **Fix**: Increase box height to 40mm, text to 11pt, row gap to 8mm, add a center vertical divider line
 
-3. **Patient Information Box**: Current has labels on the left and values offset to the right. Sample uses a clean bordered box with two columns:
-   - Left: Name, Age/Gender, Referred By, Patient ID
-   - Right: Report No, Collected On, Reported On
-   - Values appear inline after the label with a colon
+### 4. Category Header -- Should NOT Be a Filled Teal Bar
+- **Current**: Full-width teal filled rectangle with white text
+- **Sample**: Category name is centered black/dark bold text (like "CBC (Complete Blood Count)") with a thin horizontal line below it -- no filled background
+- **Fix**: Replace the filled teal bar with centered bold text + thin line separator
 
-4. **Table Column Order**: Current is `Test | Result | Unit | Range | Status`. Sample is `Test Name | Reference Range | Unit | Result | Status`.
+### 5. Table Styling -- Needs Adjustments
+- **Current**: 8.5pt body text, 2.5 cell padding, alternating stripe rows
+- **Sample**: Larger text (~10pt), more cell padding (~4-5), NO alternating row colors (clean white background), all cells center-aligned
+- **Fix**: Increase font sizes, padding, remove alternate row stripes, center-align all columns
 
-5. **Status Badges**: Current uses colored text ("Normal", "Abnormal"). Sample uses colored background badges/pills -- green for Normal, orange for Low-Abnormal/High-Abnormal, dark red for Low-Critical/High-Critical.
+### 6. Table Column Widths -- Need Rebalancing
+- **Current**: Test Name 50, Ref Range 35, Unit 22, Result 28, Status 30
+- **Sample**: Columns appear more evenly distributed with Test Name being wider
+- **Fix**: Auto-distribute columns more evenly across the page width
 
-6. **Status Labels**: Current shows "Normal" or "Abnormal". Sample shows directional labels: "Normal", "Low-Abnormal", "High-Abnormal", "Low-Critical", "High-Critical".
+### 7. Clinical Notes Label -- Should Be Teal, Not Black
+- **Current**: "Clinical Notes:-" in dark text color
+- **Sample**: "Clinical Notes:-" appears in teal/green accent color
+- **Fix**: Change label text color to accent color
 
-7. **Clinical Notes**: Current shows "COMMENTS & NOTES" centered text. Sample shows a bordered box with "Clinical Notes:-" as a bold label.
+### 8. Footer Bar -- "Report Generated On" in a Separate Badge
+- **Current**: Plain white text inline on the right side of the teal bar
+- **Sample**: "Report Generated On:" with the date appears in a small box/badge overlaid on the right side of the footer bar. Address text appears bold.
+- **Fix**: Make address text bold. Style "Report Generated On" as a small badge/box on the right
 
-8. **Signature & Page Number**: Current has a separate signature section. Sample places "Authorized Signature" in the footer area alongside a "Page # X/Y" badge.
+### 9. Signature Line Positioning
+- **Current**: Signature line 22mm above footer bar
+- **Sample**: Signature line appears closer to the footer, with "Authorized Signature" centered below the line on the right side
+- **Fix**: Adjust vertical position and center the text under the line
 
-9. **Footer Bar**: Current has a thin line with centered "Generated: date". Sample has a full-width dark teal bar with the clinic address on the left and "Report Generated On: date time" on the right.
-
-## Changes
-
-### File: `src/lib/pdf-generator.ts`
-
-#### 1. Header Rework
-- Logo on the left (larger, ~25-28mm)
-- Right side: Clinic name in bold (larger font), then "Contact: [phone]" and email below it
-- Replace thin divider with a thick teal gradient-style line below the header
-
-#### 2. Replace Report Title with "Patient Report"
-- Remove the colored bar / accent strip for report type
-- Add a centered "Patient Report" heading (large, bold) between the header divider and the patient info box
-
-#### 3. Patient Information Box Restyle
-- Draw a bordered rectangle with two columns
-- Left column fields: Name, Age/Gender, Referred By, Patient ID (inline "Label: Value" format)
-- Right column fields: Report No, Collected On, Reported On
-- Remove the separate "PATIENT INFORMATION" section header bar
-
-#### 4. Table Column Reorder
-- Change column order to: Test Name | Reference Range | Unit | Result | Status
-- Adjust column widths accordingly
-
-#### 5. Directional Status Labels with Background Colors
-- Update `getValueStatus` to return directional statuses: "Normal", "Low-Abnormal", "High-Abnormal", "Low-Critical", "High-Critical"
-- Add colored background fills to the Status cells:
-  - Green background for "Normal"
-  - Orange background for "Low-Abnormal" / "High-Abnormal"
-  - Dark red background for "Low-Critical" / "High-Critical"
-
-#### 6. Clinical Notes Box
-- Replace centered "COMMENTS & NOTES" with a bordered box
-- Bold "Clinical Notes:-" label at the top of the box
-- Notes text inside the box
-
-#### 7. Footer Redesign
-- Move signature to footer area: "Authorized Signature" text with a line, positioned on the right side above the footer bar
-- Add "Page # X/Y" badge on the left side (dark rounded rectangle with white text)
-- Replace thin footer line with a full-width dark teal bar containing:
-  - Left: "Address: [clinic address]"
-  - Right: "Report Generated On: [date time]"
-
-#### 8. Remove Abnormal Summary Box
-- The sample report does not include a separate abnormal summary alert box; status is shown per-row in the table instead
-
-### No Other Files Affected
-The PDF generator is self-contained. The live preview thumbnail and report generation will automatically reflect these changes.
+### 10. Logo Watermark Support
+- Already implemented in code (logo_watermark_enabled flag). No changes needed -- just verify it works on multi-page reports.
 
 ## Technical Details
 
-### Status Detection Enhancement
-The current `getValueStatus` function returns `'normal' | 'abnormal' | 'unknown'`. It needs to be enhanced to return directional info:
+### File Modified: `src/lib/pdf-generator.ts`
 
-```text
-Function: getDetailedValueStatus(value, field, gender)
-Returns: 'Normal' | 'Low-Abnormal' | 'High-Abnormal' | 'Low-Critical' | 'High-Critical' | 'unknown'
+All changes are in this single file:
 
-Logic:
-- If value < min: check if value < min * 0.7 -> 'Low-Critical', else 'Low-Abnormal'  
-- If value > max: check if value > max * 1.3 -> 'High-Critical', else 'High-Abnormal'
-- Otherwise: 'Normal'
-```
+1. **Line ~274**: Change `logoSize = 26` to `logoSize = 40`
+2. **Line ~282**: Change font size from `16` to `20` for clinic name
+3. **Line ~288**: Change contact font size from `8` to `10`
+4. **Line ~305**: Adjust `y += 28` to `y += 42` to account for larger logo
+5. **Lines ~399-440**: Increase patient box height from 32 to 40, font size from 8.5 to 11, row gap from 6.5 to 8, add vertical center divider line
+6. **Lines ~474-481**: Replace filled teal bar category header with centered bold text + thin line
+7. **Lines ~524-546**: Increase table body font size to 10, cell padding to 4, remove `alternateRowStyles`, center-align all columns
+8. **Line ~582**: Change "Clinical Notes:-" text color to accent color
+9. **Lines ~348-383**: Style footer address as bold, add badge styling for "Report Generated On"
+10. **Lines ~599-610**: Adjust signature position and center text under the line
 
-### Status Badge Colors
-```text
-Normal:        background #d4edda (light green), text #155724
-Low-Abnormal:  background #fff3cd (light orange), text #856404
-High-Abnormal: background #fff3cd (light orange), text #856404  
-Low-Critical:  background #f8d7da (light red), text #721c24
-High-Critical: background #f8d7da (light red), text #721c24
-```
-
-### Footer Bar
-```text
-Full-width rectangle at bottom of page
-Background: dark teal (accent color darkened)
-Left text (white): "Address: [clinic.address]"
-Right text (white): "Report Generated On: [formatted date]"
-Height: ~10mm
-```
-
-### Page Numbering
-```text
-Dark rounded rectangle badge
-Position: bottom-left, above the footer bar
-Text: "Page # X/Y" in white
-```
+### Multi-Page Verification
+The existing `didDrawPage` callback and footer loop already handle multi-page reports. The watermark loop at the end (lines 613-616) applies to all pages. These changes don't affect pagination logic.
 
