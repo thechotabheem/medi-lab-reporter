@@ -93,7 +93,7 @@ const MARGIN = 15;
 const FOOTER_BAR_HEIGHT = 10;
 
 // Enhanced status detection with directional labels
-type DetailedStatus = 'Normal' | 'Low-Abnormal' | 'High-Abnormal' | 'Low-Critical' | 'High-Critical' | 'unknown';
+type DetailedStatus = 'Normal' | 'Low' | 'High' | 'Low-Critical' | 'High-Critical' | 'unknown';
 
 const getDetailedValueStatus = (
   value: number | string | null | undefined,
@@ -118,10 +118,10 @@ const getDetailedValueStatus = (
   }
 
   if (min !== undefined && numValue < min) {
-    return numValue < min * 0.7 ? 'Low-Critical' : 'Low-Abnormal';
+    return numValue < min * 0.7 ? 'Low-Critical' : 'Low';
   }
   if (max !== undefined && numValue > max) {
-    return numValue > max * 1.3 ? 'High-Critical' : 'High-Abnormal';
+    return numValue > max * 1.3 ? 'High-Critical' : 'High';
   }
   return 'Normal';
 };
@@ -135,6 +135,7 @@ const getValueStatus = (
   const detailed = getDetailedValueStatus(value, field, gender);
   if (detailed === 'unknown') return 'unknown';
   if (detailed === 'Normal') return 'normal';
+  // Map simplified labels back to abnormal for backward compat
   return 'abnormal';
 };
 
@@ -196,8 +197,8 @@ const getStatusTextColor = (status: DetailedStatus): [number, number, number] =>
   switch (status) {
     case 'Normal':
       return DEFAULT_COLORS.statusNormalText;
-    case 'Low-Abnormal':
-    case 'High-Abnormal':
+    case 'Low':
+    case 'High':
       return DEFAULT_COLORS.statusAbnormalText;
     case 'Low-Critical':
     case 'High-Critical':
