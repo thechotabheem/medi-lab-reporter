@@ -413,7 +413,6 @@ export const applyCustomizations = (
           unit: customization.customUnit !== undefined ? customization.customUnit : field.unit,
           normalRange: customization.customNormalRange
             ? {
-                ...field.normalRange,
                 min: customization.customNormalRange.min ?? field.normalRange?.min,
                 max: customization.customNormalRange.max ?? field.normalRange?.max,
               }
