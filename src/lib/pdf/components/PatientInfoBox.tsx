@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
 import { tw } from '../tw-config';
+import { FONTS } from '../fonts';
 import { calculateAge } from '../utils';
 import { format } from 'date-fns';
 import type { Report, Patient } from '@/types/database';
@@ -14,8 +15,8 @@ interface PatientInfoBoxProps {
 
 const InfoPair = ({ label, value, fontSize }: { label: string; value: string; fontSize: number }) => (
   <View style={tw('flex-row mb-1')}>
-    <Text style={[tw('font-bold'), { fontSize, color: '#282828' }]}>{label}: </Text>
-    <Text style={{ fontSize, color: '#282828' }}>{value}</Text>
+    <Text style={[tw('font-bold'), { fontSize, color: '#282828', fontFamily: FONTS.body }]}>{label}: </Text>
+    <Text style={{ fontSize, color: '#282828', fontFamily: FONTS.body }}>{value}</Text>
   </View>
 );
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Document, Page, View } from '@react-pdf/renderer';
 import { tw } from './tw-config';
+import './fonts'; // Register custom fonts
 import { darkenColor } from './utils';
 import {
   ReportHeader,
