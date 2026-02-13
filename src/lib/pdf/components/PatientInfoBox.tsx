@@ -26,12 +26,12 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
   showPatientId = true,
   fontSizeMultiplier = 1,
 }) => {
-  const fs = 13 * fontSizeMultiplier;
+  const fs = 14 * fontSizeMultiplier;
 
   return (
-    <View style={[tw('flex-row mt-2'), { borderWidth: 1, borderColor: '#d2d2d2', borderRadius: 3, padding: 8 }]}>
+    <View style={[tw('flex-row mt-1'), { borderWidth: 1, borderColor: '#d2d2d2', borderRadius: 3, padding: 10 }]}>
       {/* Left column */}
-      <View style={{ width: '50%', paddingRight: 8, borderRightWidth: 0.5, borderRightColor: '#d2d2d2' }}>
+      <View style={{ width: '50%', paddingRight: 10, borderRightWidth: 0.5, borderRightColor: '#d2d2d2' }}>
         <InfoPair label="Name" value={patient.full_name} fontSize={fs} />
         <InfoPair
           label="Age / Gender"

@@ -32,27 +32,27 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
     return (
       <View>
         {/* Dark azure header bar */}
-        <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 110, borderRadius: 4, paddingVertical: 2, paddingLeft: 10, paddingRight: 10 }]}>
+        <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 120, borderRadius: 4, paddingVertical: 2, paddingLeft: 10, paddingRight: 10 }]}>
           {/* Logo - 60% width, fills header */}
           {logoBase64 && (
             <View style={{ width: '60%', justifyContent: 'center' }}>
-              <Image src={logoBase64} style={{ height: 150, objectFit: 'contain', objectPosition: 'center' }} />
+              <Image src={logoBase64} style={{ height: 160, objectFit: 'contain', objectPosition: 'center' }} />
             </View>
           )}
           {/* Clinic info - 40% */}
           <View style={{ width: logoBase64 ? '40%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 6 }}>
             {doctorName && (
-              <Text style={[tw('text-white font-bold'), { fontSize: 16 * fontSizeMultiplier, marginBottom: 4, fontFamily: FONTS.heading }]}>
+              <Text style={[tw('text-white font-bold'), { fontSize: 18 * fontSizeMultiplier, marginBottom: 3, fontFamily: FONTS.heading }]}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={[tw('text-white'), { fontSize: 12 * fontSizeMultiplier, fontFamily: FONTS.body }]}>
+              <Text style={[tw('text-white'), { fontSize: 13 * fontSizeMultiplier, fontFamily: FONTS.body }]}>
                 Contact: {clinicPhone}
               </Text>
             )}
             {clinicEmail && (
-              <Text style={[tw('text-white'), { fontSize: 12 * fontSizeMultiplier, marginTop: 5, fontFamily: FONTS.body }]}>
+              <Text style={[tw('text-white'), { fontSize: 13 * fontSizeMultiplier, marginTop: 4, fontFamily: FONTS.body }]}>
                 {clinicEmail}
               </Text>
             )}
