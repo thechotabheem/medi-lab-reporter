@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
 import { tw } from '../tw-config';
+import { FONTS } from '../fonts';
 import { format } from 'date-fns';
 
 interface ReportFooterProps {
@@ -29,7 +30,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
         <View style={[tw('flex-row items-end justify-between'), { paddingHorizontal: 15, marginBottom: 6 }]}>
           {/* Page badge */}
           <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
-            <Text style={[tw('text-white font-bold'), { fontSize: 8 }]}>
+            <Text style={[tw('text-white font-bold'), { fontSize: 8, fontFamily: FONTS.mono }]}>
               Page # {pageNumber}/{totalPages}
             </Text>
           </View>
@@ -37,7 +38,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
           {/* Authorized Signature */}
           <View style={{ alignItems: 'center' }}>
             <View style={{ width: 150, borderBottomWidth: 0.4, borderBottomColor: '#282828', marginBottom: 3 }} />
-            <Text style={{ fontSize: 9, color: '#282828' }}>Authorized Signature</Text>
+            <Text style={{ fontSize: 9, color: '#282828', fontFamily: FONTS.body }}>Authorized Signature</Text>
           </View>
         </View>
       )}
@@ -46,7 +47,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       {!isLastPage && (
         <View style={[tw('flex-row items-end'), { paddingHorizontal: 15, marginBottom: 2 }]}>
           <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
-            <Text style={[tw('text-white font-bold'), { fontSize: 8 }]}>
+            <Text style={[tw('text-white font-bold'), { fontSize: 8, fontFamily: FONTS.mono }]}>
               Page # {pageNumber}/{totalPages}
             </Text>
           </View>
@@ -56,13 +57,13 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       {/* Full-width accent footer bar */}
       <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 25 }]}>
         {clinicAddress && (
-          <Text style={[tw('text-white font-bold flex-1'), { fontSize: 7 }]}>
+          <Text style={[tw('text-white font-bold flex-1'), { fontSize: 7, fontFamily: FONTS.body }]}>
             Address: {clinicAddress}
           </Text>
         )}
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={[tw('text-white'), { fontSize: 7 }]}>Report Generated On:</Text>
-          <Text style={[tw('text-white'), { fontSize: 7 }]}>{genDate}</Text>
+          <Text style={[tw('text-white'), { fontSize: 7, fontFamily: FONTS.body }]}>Report Generated On:</Text>
+          <Text style={[tw('text-white'), { fontSize: 7, fontFamily: FONTS.mono }]}>{genDate}</Text>
         </View>
       </View>
     </View>
