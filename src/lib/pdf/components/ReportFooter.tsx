@@ -55,7 +55,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       )}
 
       {/* Full-width accent footer bar */}
-      <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 25 }]}>
+      <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 28 }]}>
         {clinicAddress && (
           <Text style={[tw('text-white font-bold flex-1'), { fontSize: 7, fontFamily: FONTS.body }]}>
             Address: {clinicAddress}
