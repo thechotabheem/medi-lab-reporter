@@ -66,7 +66,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
 
   return (
     <Document>
-      <Page size={pageSize as 'A4' | 'LETTER' | 'LEGAL'} style={tw('p-3 pb-10')}>
+      <Page size={pageSize as 'A4' | 'LETTER' | 'LEGAL'} style={tw('p-4 pb-12')}>
         {/* Watermark */}
         <Watermark
           text={clinic?.watermark_text}

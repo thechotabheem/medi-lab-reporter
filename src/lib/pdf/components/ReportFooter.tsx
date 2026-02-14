@@ -55,15 +55,15 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       )}
 
       {/* Full-width accent footer bar */}
-      <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 28 }]}>
+      <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 25 }]}>
         {clinicAddress && (
-          <Text style={[tw('text-white font-bold flex-1'), { fontSize: 9, fontFamily: FONTS.body }]}>
+          <Text style={[tw('text-white font-bold flex-1'), { fontSize: 7, fontFamily: FONTS.body }]}>
             Address: {clinicAddress}
           </Text>
         )}
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={[tw('text-white'), { fontSize: 8, fontFamily: FONTS.body }]}>Report Generated On:</Text>
-          <Text style={[tw('text-white'), { fontSize: 8, fontFamily: FONTS.mono }]}>{genDate}</Text>
+          <Text style={[tw('text-white'), { fontSize: 7, fontFamily: FONTS.body }]}>Report Generated On:</Text>
+          <Text style={[tw('text-white'), { fontSize: 7, fontFamily: FONTS.mono }]}>{genDate}</Text>
         </View>
       </View>
     </View>
