@@ -22,8 +22,8 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
   fontSizeMultiplier = 1,
   accentColorDark = '#006450',
 }) => {
-  const fs = 10 * fontSizeMultiplier;
-  const headerFs = 10 * fontSizeMultiplier;
+  const fs = 12 * fontSizeMultiplier;
+  const headerFs = 12 * fontSizeMultiplier;
 
   const filledFields = fields.filter(
     (f) => reportData[f.name] !== undefined && reportData[f.name] !== null && reportData[f.name] !== ''
@@ -32,22 +32,22 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
   if (filledFields.length === 0) return null;
 
   return (
-    <View style={tw('mt-1')}>
+    <View style={tw('mt-2')}>
       {/* Header row */}
       <View style={[tw('flex-row'), { backgroundColor: accentColorDark }]}>
-        <View style={[BORDER, { width: '28%', padding: 4 }]}>
+        <View style={[BORDER, { width: '28%', padding: 5 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Test Name</Text>
         </View>
-        <View style={[BORDER, { width: '22%', padding: 4 }]}>
+        <View style={[BORDER, { width: '22%', padding: 5 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Reference Range</Text>
         </View>
-        <View style={[BORDER, { width: '14%', padding: 4 }]}>
+        <View style={[BORDER, { width: '14%', padding: 5 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Unit</Text>
         </View>
-        <View style={[BORDER, { width: '16%', padding: 4 }]}>
+        <View style={[BORDER, { width: '16%', padding: 5 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Result</Text>
         </View>
-        <View style={[BORDER, { width: '20%', padding: 4 }]}>
+        <View style={[BORDER, { width: '20%', padding: 5 }]}>
           <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Status</Text>
         </View>
       </View>
@@ -62,19 +62,19 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
 
         return (
           <View key={field.name} style={[tw('flex-row'), idx % 2 === 1 ? { backgroundColor: '#fcfcfd' } : {}]}>
-            <View style={[BORDER, { width: '28%', padding: 3.5 }]}>
+            <View style={[BORDER, { width: '28%', padding: 5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.body }]}>{field.label}</Text>
             </View>
-            <View style={[BORDER, { width: '22%', padding: 3.5 }]}>
+            <View style={[BORDER, { width: '22%', padding: 5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.mono }]}>{normalRange}</Text>
             </View>
-            <View style={[BORDER, { width: '14%', padding: 3.5 }]}>
+            <View style={[BORDER, { width: '14%', padding: 5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.body }]}>{field.unit || '—'}</Text>
             </View>
-            <View style={[BORDER, { width: '16%', padding: 3.5 }]}>
+            <View style={[BORDER, { width: '16%', padding: 5 }]}>
               <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.mono }]}>{displayValue}</Text>
             </View>
-            <View style={[BORDER, { width: '20%', padding: 3.5 }]}>
+            <View style={[BORDER, { width: '20%', padding: 5 }]}>
               <Text style={[tw('text-center font-bold'), { fontSize: fs, color: statusColor, fontFamily: FONTS.body }]}>
                 {status === 'unknown' ? '—' : status}
               </Text>
