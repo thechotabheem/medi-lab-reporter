@@ -125,18 +125,18 @@ export function ActionCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="p-5 sm:p-7 h-full flex flex-col justify-center relative z-10">
+        <CardHeader className="p-4 sm:p-6 h-full flex flex-col justify-center relative z-10">
           <IconWrapper
             variant={iconVariant}
             size="lg"
             className="mb-3 sm:mb-4 shrink-0"
             style={iconStyle}
           >
-            <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
           </IconWrapper>
-          <CardTitle className="text-base sm:text-lg lg:text-xl font-semibold">{title}</CardTitle>
+          <CardTitle className="text-sm sm:text-lg lg:text-xl font-semibold">{title}</CardTitle>
           {description && (
-            <CardDescription className="text-sm sm:text-base lg:text-lg line-clamp-3 mt-2 sm:mt-3">
+            <CardDescription className="text-xs sm:text-sm lg:text-base line-clamp-3 mt-2 sm:mt-3">
               {description}
             </CardDescription>
           )}
