@@ -42,7 +42,7 @@ export default function Dashboard() {
   return <EnhancedPageLayout>
       {/* Header */}
       <header className="app-header">
-        <div className="px-4 py-5 sm:py-6">
+        <div className="px-4 py-3 sm:py-4">
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-4 sm:gap-5">
               <IconWrapper size="lg" glow hoverPulse className="animate-breathe">
@@ -58,16 +58,16 @@ export default function Dashboard() {
       <HeaderDivider />
 
       {/* Main Content - Fills remaining height */}
-      <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[2%] relative z-10">
+      <main className="flex-1 flex flex-col px-3 sm:px-5 lg:px-6 pt-3 sm:pt-4 pb-1 relative z-10">
         {/* Welcome Section */}
-        <div className="mb-4 sm:mb-5 animate-fade-in text-center">
+        <div className="mb-2 sm:mb-3 animate-fade-in text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
             {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
-          <p className="text-muted-foreground mt-2 text-base sm:text-lg">
+          <p className="text-muted-foreground mt-1 text-base sm:text-lg">
             Here's an overview of your lab activity at <span className="text-gradient-primary font-semibold">{clinicName}</span>
           </p>
-          <p className="text-sm text-muted-foreground/70 mt-2 flex items-center justify-center gap-2 flex-wrap">
+          <p className="text-sm text-muted-foreground/70 mt-1 flex items-center justify-center gap-2 flex-wrap">
             <span>
               {currentTime.toLocaleDateString('en-US', {
               weekday: 'long',
@@ -93,9 +93,9 @@ export default function Dashboard() {
         </div>
 
         {/* Card grids container - fills remaining viewport */}
-        <div className="flex-1 flex flex-col gap-2 sm:gap-4 min-h-0">
+        <div className="flex-1 flex flex-col gap-1.5 sm:gap-2 min-h-0">
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 sm:flex-1 sm:auto-rows-fr sm:min-h-0">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 sm:flex-1 sm:auto-rows-fr sm:min-h-0">
             <div className="animate-fade-in-up animation-delay-100 sm:h-full">
               <StatCard title="Total Reports" value={statsLoading ? '-' : stats?.totalReports || 0} subtitle="All time" icon={FileText} onClick={() => navigate('/reports')} loading={statsLoading} glowEffect />
             </div>
@@ -111,7 +111,7 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 sm:flex-1 sm:auto-rows-fr sm:min-h-0">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 sm:flex-1 sm:auto-rows-fr sm:min-h-0">
             <div className="animate-fade-in-up animation-delay-200 sm:h-full">
               <ActionCard title="New Report" description="Create a new lab report for a patient" icon={Plus} iconVariant="interactive" onClick={() => navigate('/reports/new')} glowEffect />
             </div>
@@ -130,7 +130,7 @@ export default function Dashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-3 text-center border-t border-border/30 animate-fade-in animation-delay-700">
+      <footer className="relative z-10 py-1.5 text-center border-t border-border/30 animate-fade-in animation-delay-700">
         <p className="text-xs sm:text-sm text-muted-foreground/60">
           Solely Developed by <span className="font-semibold text-primary/80 hover:text-primary transition-colors duration-300 cursor-default relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">WIJDAN-UL-BASEER</span>
         </p>

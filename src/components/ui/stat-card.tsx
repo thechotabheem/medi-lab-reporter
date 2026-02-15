@@ -132,27 +132,27 @@ export function StatCard({
             opacity: glowPosition.opacity,
           }}
         />
-        <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-3 space-y-0 relative z-10 px-4 sm:px-6 pt-4 sm:pt-6">
-          <CardTitle className="text-xs sm:text-sm lg:text-base font-medium text-muted-foreground">
+        <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 space-y-0 relative z-10 px-5 sm:px-7 pt-5 sm:pt-7">
+          <CardTitle className="text-sm sm:text-base lg:text-lg font-medium text-muted-foreground">
             {title}
           </CardTitle>
           {Icon && (
             <Icon 
-              className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
+              className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110" 
               style={iconStyle}
             />
           )}
         </CardHeader>
-        <CardContent className="relative z-10 px-4 sm:px-6 pb-4 sm:pb-6 pt-0 flex-1 flex flex-col justify-center">
+        <CardContent className="relative z-10 px-5 sm:px-7 pb-5 sm:pb-7 pt-0 flex-1 flex flex-col justify-center">
           {loading ? (
-            <div className="h-8 sm:h-10 w-16 sm:w-20 skeleton rounded" />
+            <div className="h-10 sm:h-12 w-20 sm:w-24 skeleton rounded" />
           ) : (
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
               {value}
             </div>
           )}
           {subtitle && (
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{subtitle}</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">{subtitle}</p>
           )}
           {trend && (
             <p
