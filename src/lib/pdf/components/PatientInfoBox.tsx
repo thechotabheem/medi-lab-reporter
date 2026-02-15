@@ -14,7 +14,7 @@ interface PatientInfoBoxProps {
 }
 
 const InfoPair = ({ label, value, fontSize }: { label: string; value: string; fontSize: number }) => (
-  <View style={tw('flex-row mb-1')}>
+  <View style={tw('flex-row mb-2')}>
     <Text style={[tw('font-bold'), { fontSize, color: '#282828', fontFamily: FONTS.body }]}>{label}: </Text>
     <Text style={{ fontSize, color: '#282828', fontFamily: FONTS.body }}>{value}</Text>
   </View>
@@ -26,12 +26,12 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
   showPatientId = true,
   fontSizeMultiplier = 1,
 }) => {
-  const fs = 13 * fontSizeMultiplier;
+  const fs = 14 * fontSizeMultiplier;
 
   return (
-    <View style={[tw('flex-row mt-2'), { borderWidth: 1, borderColor: '#d2d2d2', borderRadius: 3, padding: 8 }]}>
+    <View style={[tw('flex-row mt-3'), { borderWidth: 1, borderColor: '#d2d2d2', borderRadius: 3, padding: 12 }]}>
       {/* Left column */}
-      <View style={{ width: '50%', paddingRight: 8, borderRightWidth: 0.5, borderRightColor: '#d2d2d2' }}>
+      <View style={{ width: '50%', paddingRight: 10, borderRightWidth: 0.5, borderRightColor: '#d2d2d2' }}>
         <InfoPair label="Name" value={patient.full_name} fontSize={fs} />
         <InfoPair
           label="Age / Gender"
@@ -45,7 +45,7 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
       </View>
 
       {/* Right column */}
-      <View style={{ width: '50%', paddingLeft: 8 }}>
+      <View style={{ width: '50%', paddingLeft: 10 }}>
         <InfoPair label="Report No" value={report.report_number} fontSize={fs} />
         <InfoPair label="Collected On" value={format(new Date(report.test_date), 'd/MM/yy')} fontSize={fs} />
         <InfoPair label="Reported On" value={format(new Date(report.created_at), 'd/MM/yy')} fontSize={fs} />
