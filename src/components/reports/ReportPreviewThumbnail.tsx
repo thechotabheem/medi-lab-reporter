@@ -31,11 +31,17 @@ export function ReportPreviewThumbnail({
 
     try {
       // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
+      let clinicData = null;
+      try {
+        const { data } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', clinicId)
+          .single();
+        clinicData = data;
+      } catch {
+        // Continue with null clinic data if fetch fails (e.g. offline)
+      }
 
       const blob = await generateReportPDF({
         report,
