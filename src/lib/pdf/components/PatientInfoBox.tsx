@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
-import { tw } from '../tw-config';
 import { FONTS } from '../fonts';
 import { calculateAge } from '../utils';
 import { format } from 'date-fns';
@@ -14,9 +13,9 @@ interface PatientInfoBoxProps {
 }
 
 const InfoPair = ({ label, value, fontSize }: { label: string; value: string; fontSize: number }) => (
-  <View style={tw('flex-row mb-2')}>
-    <Text style={[tw('font-bold'), { fontSize, color: '#282828', fontFamily: FONTS.body }]}>{label}: </Text>
-    <Text style={{ fontSize, color: '#282828', fontFamily: FONTS.body }}>{value}</Text>
+  <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+    <Text style={{ fontSize, color: '#000000', fontFamily: FONTS.bold }}>{label}: </Text>
+    <Text style={{ fontSize, color: '#000000', fontFamily: FONTS.body }}>{value}</Text>
   </View>
 );
 
@@ -26,12 +25,19 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
   showPatientId = true,
   fontSizeMultiplier = 1,
 }) => {
-  const fs = 14 * fontSizeMultiplier;
+  const fs = 12 * fontSizeMultiplier;
+  const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
 
   return (
-    <View style={[tw('flex-row mt-3'), { borderWidth: 1, borderColor: '#d2d2d2', borderRadius: 3, padding: 12 }]}>
+    <View style={{
+      flexDirection: 'row',
+      marginTop: 10,
+      borderWidth: 1,
+      borderColor: '#D3D3D3',
+      padding: 10,
+    }}>
       {/* Left column */}
-      <View style={{ width: '50%', paddingRight: 10, borderRightWidth: 0.5, borderRightColor: '#d2d2d2' }}>
+      <View style={{ width: '50%', paddingRight: 10, borderRightWidth: 1, borderRightColor: '#D3D3D3' }}>
         <InfoPair label="Name" value={patient.full_name} fontSize={fs} />
         <InfoPair
           label="Age / Gender"
@@ -49,6 +55,7 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
         <InfoPair label="Report No" value={report.report_number} fontSize={fs} />
         <InfoPair label="Collected On" value={format(new Date(report.test_date), 'd/MM/yy')} fontSize={fs} />
         <InfoPair label="Reported On" value={format(new Date(report.created_at), 'd/MM/yy')} fontSize={fs} />
+        <InfoPair label="Generated On" value={genDate} fontSize={fs} />
       </View>
     </View>
   );

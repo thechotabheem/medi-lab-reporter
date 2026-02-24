@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Image } from '@react-pdf/renderer';
-import { tw } from '../tw-config';
 import { FONTS } from '../fonts';
 
 interface ReportHeaderProps {
@@ -25,53 +24,58 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
   isFirstPage,
   showLogoOnAllPages = true,
   reportNumber,
-  accentColorDark = '#006450',
+  accentColorDark = '#003366',
   fontSizeMultiplier = 1,
 }) => {
   if (isFirstPage) {
     return (
       <View>
-        {/* Dark azure header bar */}
-        <View style={[tw('flex-row'), { backgroundColor: '#003366', height: 120, borderRadius: 4, paddingVertical: 4, paddingLeft: 12, paddingRight: 12 }]}>
-          {/* Logo - 60% width, fills header */}
+        {/* Deep navy header banner */}
+        <View style={{
+          flexDirection: 'row',
+          backgroundColor: '#003366',
+          height: 90,
+          alignItems: 'center',
+          paddingHorizontal: 15,
+        }}>
+          {/* Left: Logo */}
           {logoBase64 && (
-            <View style={{ width: '60%', justifyContent: 'center' }}>
-              <Image src={logoBase64} style={{ height: 160, objectFit: 'contain', objectPosition: 'center' }} />
+            <View style={{ width: '40%', justifyContent: 'center' }}>
+              <Image src={logoBase64} style={{ height: 80, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
-          {/* Clinic info - 40% */}
-          <View style={{ width: logoBase64 ? '40%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 8 }}>
+          {/* Center: spacer */}
+          <View style={{ flex: 1 }} />
+          {/* Right: Doctor info */}
+          <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
             {doctorName && (
-              <Text style={[tw('text-white font-bold'), { fontSize: 18 * fontSizeMultiplier, marginBottom: 5, fontFamily: FONTS.heading }]}>
+              <Text style={{ fontSize: 12 * fontSizeMultiplier, color: '#FFFFFF', fontFamily: FONTS.body, marginBottom: 3 }}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={[tw('text-white'), { fontSize: 13 * fontSizeMultiplier, fontFamily: FONTS.body }]}>
+              <Text style={{ fontSize: 12 * fontSizeMultiplier, color: '#FFFFFF', fontFamily: FONTS.body, marginBottom: 2 }}>
                 Contact: {clinicPhone}
               </Text>
             )}
             {clinicEmail && (
-              <Text style={[tw('text-white'), { fontSize: 13 * fontSizeMultiplier, marginTop: 5, fontFamily: FONTS.body }]}>
+              <Text style={{ fontSize: 12 * fontSizeMultiplier, color: '#FFFFFF', fontFamily: FONTS.body }}>
                 {clinicEmail}
               </Text>
             )}
           </View>
         </View>
-
-        {/* Accent divider line */}
-        <View style={{ height: 2, backgroundColor: accentColorDark }} />
       </View>
     );
   }
 
   // Compact continuation header for subsequent pages
   return (
-    <View style={[tw('flex-row items-center pb-2 mb-2'), { borderBottomWidth: 1, borderBottomColor: accentColorDark }]}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 6, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: '#003366' }}>
       {showLogoOnAllPages && logoBase64 && (
         <Image src={logoBase64} style={{ width: 25, height: 25, marginRight: 8, objectFit: 'contain' }} />
       )}
-      <Text style={[tw('font-bold flex-1'), { fontSize: 11 * fontSizeMultiplier, color: accentColorDark, fontFamily: FONTS.heading }]}>
+      <Text style={{ flex: 1, fontSize: 11 * fontSizeMultiplier, color: '#003366', fontFamily: FONTS.bold }}>
         {clinicName || 'Medical Laboratory'}
       </Text>
       {reportNumber && (
