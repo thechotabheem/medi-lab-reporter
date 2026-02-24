@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
+import { tw } from '../tw-config';
 import { FONTS } from '../fonts';
 import { format } from 'date-fns';
 
@@ -17,43 +18,54 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
   pageNumber,
   totalPages,
   clinicAddress,
+  accentColorDark = '#006450',
   isLastPage = false,
 }) => {
   const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
 
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} fixed>
-      {/* Centered page badge */}
-      <View style={{ alignItems: 'center', marginBottom: 6 }}>
-        <View style={{ backgroundColor: '#808080', paddingHorizontal: 12, paddingVertical: 3, borderRadius: 3 }}>
-          <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.body }}>
-            Page # {pageNumber}/{totalPages}
-          </Text>
-        </View>
-      </View>
-
-      {/* Signature line (last page only) */}
+      {/* Page badge (left) + Authorized Signature (right) on the same row */}
       {isLastPage && (
-        <View style={{ alignItems: 'flex-end', paddingHorizontal: 72, marginBottom: 8 }}>
-          <View style={{ width: 160, borderBottomWidth: 0.5, borderBottomColor: '#000000', marginBottom: 3 }} />
-          <Text style={{ fontSize: 10, color: '#000000', fontFamily: FONTS.body }}>Authorized Signature</Text>
+        <View style={[tw('flex-row items-end justify-between'), { paddingHorizontal: 15, marginBottom: 6 }]}>
+          {/* Page badge */}
+          <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
+            <Text style={[tw('text-white font-bold'), { fontSize: 8, fontFamily: FONTS.mono }]}>
+              Page # {pageNumber}/{totalPages}
+            </Text>
+          </View>
+
+          {/* Authorized Signature */}
+          <View style={{ alignItems: 'center' }}>
+            <View style={{ width: 150, borderBottomWidth: 0.4, borderBottomColor: '#282828', marginBottom: 3 }} />
+            <Text style={{ fontSize: 9, color: '#282828', fontFamily: FONTS.body }}>Authorized Signature</Text>
+          </View>
         </View>
       )}
 
-      {/* Address + Generated On row */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 4 }}>
+      {/* If not last page, just show the page badge */}
+      {!isLastPage && (
+        <View style={[tw('flex-row items-end'), { paddingHorizontal: 15, marginBottom: 2 }]}>
+          <View style={[tw('rounded-sm px-2 py-1'), { backgroundColor: accentColorDark }]}>
+            <Text style={[tw('text-white font-bold'), { fontSize: 8, fontFamily: FONTS.mono }]}>
+              Page # {pageNumber}/{totalPages}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Full-width accent footer bar */}
+      <View style={[tw('flex-row items-center px-4'), { backgroundColor: accentColorDark, height: 28 }]}>
         {clinicAddress && (
-          <Text style={{ fontSize: 10, color: '#000000', fontFamily: FONTS.italic }}>
-            {clinicAddress}
+          <Text style={[tw('text-white font-bold flex-1'), { fontSize: 8, fontFamily: FONTS.body }]}>
+            Address: {clinicAddress}
           </Text>
         )}
-        <Text style={{ fontSize: 10, color: '#000000', fontFamily: FONTS.body }}>
-          Report Generated On: {genDate}
-        </Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={[tw('text-white'), { fontSize: 8, fontFamily: FONTS.body }]}>Report Generated On:</Text>
+          <Text style={[tw('text-white'), { fontSize: 8, fontFamily: FONTS.mono }]}>{genDate}</Text>
+        </View>
       </View>
-
-      {/* Bottom banner mirroring header */}
-      <View style={{ backgroundColor: '#003366', height: 20 }} />
     </View>
   );
 };

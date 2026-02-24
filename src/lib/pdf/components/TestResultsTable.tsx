@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
+import { tw } from '../tw-config';
 import { FONTS } from '../fonts';
 import type { TestField, Gender } from '@/types/database';
-import { getDetailedValueStatus, formatNormalRange, getStatusColor, getStatusLabel } from '../utils';
+import { getDetailedValueStatus, formatNormalRange, getStatusColor } from '../utils';
 
 interface TestResultsTableProps {
   fields: TestField[];
@@ -12,15 +13,16 @@ interface TestResultsTableProps {
   accentColorDark?: string;
 }
 
-const BORDER = { borderWidth: 0.5, borderColor: '#000000' };
+const BORDER = { borderWidth: 0.7, borderColor: '#d2d2d2' };
 
 export const TestResultsTable: React.FC<TestResultsTableProps> = ({
   fields,
   reportData,
   gender,
   fontSizeMultiplier = 1,
+  accentColorDark = '#006450',
 }) => {
-  const fs = 10 * fontSizeMultiplier;
+  const fs = 12 * fontSizeMultiplier;
   const headerFs = 12 * fontSizeMultiplier;
 
   const filledFields = fields.filter(
@@ -30,52 +32,51 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
   if (filledFields.length === 0) return null;
 
   return (
-    <View>
+    <View style={tw('mt-1')}>
       {/* Header row */}
-      <View style={{ flexDirection: 'row', backgroundColor: '#F0F0F0' }}>
-        <View style={[BORDER, { width: '30%', padding: 5 }]}>
-          <Text style={{ fontSize: headerFs, color: '#000000', fontFamily: FONTS.bold }}>Test Name</Text>
+      <View style={[tw('flex-row'), { backgroundColor: accentColorDark }]}>
+        <View style={[BORDER, { width: '28%', padding: 6 }]}>
+          <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Test Name</Text>
         </View>
-        <View style={[BORDER, { width: '20%', padding: 5 }]}>
-          <Text style={{ fontSize: headerFs, color: '#000000', fontFamily: FONTS.bold }}>Reference Range</Text>
+        <View style={[BORDER, { width: '22%', padding: 6 }]}>
+          <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Reference Range</Text>
         </View>
-        <View style={[BORDER, { width: '15%', padding: 5 }]}>
-          <Text style={{ fontSize: headerFs, color: '#000000', fontFamily: FONTS.bold }}>Unit</Text>
+        <View style={[BORDER, { width: '14%', padding: 6 }]}>
+          <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Unit</Text>
         </View>
-        <View style={[BORDER, { width: '15%', padding: 5 }]}>
-          <Text style={{ fontSize: headerFs, color: '#000000', fontFamily: FONTS.bold, textAlign: 'right' }}>Result</Text>
+        <View style={[BORDER, { width: '16%', padding: 6 }]}>
+          <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Result</Text>
         </View>
-        <View style={[BORDER, { width: '20%', padding: 5 }]}>
-          <Text style={{ fontSize: headerFs, color: '#000000', fontFamily: FONTS.bold, textAlign: 'center' }}>Status</Text>
+        <View style={[BORDER, { width: '20%', padding: 6 }]}>
+          <Text style={[tw('text-center font-bold text-white'), { fontSize: headerFs, fontFamily: FONTS.body }]}>Status</Text>
         </View>
       </View>
 
-      {/* Data rows — no zebra striping */}
-      {filledFields.map((field) => {
+      {/* Data rows */}
+      {filledFields.map((field, idx) => {
         const value = reportData[field.name];
         const displayValue = String(value);
         const normalRange = formatNormalRange(field, gender);
         const status = getDetailedValueStatus(value as number, field, gender);
         const statusColor = getStatusColor(status);
-        const statusLabel = getStatusLabel(status);
 
         return (
-          <View key={field.name} style={{ flexDirection: 'row' }}>
-            <View style={[BORDER, { width: '30%', padding: 5 }]}>
-              <Text style={{ fontSize: fs, color: '#000000', fontFamily: FONTS.body }}>{field.label}</Text>
+          <View key={field.name} style={[tw('flex-row'), idx % 2 === 1 ? { backgroundColor: '#fcfcfd' } : {}]}>
+            <View style={[BORDER, { width: '28%', padding: 5 }]}>
+              <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.body }]}>{field.label}</Text>
+            </View>
+            <View style={[BORDER, { width: '22%', padding: 5 }]}>
+              <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.mono }]}>{normalRange}</Text>
+            </View>
+            <View style={[BORDER, { width: '14%', padding: 5 }]}>
+              <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.body }]}>{field.unit || '—'}</Text>
+            </View>
+            <View style={[BORDER, { width: '16%', padding: 5 }]}>
+              <Text style={[tw('text-center'), { fontSize: fs, color: '#282828', fontFamily: FONTS.mono }]}>{displayValue}</Text>
             </View>
             <View style={[BORDER, { width: '20%', padding: 5 }]}>
-              <Text style={{ fontSize: fs, color: '#000000', fontFamily: FONTS.body }}>{normalRange}</Text>
-            </View>
-            <View style={[BORDER, { width: '15%', padding: 5 }]}>
-              <Text style={{ fontSize: fs, color: '#000000', fontFamily: FONTS.body }}>{field.unit || '—'}</Text>
-            </View>
-            <View style={[BORDER, { width: '15%', padding: 5 }]}>
-              <Text style={{ fontSize: fs, color: '#000000', fontFamily: FONTS.body, textAlign: 'right' }}>{displayValue}</Text>
-            </View>
-            <View style={[BORDER, { width: '20%', padding: 5 }]}>
-              <Text style={{ fontSize: fs, color: statusColor, fontFamily: FONTS.bold, textAlign: 'center' }}>
-                {statusLabel}
+              <Text style={[tw('text-center font-bold'), { fontSize: fs, color: statusColor, fontFamily: FONTS.body }]}>
+                {status === 'unknown' ? '—' : status}
               </Text>
             </View>
           </View>

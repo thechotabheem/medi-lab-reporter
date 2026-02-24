@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
+import { tw } from '../tw-config';
 import { FONTS } from '../fonts';
 
 interface ClinicalNotesBoxProps {
@@ -8,11 +9,11 @@ interface ClinicalNotesBoxProps {
 }
 
 export const ClinicalNotesBox: React.FC<ClinicalNotesBoxProps> = ({ notes, fontSizeMultiplier = 1 }) => (
-  <View style={{ marginTop: 12, padding: 10, borderWidth: 1, borderColor: '#D3D3D3' }}>
-    <Text style={{ fontSize: 12 * fontSizeMultiplier, color: '#000000', fontFamily: FONTS.bold, marginBottom: 4 }}>
+  <View style={[tw('mt-4 p-3'), { borderWidth: 0.5, borderColor: '#d2d2d2', borderRadius: 3 }]}>
+    <Text style={[tw('font-bold'), { fontSize: 13 * fontSizeMultiplier, color: '#282828', fontFamily: FONTS.heading }]}>
       Clinical Notes:-
     </Text>
-    <Text style={{ fontSize: 10 * fontSizeMultiplier, color: '#000000', fontFamily: FONTS.body, lineHeight: 1.5 }}>
+    <Text style={{ fontSize: 11 * fontSizeMultiplier, color: '#282828', marginTop: 4, fontFamily: FONTS.body, lineHeight: 1.4 }}>
       {notes}
     </Text>
   </View>

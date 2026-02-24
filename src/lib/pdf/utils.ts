@@ -94,23 +94,12 @@ export const loadImageAsBase64 = async (url: string): Promise<string | null> => 
 
 export const getStatusColor = (status: DetailedStatus): string => {
   switch (status) {
-    case 'Normal': return '#008000';
+    case 'Normal': return '#16a34a';
     case 'Low-Abnormal':
-    case 'Low-Critical': return '#FF0000';
-    case 'High-Abnormal':
-    case 'High-Critical': return '#0000FF';
-    default: return '#000000';
-  }
-};
-
-export const getStatusLabel = (status: DetailedStatus): string => {
-  switch (status) {
-    case 'Normal': return 'Normal';
-    case 'Low-Abnormal':
-    case 'Low-Critical': return 'Low';
-    case 'High-Abnormal':
-    case 'High-Critical': return 'High';
-    default: return '—';
+    case 'High-Abnormal': return '#c88200';
+    case 'Low-Critical':
+    case 'High-Critical': return '#c82828';
+    default: return '#787878';
   }
 };
 
