@@ -1,8 +1,6 @@
 import React from 'react';
 import { Document, Page, View } from '@react-pdf/renderer';
-import { tw } from './tw-config';
 import './fonts'; // Register custom fonts
-import './fonts';
 import {
   ReportHeader,
   PatientInfoBox,
