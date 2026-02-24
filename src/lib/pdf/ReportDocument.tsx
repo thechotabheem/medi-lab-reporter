@@ -2,7 +2,7 @@ import React from 'react';
 import { Document, Page, View } from '@react-pdf/renderer';
 import { tw } from './tw-config';
 import './fonts'; // Register custom fonts
-import { darkenColor } from './utils';
+import './fonts';
 import {
   ReportHeader,
   PatientInfoBox,
@@ -57,8 +57,6 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
   reportData,
   logoBase64,
 }) => {
-  const accentColor = clinic?.accent_color || '#009688';
-  const accentColorDark = darkenColor(accentColor);
   const fontSizeMultiplier = clinic?.font_size === 'small' ? 0.9 : clinic?.font_size === 'large' ? 1.1 : 1;
   const showPatientId = clinic?.show_patient_id ?? true;
   const showLogoOnAllPages = clinic?.show_logo_on_all_pages ?? true;
@@ -66,7 +64,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
 
   return (
     <Document>
-      <Page size={pageSize as 'A4' | 'LETTER' | 'LEGAL'} style={tw('p-5 pb-14')}>
+      <Page size={pageSize as 'A4' | 'LETTER' | 'LEGAL'} style={{ paddingTop: 0, paddingBottom: 50, paddingHorizontal: 0 }}>
         {/* Watermark */}
         <Watermark
           text={clinic?.watermark_text}
@@ -84,48 +82,49 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           isFirstPage={true}
           showLogoOnAllPages={showLogoOnAllPages}
           reportNumber={report.report_number}
-          accentColorDark={accentColorDark}
           fontSizeMultiplier={fontSizeMultiplier}
         />
 
         {/* Patient info */}
-
-        {/* Patient info */}
-        <PatientInfoBox
-          patient={patient}
-          report={report}
-          showPatientId={showPatientId}
-          fontSizeMultiplier={fontSizeMultiplier}
-        />
+        <View style={{ paddingHorizontal: 20 }}>
+          <PatientInfoBox
+            patient={patient}
+            report={report}
+            showPatientId={showPatientId}
+            fontSizeMultiplier={fontSizeMultiplier}
+          />
+        </View>
 
         {/* Test results by category */}
-        {template.categories.map((category) => {
-          const categoryFields = category.fields.filter(
-            (f) => reportData[f.name] !== undefined && reportData[f.name] !== null && reportData[f.name] !== ''
-          );
-          if (categoryFields.length === 0) return null;
+        <View style={{ paddingHorizontal: 20 }}>
+          {template.categories.map((category) => {
+            const categoryFields = category.fields.filter(
+              (f) => reportData[f.name] !== undefined && reportData[f.name] !== null && reportData[f.name] !== ''
+            );
+            if (categoryFields.length === 0) return null;
 
-          return (
-            <View key={category.name} wrap={false}>
-              <CategoryHeader
-                name={category.name}
-                fontSizeMultiplier={fontSizeMultiplier}
-                accentColorDark={accentColorDark}
-              />
-              <TestResultsTable
-                fields={categoryFields}
-                reportData={reportData}
-                gender={patient.gender}
-                fontSizeMultiplier={fontSizeMultiplier}
-                accentColorDark={accentColorDark}
-              />
-            </View>
-          );
-        })}
+            return (
+              <View key={category.name} wrap={false}>
+                <CategoryHeader
+                  name={category.name}
+                  fontSizeMultiplier={fontSizeMultiplier}
+                />
+                <TestResultsTable
+                  fields={categoryFields}
+                  reportData={reportData}
+                  gender={patient.gender}
+                  fontSizeMultiplier={fontSizeMultiplier}
+                />
+              </View>
+            );
+          })}
+        </View>
 
         {/* Clinical notes */}
         {report.clinical_notes && (
-          <ClinicalNotesBox notes={report.clinical_notes} fontSizeMultiplier={fontSizeMultiplier} />
+          <View style={{ paddingHorizontal: 20 }}>
+            <ClinicalNotesBox notes={report.clinical_notes} fontSizeMultiplier={fontSizeMultiplier} />
+          </View>
         )}
 
         {/* Footer */}
@@ -133,7 +132,6 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           pageNumber={1}
           totalPages={1}
           clinicAddress={clinic?.address}
-          accentColorDark={accentColorDark}
           isLastPage={true}
         />
       </Page>
