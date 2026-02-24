@@ -1,8 +1,6 @@
 import React from 'react';
 import { Document, Page, View } from '@react-pdf/renderer';
-import { tw } from './tw-config';
-import './fonts'; // Register custom fonts
-import { darkenColor } from './utils';
+import './fonts'; // Ensure font constants are loaded
 import {
   ReportHeader,
   PatientInfoBox,
@@ -57,16 +55,15 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
   reportData,
   logoBase64,
 }) => {
-  const accentColor = clinic?.accent_color || '#009688';
-  const accentColorDark = darkenColor(accentColor);
   const fontSizeMultiplier = clinic?.font_size === 'small' ? 0.9 : clinic?.font_size === 'large' ? 1.1 : 1;
   const showPatientId = clinic?.show_patient_id ?? true;
   const showLogoOnAllPages = clinic?.show_logo_on_all_pages ?? true;
   const pageSize = clinic?.page_size === 'letter' ? 'LETTER' : clinic?.page_size === 'legal' ? 'LEGAL' : 'A4';
 
+  // 1-inch margins = 72pt
   return (
     <Document>
-      <Page size={pageSize as 'A4' | 'LETTER' | 'LEGAL'} style={tw('p-5 pb-14')}>
+      <Page size={pageSize as 'A4' | 'LETTER' | 'LEGAL'} style={{ paddingTop: 0, paddingBottom: 70, paddingHorizontal: 0 }}>
         {/* Watermark */}
         <Watermark
           text={clinic?.watermark_text}
@@ -74,7 +71,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           logoWatermarkEnabled={clinic?.logo_watermark_enabled ?? false}
         />
 
-        {/* Header */}
+        {/* Header — full-width, no horizontal padding */}
         <ReportHeader
           logoBase64={logoBase64}
           clinicPhone={clinic?.phone}
@@ -84,56 +81,53 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
           isFirstPage={true}
           showLogoOnAllPages={showLogoOnAllPages}
           reportNumber={report.report_number}
-          accentColorDark={accentColorDark}
           fontSizeMultiplier={fontSizeMultiplier}
         />
 
-        {/* Patient info */}
+        {/* Content area with 1-inch side margins (72pt) */}
+        <View style={{ paddingHorizontal: 50 }}>
+          {/* Patient info */}
+          <PatientInfoBox
+            patient={patient}
+            report={report}
+            showPatientId={showPatientId}
+            fontSizeMultiplier={fontSizeMultiplier}
+          />
 
-        {/* Patient info */}
-        <PatientInfoBox
-          patient={patient}
-          report={report}
-          showPatientId={showPatientId}
-          fontSizeMultiplier={fontSizeMultiplier}
-        />
+          {/* Test results by category */}
+          {template.categories.map((category) => {
+            const categoryFields = category.fields.filter(
+              (f) => reportData[f.name] !== undefined && reportData[f.name] !== null && reportData[f.name] !== ''
+            );
+            if (categoryFields.length === 0) return null;
 
-        {/* Test results by category */}
-        {template.categories.map((category) => {
-          const categoryFields = category.fields.filter(
-            (f) => reportData[f.name] !== undefined && reportData[f.name] !== null && reportData[f.name] !== ''
-          );
-          if (categoryFields.length === 0) return null;
+            return (
+              <View key={category.name} wrap={false}>
+                <CategoryHeader
+                  name={category.name}
+                  fontSizeMultiplier={fontSizeMultiplier}
+                />
+                <TestResultsTable
+                  fields={categoryFields}
+                  reportData={reportData}
+                  gender={patient.gender}
+                  fontSizeMultiplier={fontSizeMultiplier}
+                />
+              </View>
+            );
+          })}
 
-          return (
-            <View key={category.name} wrap={false}>
-              <CategoryHeader
-                name={category.name}
-                fontSizeMultiplier={fontSizeMultiplier}
-                accentColorDark={accentColorDark}
-              />
-              <TestResultsTable
-                fields={categoryFields}
-                reportData={reportData}
-                gender={patient.gender}
-                fontSizeMultiplier={fontSizeMultiplier}
-                accentColorDark={accentColorDark}
-              />
-            </View>
-          );
-        })}
-
-        {/* Clinical notes */}
-        {report.clinical_notes && (
-          <ClinicalNotesBox notes={report.clinical_notes} fontSizeMultiplier={fontSizeMultiplier} />
-        )}
+          {/* Clinical notes */}
+          {report.clinical_notes && (
+            <ClinicalNotesBox notes={report.clinical_notes} fontSizeMultiplier={fontSizeMultiplier} />
+          )}
+        </View>
 
         {/* Footer */}
         <ReportFooter
           pageNumber={1}
           totalPages={1}
           clinicAddress={clinic?.address}
-          accentColorDark={accentColorDark}
           isLastPage={true}
         />
       </Page>
