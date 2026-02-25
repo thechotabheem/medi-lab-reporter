@@ -14,12 +14,12 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({
 }) => (
   <View style={{ marginTop: 14, marginBottom: 8, paddingHorizontal: 0 }}>
     {/* Top line */}
-    <View style={{ height: 2, backgroundColor: '#000000', marginBottom: 6 }} />
+    <View style={{ height: 1.25, backgroundColor: '#000000', marginBottom: 6 }} />
     {/* Category name */}
     <Text style={{ textAlign: 'center', fontFamily: FONTS.bodyBold, fontSize: 16 * fontSizeMultiplier, color: '#000000' }}>
       {name}
     </Text>
     {/* Bottom line */}
-    <View style={{ height: 2, backgroundColor: '#000000', marginTop: 6 }} />
+    <View style={{ height: 1.25, backgroundColor: '#000000', marginTop: 6 }} />
   </View>
 );
