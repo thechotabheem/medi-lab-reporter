@@ -34,7 +34,6 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
           flexDirection: 'row',
           backgroundColor: '#003366',
           height: 130,
-          borderRadius: 0,
           alignItems: 'center',
           paddingHorizontal: 16,
         }}>
