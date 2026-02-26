@@ -24,7 +24,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} fixed>
       {/* Page badge + Authorized Signature row */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 4 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 8 }}>
         {/* Left: Gray pill-shaped page badge */}
         <View style={{
           backgroundColor: '#808080',
@@ -48,9 +48,9 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       </View>
 
       {/* Full-width Dark Azure footer banner */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', height: 36, paddingHorizontal: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', height: 44, paddingHorizontal: 16 }}>
         {clinicAddress && (
-          <View style={{ width: '50%', flexDirection: 'row' }}>
+          <View style={{ width: '55%', flexDirection: 'row', flexWrap: 'wrap' }}>
             <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>
               Address:{' '}
             </Text>
@@ -59,9 +59,12 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
             </Text>
           </View>
         )}
-        <View style={{ width: '30%', marginLeft: 'auto', alignItems: 'flex-end' }}>
+        <View style={{ width: '35%', marginLeft: 'auto', alignItems: 'flex-end' }}>
           <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.garet }}>
-            Report Generated On: {genDate}
+            Report Generated On:
+          </Text>
+          <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.garet }}>
+            {genDate}
           </Text>
         </View>
       </View>
