@@ -40,19 +40,19 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
       {/* Header row */}
       <View style={{ flexDirection: 'row' }}>
         <View style={headerCellStyle('25%')}>
-          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 700, fontSize: 14, color: '#000000' }}>Test Name</Text>
+          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 600, fontSize: 14, color: '#000000' }}>Test Name</Text>
         </View>
         <View style={headerCellStyle('25%')}>
-          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 700, fontSize: 14, color: '#000000' }}>Reference Range</Text>
+          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 600, fontSize: 14, color: '#000000' }}>Reference Range</Text>
         </View>
         <View style={headerCellStyle('15%')}>
-          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 700, fontSize: 14, color: '#000000' }}>Unit</Text>
+          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 600, fontSize: 14, color: '#000000' }}>Unit</Text>
         </View>
         <View style={headerCellStyle('15%')}>
-          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 700, fontSize: 14, color: '#000000' }}>Result</Text>
+          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 600, fontSize: 14, color: '#000000' }}>Result</Text>
         </View>
         <View style={headerCellStyle('20%')}>
-          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 700, fontSize: 14, color: '#000000' }}>Status</Text>
+          <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 600, fontSize: 14, color: '#000000' }}>Status</Text>
         </View>
       </View>
 
@@ -83,7 +83,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
               <Text style={{ textAlign: 'center', fontSize: 12, color: '#000000', fontFamily: FONTS.workSans }}>{displayValue}</Text>
             </View>
             <View style={dataCellStyle('20%')}>
-              <Text style={{ textAlign: 'center', fontFamily: FONTS.workSansBold, fontWeight: 700, fontSize: 12, color: statusColor }}>
+              <Text style={{ textAlign: 'center', fontFamily: FONTS.workSansBold, fontWeight: 600, fontSize: 12, color: statusColor }}>
                 {statusLabel}
               </Text>
             </View>
