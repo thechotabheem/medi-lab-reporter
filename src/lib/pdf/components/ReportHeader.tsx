@@ -38,7 +38,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         }}>
           {/* Left: Logo */}
           {logoBase64 && (
-            <View style={{ width: '55%', justifyContent: 'center' }}>
+            <View style={{ width: '55%', justifyContent: 'center', paddingLeft: 20 }}>
               <Image src={logoBase64} style={{ height: 110, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
