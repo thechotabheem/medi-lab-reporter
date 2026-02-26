@@ -38,24 +38,24 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         }}>
           {/* Left: Logo */}
           {logoBase64 && (
-            <View style={{ width: '55%', justifyContent: 'center', paddingLeft: 20 }}>
+            <View style={{ width: '55%', justifyContent: 'center', paddingLeft: 8 }}>
               <Image src={logoBase64} style={{ height: 110, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
           {/* Right: Doctor info */}
-          <View style={{ width: logoBase64 ? '45%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 4 }}>
+          <View style={{ width: logoBase64 ? '45%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 16 }}>
             {doctorName && (
-              <Text style={{ fontSize: 15, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 6 }}>
+              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 8 }}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={{ fontSize: 15, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 3 }}>
+              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 4 }}>
                 Contact: {clinicPhone}
               </Text>
             )}
             {clinicEmail && (
-              <Text style={{ fontSize: 15, color: '#FFFFFF', fontFamily: FONTS.inter }}>
+              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter }}>
                 {clinicEmail}
               </Text>
             )}
