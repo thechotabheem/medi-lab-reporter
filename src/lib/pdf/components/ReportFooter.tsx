@@ -48,7 +48,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       </View>
 
       {/* Full-width Dark Azure footer banner */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', height: 84, paddingHorizontal: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', height: 42, paddingHorizontal: 16 }}>
         {clinicAddress && (
           <View style={{ width: '55%', flexDirection: 'row', flexWrap: 'wrap' }}>
             <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>
