@@ -1,7 +1,7 @@
 import { Font } from '@react-pdf/renderer';
 
-// Register Google Fonts
-// Garet is not on Google Fonts — using Poppins (geometric sans) as substitute
+// Register Google Fonts with correct TTF URLs
+// Garet substitute — Poppins (geometric sans)
 Font.register({
   family: 'Poppins',
   fonts: [
@@ -13,29 +13,29 @@ Font.register({
 Font.register({
   family: 'Inter',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hjQ.ttf', fontWeight: 400 },
   ],
 });
 
 Font.register({
   family: 'WorkSans',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/worksans/v19/QGYsz_wNahGAdqQ43Rh3H6Ds.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/worksans/v19/QGYsz_wNahGAdqQ43Rh3x6fs.ttf', fontWeight: 700 },
+    { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K0nXBi8Jow.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K67QBi8Jow.ttf', fontWeight: 700 },
   ],
 });
 
 Font.register({
   family: 'SourceSans3',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/sourcesans3/v15/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Ky462EM.ttf', fontWeight: 700 },
+    { src: 'https://fonts.gstatic.com/s/sourcesans3/v19/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Kxf7GEK9C4.ttf', fontWeight: 700 },
   ],
 });
 
 Font.register({
   family: 'BeVietnamPro',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/bevietnampro/v11/QdVPSTAyLFyeg_IDWvOJmVES_HRUBI49.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/bevietnampro/v12/QdVPSTAyLFyeg_IDWvOJmVES_Hw3BX8.ttf', fontWeight: 400 },
   ],
 });
 
@@ -43,7 +43,7 @@ Font.register({
 Font.register({
   family: 'SpaceGrotesk',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.ttf', fontWeight: 700 },
+    { src: 'https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVnskPMU.ttf', fontWeight: 700 },
   ],
 });
 
@@ -51,7 +51,7 @@ Font.register({
 Font.register({
   family: 'Amiri',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/amiri/v27/J7aRnpd8CGxBHpUrtLMA7w.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/amiri/v30/J7aRnpd8CGxBHpUutLY.ttf', fontWeight: 400 },
   ],
 });
 
