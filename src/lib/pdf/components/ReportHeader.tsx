@@ -45,7 +45,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
           {/* Right: Doctor info */}
           <View style={{ width: logoBase64 ? '45%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 16 }}>
             {doctorName && (
-              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 500, marginBottom: 10 }}>
+              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 10 }}>
                 {doctorName}
               </Text>
             )}
