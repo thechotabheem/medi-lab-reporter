@@ -48,22 +48,22 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       </View>
 
       {/* Full-width Dark Azure footer banner */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', height: 42, paddingHorizontal: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', paddingVertical: 8, paddingHorizontal: 20 }}>
         {clinicAddress && (
-          <View style={{ width: '55%', flexDirection: 'row', flexWrap: 'wrap' }}>
-            <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>
+          <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>
               Address:{' '}
             </Text>
-            <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.workSans }}>
+            <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.workSans }}>
               {clinicAddress}
             </Text>
           </View>
         )}
-        <View style={{ width: '35%', marginLeft: 'auto', alignItems: 'flex-end' }}>
-          <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.garet }}>
+        <View style={{ marginLeft: 'auto', alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.garet }}>
             Report Generated On:
           </Text>
-          <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.garet }}>
+          <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.garet }}>
             {genDate}
           </Text>
         </View>
