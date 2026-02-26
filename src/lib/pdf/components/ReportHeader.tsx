@@ -32,7 +32,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         <View style={{
           flexDirection: 'row',
           backgroundColor: '#084c6e',
-          height: 147,
+          height: 126,
           alignItems: 'center',
           paddingHorizontal: 16,
         }}>
