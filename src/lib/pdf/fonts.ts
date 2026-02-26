@@ -22,7 +22,6 @@ Font.register({
   family: 'WorkSans',
   fonts: [
     { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K0nXBi8Jow.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K3fRBi8Jow.ttf', fontWeight: 600 },
     { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K67QBi8Jow.ttf', fontWeight: 700 },
   ],
 });

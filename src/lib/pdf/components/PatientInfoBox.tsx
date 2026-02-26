@@ -13,7 +13,7 @@ interface PatientInfoBoxProps {
 
 const InfoPair = ({ label, value }: { label: string; value: string }) => (
   <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 5 }}>
-    <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSansBold, fontWeight: 600 }}>{label}: </Text>
+    <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSans, fontWeight: 400 }}>{label}: </Text>
     <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSans }}>{value}</Text>
   </View>
 );
