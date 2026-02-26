@@ -48,9 +48,9 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
       </View>
 
       {/* Full-width Dark Azure footer banner */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', paddingVertical: 4, paddingHorizontal: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#084c6e', paddingVertical: 4, paddingHorizontal: 12 }}>
         {clinicAddress && (
-          <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '60%' }}>
             <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>
               Address:{' '}
             </Text>
@@ -59,7 +59,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
             </Text>
           </View>
         )}
-        <View style={{ marginLeft: 'auto', alignItems: 'flex-end' }}>
+        <View style={{ alignItems: 'flex-end' }}>
           <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.garet }}>
             Report Generated On:
           </Text>
