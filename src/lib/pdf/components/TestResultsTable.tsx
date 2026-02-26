@@ -83,7 +83,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
               <Text style={{ textAlign: 'center', fontSize: 12, color: '#000000', fontFamily: FONTS.workSans }}>{displayValue}</Text>
             </View>
             <View style={dataCellStyle('20%')}>
-              <Text style={{ textAlign: 'center', fontFamily: FONTS.workSansBold, fontWeight: 600, fontSize: 12, color: statusColor }}>
+              <Text style={{ textAlign: 'center', fontFamily: FONTS.workSans, fontWeight: 400, fontSize: 12, color: statusColor }}>
                 {statusLabel}
               </Text>
             </View>
