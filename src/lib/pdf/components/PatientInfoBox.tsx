@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
 import { FONTS } from '../fonts';
 import { calculateAge } from '../utils';
-import { format } from 'date-fns';
 import type { Report, Patient } from '@/types/database';
 
 interface PatientInfoBoxProps {
@@ -24,7 +23,7 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
   report,
   showPatientId = true,
 }) => {
-  const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
+  const fmt = (d: string) => { const dt = new Date(d); return `${dt.getDate()}/${dt.getMonth()+1}/${String(dt.getFullYear()).slice(-2)}`; };
 
   return (
     <View style={{
@@ -51,9 +50,8 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
       {/* Right column */}
       <View style={{ width: '50%', paddingLeft: 10, alignItems: 'center' }}>
         <InfoPair label="Report No" value={report.report_number} />
-        <InfoPair label="Collected On" value={format(new Date(report.test_date), 'd/MM/yy')} />
-        <InfoPair label="Reported On" value={format(new Date(report.created_at), 'd/MM/yy')} />
-        <InfoPair label="Generated On" value={genDate} />
+        <InfoPair label="Collected On" value={fmt(report.test_date)} />
+        <InfoPair label="Reported On" value={fmt(report.created_at)} />
       </View>
     </View>
   );
