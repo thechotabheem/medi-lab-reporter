@@ -12,10 +12,10 @@ interface PatientInfoBoxProps {
   fontSizeMultiplier?: number;
 }
 
-const InfoPair = ({ label, value, fontSize }: { label: string; value: string; fontSize: number }) => (
-  <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-    <Text style={{ fontSize, color: '#000000', fontFamily: FONTS.bodyBold }}>{label}: </Text>
-    <Text style={{ fontSize, color: '#000000', fontFamily: FONTS.body }}>{value}</Text>
+const InfoPair = ({ label, value }: { label: string; value: string }) => (
+  <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 5 }}>
+    <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>{label}: </Text>
+    <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSans }}>{value}</Text>
   </View>
 );
 
@@ -23,9 +23,7 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
   patient,
   report,
   showPatientId = true,
-  fontSizeMultiplier = 1,
 }) => {
-  const fs = 12 * fontSizeMultiplier;
   const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
 
   return (
@@ -38,25 +36,24 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
       padding: 12,
     }}>
       {/* Left column */}
-      <View style={{ width: '50%', paddingRight: 10, borderRightWidth: 1, borderRightColor: '#000000' }}>
-        <InfoPair label="Name" value={patient.full_name} fontSize={fs} />
+      <View style={{ width: '50%', paddingRight: 10, borderRightWidth: 1, borderRightColor: '#000000', alignItems: 'center' }}>
+        <InfoPair label="Name" value={patient.full_name} />
         <InfoPair
           label="Age / Gender"
           value={`${calculateAge(patient.date_of_birth)} / ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`}
-          fontSize={fs}
         />
-        <InfoPair label="Referred By" value={report.referring_doctor || '—'} fontSize={fs} />
+        <InfoPair label="Referred By" value={report.referring_doctor || '—'} />
         {showPatientId && (
-          <InfoPair label="Patient ID" value={patient.patient_id_number || '—'} fontSize={fs} />
+          <InfoPair label="Patient ID" value={patient.patient_id_number || '—'} />
         )}
       </View>
 
       {/* Right column */}
-      <View style={{ width: '50%', paddingLeft: 10 }}>
-        <InfoPair label="Report No" value={report.report_number} fontSize={fs} />
-        <InfoPair label="Collected On" value={format(new Date(report.test_date), 'd/MM/yy')} fontSize={fs} />
-        <InfoPair label="Reported On" value={format(new Date(report.created_at), 'd/MM/yy')} fontSize={fs} />
-        <InfoPair label="Generated On" value={genDate} fontSize={fs} />
+      <View style={{ width: '50%', paddingLeft: 10, alignItems: 'center' }}>
+        <InfoPair label="Report No" value={report.report_number} />
+        <InfoPair label="Collected On" value={format(new Date(report.test_date), 'd/MM/yy')} />
+        <InfoPair label="Reported On" value={format(new Date(report.created_at), 'd/MM/yy')} />
+        <InfoPair label="Generated On" value={genDate} />
       </View>
     </View>
   );

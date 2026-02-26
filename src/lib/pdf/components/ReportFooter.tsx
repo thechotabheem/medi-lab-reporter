@@ -24,7 +24,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} fixed>
       {/* Page badge + Authorized Signature row */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 4 }}>
         {/* Left: Gray pill-shaped page badge */}
         <View style={{
           backgroundColor: '#808080',
@@ -33,7 +33,7 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
           paddingVertical: 4,
           alignItems: 'center',
         }}>
-          <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.bodyBold }}>
+          <Text style={{ fontSize: 13, color: '#FFFFFF', fontFamily: FONTS.spaceGrotesk, fontWeight: 700 }}>
             Page # {pageNumber}/{totalPages}
           </Text>
         </View>
@@ -41,21 +41,26 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
         {/* Right: Authorized Signature */}
         {isLastPage && (
           <View style={{ alignItems: 'center' }}>
-            <View style={{ width: 160, borderBottomWidth: 1, borderBottomColor: '#000000', marginBottom: 3 }} />
-            <Text style={{ fontSize: 10, color: '#000000', fontFamily: FONTS.body }}>Authorized Signature</Text>
+            <View style={{ width: 160, borderBottomWidth: 2, borderBottomColor: '#000000', marginBottom: 3 }} />
+            <Text style={{ fontSize: 13, color: '#000000', fontFamily: FONTS.beVietnam }}>Authorized Signature</Text>
           </View>
         )}
       </View>
 
-      {/* Full-width deep navy blue footer banner */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#003366', height: 32, paddingHorizontal: 16 }}>
+      {/* Full-width Dark Azure footer banner */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#084c6e', height: 36, paddingHorizontal: 16 }}>
         {clinicAddress && (
-          <Text style={{ flex: 1, fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.italic }}>
-            Address: {clinicAddress}
-          </Text>
+          <View style={{ width: '50%', flexDirection: 'row' }}>
+            <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.workSansBold, fontWeight: 700 }}>
+              Address:{' '}
+            </Text>
+            <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.workSans }}>
+              {clinicAddress}
+            </Text>
+          </View>
         )}
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={{ fontSize: 10, color: '#FFFFFF', fontFamily: FONTS.body }}>
+        <View style={{ width: '30%', marginLeft: 'auto', alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 12, color: '#FFFFFF', fontFamily: FONTS.garet }}>
             Report Generated On: {genDate}
           </Text>
         </View>
