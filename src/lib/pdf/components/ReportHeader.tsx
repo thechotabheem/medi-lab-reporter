@@ -45,12 +45,12 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
           {/* Right: Doctor info */}
           <View style={{ width: logoBase64 ? '45%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 16 }}>
             {doctorName && (
-              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 12 }}>
+              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 10 }}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 8 }}>
+              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 10 }}>
                 Contact: {clinicPhone}
               </Text>
             )}
