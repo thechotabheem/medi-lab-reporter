@@ -13,13 +13,10 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   fontSizeMultiplier = 1,
 }) => (
   <View style={{ marginTop: 14, marginBottom: 8, paddingHorizontal: 0 }}>
-    {/* Top line */}
     <View style={{ height: 1.25, backgroundColor: '#000000', marginBottom: 6 }} />
-    {/* Category name */}
-    <Text style={{ textAlign: 'center', fontFamily: FONTS.bodyBold, fontSize: 16 * fontSizeMultiplier, color: '#000000' }}>
+    <Text style={{ textAlign: 'center', fontFamily: FONTS.garetBold, fontWeight: 700, fontSize: 16 * fontSizeMultiplier, color: '#000000' }}>
       {name}
     </Text>
-    {/* Bottom line */}
     <View style={{ height: 1.25, backgroundColor: '#000000', marginTop: 6 }} />
   </View>
 );

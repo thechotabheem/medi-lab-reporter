@@ -29,10 +29,9 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
   if (isFirstPage) {
     return (
       <View>
-        {/* Deep navy blue header banner - top ~18% of page */}
         <View style={{
           flexDirection: 'row',
-          backgroundColor: '#003366',
+          backgroundColor: '#084c6e',
           height: 130,
           alignItems: 'center',
           paddingHorizontal: 16,
@@ -43,20 +42,20 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
               <Image src={logoBase64} style={{ height: 110, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
-          {/* Right: Doctor info in white */}
+          {/* Right: Doctor info */}
           <View style={{ width: logoBase64 ? '45%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 4 }}>
             {doctorName && (
-              <Text style={{ fontSize: 14 * fontSizeMultiplier, color: '#FFFFFF', fontFamily: FONTS.bodyBold, marginBottom: 6 }}>
+              <Text style={{ fontSize: 15, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 6 }}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={{ fontSize: 12 * fontSizeMultiplier, color: '#FFFFFF', fontFamily: FONTS.body, marginBottom: 3 }}>
+              <Text style={{ fontSize: 15, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 3 }}>
                 Contact: {clinicPhone}
               </Text>
             )}
             {clinicEmail && (
-              <Text style={{ fontSize: 12 * fontSizeMultiplier, color: '#FFFFFF', fontFamily: FONTS.body }}>
+              <Text style={{ fontSize: 15, color: '#FFFFFF', fontFamily: FONTS.inter }}>
                 {clinicEmail}
               </Text>
             )}
@@ -66,17 +65,17 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
     );
   }
 
-  // Continuation header for subsequent pages
+  // Continuation header
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 6, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: '#003366' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 6, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: '#084c6e' }}>
       {showLogoOnAllPages && logoBase64 && (
         <Image src={logoBase64} style={{ width: 25, height: 25, marginRight: 8, objectFit: 'contain' }} />
       )}
-      <Text style={{ fontSize: 11 * fontSizeMultiplier, color: '#003366', fontFamily: FONTS.bodyBold, flex: 1 }}>
+      <Text style={{ fontSize: 11 * fontSizeMultiplier, color: '#084c6e', fontFamily: FONTS.garetBold, fontWeight: 700, flex: 1 }}>
         {clinicName || 'Medical Laboratory'}
       </Text>
       {reportNumber && (
-        <Text style={{ fontSize: 8 * fontSizeMultiplier, color: '#787878', fontFamily: FONTS.body }}>Report #: {reportNumber}</Text>
+        <Text style={{ fontSize: 8 * fontSizeMultiplier, color: '#787878', fontFamily: FONTS.workSans }}>Report #: {reportNumber}</Text>
       )}
     </View>
   );
