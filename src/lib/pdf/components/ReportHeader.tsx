@@ -38,19 +38,19 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         }}>
           {/* Left: Logo */}
           {logoBase64 && (
-            <View style={{ width: '55%', justifyContent: 'center', paddingLeft: 8 }}>
+            <View style={{ width: '55%', justifyContent: 'center', paddingLeft: 24 }}>
               <Image src={logoBase64} style={{ height: 110, objectFit: 'contain', objectPosition: 'left' }} />
             </View>
           )}
           {/* Right: Doctor info */}
           <View style={{ width: logoBase64 ? '45%' : '100%', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 16 }}>
             {doctorName && (
-              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 8 }}>
+              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.garetBold, fontWeight: 700, marginBottom: 12 }}>
                 {doctorName}
               </Text>
             )}
             {clinicPhone && (
-              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 4 }}>
+              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter, marginBottom: 8 }}>
                 Contact: {clinicPhone}
               </Text>
             )}
