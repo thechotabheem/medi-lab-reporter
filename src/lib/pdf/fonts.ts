@@ -6,6 +6,7 @@ Font.register({
   family: 'Poppins',
   fonts: [
     { src: 'https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrFJA.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6V1s.ttf', fontWeight: 600 },
     { src: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7V1s.ttf', fontWeight: 700 },
   ],
 });
@@ -21,6 +22,7 @@ Font.register({
   family: 'WorkSans',
   fonts: [
     { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K0nXBi8Jow.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K3fRBi8Jow.ttf', fontWeight: 600 },
     { src: 'https://fonts.gstatic.com/s/worksans/v24/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K67QBi8Jow.ttf', fontWeight: 700 },
   ],
 });
