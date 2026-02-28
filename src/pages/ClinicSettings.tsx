@@ -10,77 +10,7 @@ import { SkeletonForm } from '@/components/ui/skeleton';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Loader2 } from 'lucide-react';
-import {
-  BasicInfoSection,
-  ReportBrandingSection,
-  SignatureSection,
-  VisualStylingSection,
-  PDFOptionsSection,
-  PDFPreviewThumbnail,
-} from '@/components/clinic-settings';
-import { generateReportPDF } from '@/lib/pdf-generator.tsx';
-import type { Report, Patient } from '@/types/database';
-
-// Sample data for comprehensive preview
-const createMockData = (clinicId: string) => {
-  const mockPatient: Patient = {
-    id: 'preview-patient',
-    clinic_id: clinicId,
-    full_name: 'John Sample Patient',
-    gender: 'male',
-    date_of_birth: '1985-06-15',
-    patient_id_number: 'PID-2024-001',
-    phone: '+1 555 123 4567',
-    email: 'patient@example.com',
-    address: '123 Sample Street, City',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  const mockReport: Report = {
-    id: 'preview-report',
-    clinic_id: clinicId,
-    patient_id: mockPatient.id,
-    report_type: 'combined',
-    report_number: 'RPT-PREVIEW-001',
-    test_date: new Date().toISOString().split('T')[0],
-    status: 'completed',
-    referring_doctor: 'Dr. Sample Physician',
-    clinical_notes: 'Sample clinical notes demonstrating how notes appear in the report.',
-    included_tests: ['cbc', 'lft', 'lipid_profile'],
-    report_data: {
-      // CBC data (namespaced)
-      'cbc.hemoglobin': 14.5,
-      'cbc.rbc': 5.2,
-      'cbc.wbc': 7500,
-      'cbc.platelets': 250000,
-      'cbc.hematocrit': 42,
-      'cbc.mcv': 88,
-      'cbc.mch': 29,
-      'cbc.mchc': 33,
-      // LFT data (namespaced) - with some abnormal values
-      'lft.bilirubin_total': 1.8,
-      'lft.bilirubin_direct': 0.4,
-      'lft.sgot': 45,
-      'lft.sgpt': 52,
-      'lft.alkaline_phosphatase': 95,
-      'lft.total_protein': 7.2,
-      'lft.albumin': 4.0,
-      'lft.globulin': 3.2,
-      // Lipid Profile data (namespaced)
-      'lipid_profile.total_cholesterol': 220,
-      'lipid_profile.triglycerides': 160,
-      'lipid_profile.hdl': 45,
-      'lipid_profile.ldl': 140,
-      'lipid_profile.vldl': 32,
-    },
-    created_by: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  return { mockPatient, mockReport };
-};
+import { BasicInfoSection } from '@/components/clinic-settings';
 
 interface ClinicData {
   name: string;
@@ -89,24 +19,6 @@ interface ClinicData {
   email: string;
   address: string;
   website: string;
-  header_text: string;
-  footer_text: string;
-  logo_url: string;
-  tagline: string;
-  watermark_text: string;
-  enable_qr_code: boolean;
-  accent_color: string;
-  secondary_color: string;
-  font_size: string;
-  show_logo_on_all_pages: boolean;
-  signature_title_left: string;
-  signature_title_right: string;
-  page_size: string;
-  show_abnormal_summary: boolean;
-  show_patient_id: boolean;
-  border_style: string;
-  pdf_style: string;
-  logo_watermark_enabled: boolean;
 }
 
 const defaultFormData: ClinicData = {
@@ -116,24 +28,6 @@ const defaultFormData: ClinicData = {
   email: '',
   address: '',
   website: '',
-  header_text: '',
-  footer_text: '',
-  logo_url: '',
-  tagline: '',
-  watermark_text: '',
-  enable_qr_code: false,
-  accent_color: '#00968F',
-  secondary_color: '',
-  font_size: 'medium',
-  show_logo_on_all_pages: true,
-  signature_title_left: 'Lab Technician',
-  signature_title_right: 'Pathologist',
-  page_size: 'a4',
-  show_abnormal_summary: true,
-  show_patient_id: true,
-  border_style: 'simple',
-  pdf_style: 'modern',
-  logo_watermark_enabled: false,
 };
 
 export default function ClinicSettings() {
@@ -142,61 +36,7 @@ export default function ClinicSettings() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [formData, setFormData] = useState<ClinicData>(defaultFormData);
-
-  const getClinicBranding = () => ({
-    name: formData.name || 'Your Clinic Name',
-    address: formData.address,
-    phone: formData.phone,
-    email: formData.email,
-    logo_url: formData.logo_url,
-    header_text: formData.header_text,
-    footer_text: formData.footer_text,
-    watermark_text: formData.watermark_text,
-    enable_qr_code: formData.enable_qr_code,
-    accent_color: formData.accent_color,
-    tagline: formData.tagline,
-    website: formData.website,
-    font_size: formData.font_size,
-    show_logo_on_all_pages: formData.show_logo_on_all_pages,
-    signature_title_left: formData.signature_title_left,
-    signature_title_right: formData.signature_title_right,
-    page_size: formData.page_size,
-    show_abnormal_summary: formData.show_abnormal_summary,
-    show_patient_id: formData.show_patient_id,
-    border_style: formData.border_style,
-    secondary_color: formData.secondary_color,
-    pdf_style: formData.pdf_style,
-    logo_watermark_enabled: formData.logo_watermark_enabled,
-    doctor_name: formData.doctor_name,
-  });
-
-  const handlePreviewPDF = async () => {
-    setIsGeneratingPreview(true);
-    
-    try {
-      const { mockPatient, mockReport } = createMockData(clinicId);
-      const clinicBranding = getClinicBranding();
-
-      const pdfBlob = await generateReportPDF({
-        report: mockReport,
-        patient: mockPatient,
-        clinic: clinicBranding,
-      });
-
-      // Open PDF in new tab
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      window.open(pdfUrl, '_blank');
-      
-      toast({ title: 'Preview Generated', description: 'Sample PDF opened in a new tab.' });
-    } catch (error: any) {
-      console.error('Preview generation error:', error);
-      toast({ title: 'Error', description: 'Failed to generate preview.', variant: 'destructive' });
-    } finally {
-      setIsGeneratingPreview(false);
-    }
-  };
 
   useEffect(() => {
     const fetchClinicData = async () => {
@@ -219,24 +59,6 @@ export default function ClinicSettings() {
             email: data.email || '',
             address: data.address || '',
             website: (data as any).website || '',
-            header_text: data.header_text || '',
-            footer_text: data.footer_text || '',
-            logo_url: data.logo_url || '',
-            tagline: (data as any).tagline || '',
-            watermark_text: data.watermark_text || '',
-            enable_qr_code: data.enable_qr_code || false,
-            accent_color: data.accent_color || '#00968F',
-            secondary_color: (data as any).secondary_color || '',
-            font_size: (data as any).font_size || 'medium',
-            show_logo_on_all_pages: (data as any).show_logo_on_all_pages ?? true,
-            signature_title_left: (data as any).signature_title_left || 'Lab Technician',
-            signature_title_right: (data as any).signature_title_right || 'Pathologist',
-            page_size: (data as any).page_size || 'a4',
-            show_abnormal_summary: (data as any).show_abnormal_summary ?? true,
-            show_patient_id: (data as any).show_patient_id ?? true,
-            border_style: (data as any).border_style || 'simple',
-            pdf_style: (data as any).pdf_style || 'modern',
-            logo_watermark_enabled: (data as any).logo_watermark_enabled ?? false,
           });
         }
       } catch (error: any) {
@@ -273,24 +95,6 @@ export default function ClinicSettings() {
           email: formData.email || null,
           address: formData.address || null,
           website: formData.website || null,
-          header_text: formData.header_text || null,
-          footer_text: formData.footer_text || null,
-          logo_url: formData.logo_url || null,
-          tagline: formData.tagline || null,
-          watermark_text: formData.watermark_text || null,
-          enable_qr_code: formData.enable_qr_code,
-          accent_color: formData.accent_color || null,
-          secondary_color: formData.secondary_color || null,
-          font_size: formData.font_size || 'medium',
-          show_logo_on_all_pages: formData.show_logo_on_all_pages,
-          signature_title_left: formData.signature_title_left || 'Lab Technician',
-          signature_title_right: formData.signature_title_right || 'Pathologist',
-          page_size: formData.page_size || 'a4',
-          show_abnormal_summary: formData.show_abnormal_summary,
-          show_patient_id: formData.show_patient_id,
-          border_style: formData.border_style || 'simple',
-          pdf_style: formData.pdf_style || 'modern',
-          logo_watermark_enabled: formData.logo_watermark_enabled,
         } as any)
         .eq('id', clinicId);
 
@@ -339,43 +143,6 @@ export default function ClinicSettings() {
               </FadeIn>
 
               <FadeIn delay={150}>
-                <ReportBrandingSection
-                  formData={formData}
-                  onChange={handleChange}
-                  clinicId={clinicId}
-                />
-              </FadeIn>
-
-              <FadeIn delay={200}>
-                <SignatureSection
-                  formData={formData}
-                  onChange={handleChange}
-                />
-              </FadeIn>
-
-              <FadeIn delay={250}>
-                <VisualStylingSection
-                  formData={formData}
-                  onChange={handleChange}
-                />
-              </FadeIn>
-
-              <FadeIn delay={300}>
-                <PDFOptionsSection
-                  formData={formData}
-                  onChange={handleChange}
-                />
-              </FadeIn>
-
-              <FadeIn delay={350}>
-                <PDFPreviewThumbnail
-                  clinicBranding={getClinicBranding()}
-                  clinicId={clinicId}
-                  onOpenFullPreview={handlePreviewPDF}
-                />
-              </FadeIn>
-
-              <FadeIn delay={400}>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     type="button"
