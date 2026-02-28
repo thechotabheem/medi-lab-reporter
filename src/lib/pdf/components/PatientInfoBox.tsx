@@ -48,7 +48,7 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
       </View>
 
       {/* Right column */}
-      <View style={{ width: '50%', paddingLeft: 10, alignItems: 'center' }}>
+      <View style={{ width: '50%', paddingLeft: 10, alignItems: 'center', justifyContent: 'center' }}>
         <InfoPair label="Report No" value={report.report_number} />
         <InfoPair label="Collected On" value={fmt(report.test_date)} />
         <InfoPair label="Reported On" value={fmt(report.created_at)} />
