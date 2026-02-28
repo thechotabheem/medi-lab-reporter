@@ -11,8 +11,8 @@ interface PatientInfoBoxProps {
   fontSizeMultiplier?: number;
 }
 
-const InfoPair = ({ label, value }: { label: string; value: string }) => (
-  <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 5 }}>
+const InfoPair = ({ label, value, spacing = 5 }: { label: string; value: string; spacing?: number }) => (
+  <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: spacing }}>
     <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSans, fontWeight: 400 }}>{label}: </Text>
     <Text style={{ fontSize: 15, color: '#000000', fontFamily: FONTS.workSans }}>{value}</Text>
   </View>
@@ -49,9 +49,9 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
 
       {/* Right column */}
       <View style={{ width: '50%', paddingLeft: 10, alignItems: 'center', justifyContent: 'center' }}>
-        <InfoPair label="Report No" value={report.report_number} />
-        <InfoPair label="Collected On" value={fmt(report.test_date)} />
-        <InfoPair label="Reported On" value={fmt(report.created_at)} />
+        <InfoPair label="Report No" value={report.report_number} spacing={10} />
+        <InfoPair label="Collected On" value={fmt(report.test_date)} spacing={10} />
+        <InfoPair label="Reported On" value={fmt(report.created_at)} spacing={10} />
       </View>
     </View>
   );
