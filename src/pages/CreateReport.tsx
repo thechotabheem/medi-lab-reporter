@@ -30,6 +30,7 @@ import type { Patient, Report, ReportType } from '@/types/database';
 import { Check, Save, Layers, Eye, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { enqueueAction } from '@/lib/offlineQueue';
+import { generateReportNumber, generatePatientId } from '@/lib/id-generators';
 
 export default function CreateReport() {
   const navigate = useNavigate();
@@ -317,6 +318,9 @@ export default function CreateReport() {
 
       // If new patient, create them first
       if (newPatientData && !selectedPatient) {
+        // Auto-generate patient ID if not provided
+        const patientIdNumber = newPatientData.patient_id_number || await generatePatientId(clinicId);
+
         const { data: newPatient, error: patientError } = await supabase
           .from('patients')
           .insert({
@@ -325,7 +329,7 @@ export default function CreateReport() {
             date_of_birth: ageToDateOfBirth(newPatientData.age),
             gender: newPatientData.gender,
             phone: newPatientData.phone || null,
-            patient_id_number: newPatientData.patient_id_number || null,
+            patient_id_number: patientIdNumber,
           })
           .select()
           .single();
@@ -340,8 +344,11 @@ export default function CreateReport() {
         throw new Error('No patient selected');
       }
 
-      // Generate report number
-      const reportNumber = `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
+      // Determine report type first so we can generate the number
+      const effectiveType = isCombinedMode ? 'combined' : (selectedTemplate || 'combined');
+
+      // Generate report number based on type
+      const reportNumber = await generateReportNumber(effectiveType, clinicId);
 
       // Determine report type and data
       let reportType: ReportType;
@@ -437,7 +444,7 @@ export default function CreateReport() {
       if (!navigator.onLine || (error instanceof Error && error.message.includes('fetch'))) {
         const reportPayload = {
           clinic_id: clinicId,
-          report_number: `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase(),
+          report_number: `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase(), // fallback for offline
           report_type: isCombinedMode ? 'combined' : selectedTemplate,
           report_data: isCombinedMode ? combinedReportData : reportData,
           included_tests: isCombinedMode ? selectedTests : null,

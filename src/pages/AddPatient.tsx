@@ -23,6 +23,7 @@ import { UserPlus, Loader2 } from 'lucide-react';
 import { ageToDateOfBirth } from '@/lib/utils';
 import { patientSchema } from '@/lib/validation-schemas';
 import { enqueueAction } from '@/lib/offlineQueue';
+import { generatePatientId } from '@/lib/id-generators';
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -80,6 +81,12 @@ export default function AddPatient() {
     const validated = result.data;
     setIsSubmitting(true);
 
+    // Auto-generate patient ID if not manually provided
+    let patientIdNumber = validated.patient_id_number?.trim() || null;
+    if (!patientIdNumber) {
+      patientIdNumber = await generatePatientId(clinicId);
+    }
+
     const patientPayload = {
       clinic_id: clinicId,
       full_name: validated.full_name.trim(),
@@ -87,7 +94,7 @@ export default function AddPatient() {
       gender: validated.gender,
       phone: validated.phone?.trim() || null,
       email: validated.email?.trim() || null,
-      patient_id_number: validated.patient_id_number?.trim() || null,
+      patient_id_number: patientIdNumber,
       address: validated.address?.trim() || null,
     };
 
