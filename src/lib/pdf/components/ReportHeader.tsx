@@ -55,7 +55,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
               </Text>
             )}
             {clinicEmail && (
-              <Text style={{ fontSize: 16, color: '#FFFFFF', fontFamily: FONTS.inter, letterSpacing: 2 }}>
+              <Text style={{ fontSize: 14, color: '#FFFFFF', fontFamily: FONTS.inter, letterSpacing: 2 }}>
                 {clinicEmail}
               </Text>
             )}
