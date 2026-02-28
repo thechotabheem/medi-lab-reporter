@@ -9,6 +9,7 @@ import { BrowserRouter, useNavigate } from "react-router-dom";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
@@ -18,15 +19,12 @@ import { OfflineSyncStatus } from "@/components/OfflineSyncStatus";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Keep cached data for 24 hours so it's available offline
       gcTime: 1000 * 60 * 60 * 24,
-      staleTime: 1000 * 60 * 2, // 2 min stale time
+      staleTime: 1000 * 60 * 2,
       retry: (failureCount, error) => {
-        // Don't retry when offline
         if (!navigator.onLine) return false;
         return failureCount < 3;
       },
-      // Use cached data when network fails
       networkMode: 'offlineFirst',
     },
     mutations: {
@@ -81,35 +79,37 @@ const App = () => {
   };
 
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{
-        persister,
-        maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        buster: '', // Cache buster string
-      }}
-    >
-      <ThemeProvider defaultTheme="dark">
-        <AuthProvider>
-          <ClinicProvider>
-            <TooltipProvider>
-              {showSplash && isFirstLoad && (
-                <SplashScreen onComplete={handleSplashComplete} />
-              )}
-              <OfflineBanner />
-              <ServiceWorkerUpdate />
-              <OfflineSyncStatus />
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <KeyboardShortcuts />
-                <AnimatedRoutes />
-              </BrowserRouter>
-            </TooltipProvider>
-          </ClinicProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </PersistQueryClientProvider>
+    <ErrorBoundary>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: 1000 * 60 * 60 * 24,
+          buster: '',
+        }}
+      >
+        <ThemeProvider defaultTheme="dark">
+          <AuthProvider>
+            <ClinicProvider>
+              <TooltipProvider>
+                {showSplash && isFirstLoad && (
+                  <SplashScreen onComplete={handleSplashComplete} />
+                )}
+                <OfflineBanner />
+                <ServiceWorkerUpdate />
+                <OfflineSyncStatus />
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <KeyboardShortcuts />
+                  <AnimatedRoutes />
+                </BrowserRouter>
+              </TooltipProvider>
+            </ClinicProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

@@ -1,26 +1,46 @@
 import { useLocation, Routes, Route, Navigate } from "react-router-dom";
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { useAuth } from "@/contexts/AuthContext";
-import Auth from "@/pages/Auth";
-import Dashboard from "@/pages/Dashboard";
-import CreateReport from "@/pages/CreateReport";
-import EditReport from "@/pages/EditReport";
-import Reports from "@/pages/Reports";
-import ReportView from "@/pages/ReportView";
-import Patients from "@/pages/Patients";
-import PatientDetail from "@/pages/PatientDetail";
-import AddPatient from "@/pages/AddPatient";
-import Settings from "@/pages/Settings";
-import ClinicSettings from "@/pages/ClinicSettings";
-import TemplateEditor from "@/pages/TemplateEditor";
-import Documentation from "@/pages/Documentation";
-import Install from "@/pages/Install";
-import CompareReports from "@/pages/CompareReports";
-import AdminPanel from "@/pages/AdminPanel";
-import AccountSettings from "@/pages/AccountSettings";
+import { Skeleton } from "@/components/ui/skeleton";
 
+// Lazy-loaded route components for code-splitting
+const Auth = lazy(() => import("@/pages/Auth"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const CreateReport = lazy(() => import("@/pages/CreateReport"));
+const EditReport = lazy(() => import("@/pages/EditReport"));
+const Reports = lazy(() => import("@/pages/Reports"));
+const ReportView = lazy(() => import("@/pages/ReportView"));
+const Patients = lazy(() => import("@/pages/Patients"));
+const PatientDetail = lazy(() => import("@/pages/PatientDetail"));
+const AddPatient = lazy(() => import("@/pages/AddPatient"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const ClinicSettings = lazy(() => import("@/pages/ClinicSettings"));
+const TemplateEditor = lazy(() => import("@/pages/TemplateEditor"));
+const Documentation = lazy(() => import("@/pages/Documentation"));
+const Install = lazy(() => import("@/pages/Install"));
+const CompareReports = lazy(() => import("@/pages/CompareReports"));
+const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
+const AccountSettings = lazy(() => import("@/pages/AccountSettings"));
+
+import { NotFound } from "@/components/NotFound";
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4 p-8">
+      <div className="w-full max-w-md space-y-4">
+        <Skeleton className="h-8 w-3/4 mx-auto" />
+        <Skeleton className="h-4 w-1/2 mx-auto" />
+        <div className="space-y-3 pt-4">
+          <Skeleton className="h-24 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Check for reduced motion preference
 const prefersReducedMotion = () => {
@@ -82,19 +102,17 @@ export function AnimatedRoutes() {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   // If not authenticated, show auth page (except install route)
   if (!user && displayLocation.pathname !== '/install') {
     return (
-      <Routes location={displayLocation}>
-        <Route path="*" element={<Auth />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes location={displayLocation}>
+          <Route path="*" element={<Auth />} />
+        </Routes>
+      </Suspense>
     );
   }
 
@@ -116,27 +134,29 @@ export function AnimatedRoutes() {
         onAnimationEnd={handleAnimationEnd}
       >
         <div id="main-content">
-          <Routes location={displayLocation}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/install" element={<Install />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/reports/new" element={<CreateReport />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/reports/:id" element={<ReportView />} />
-            <Route path="/reports/:id/edit" element={<EditReport />} />
-            <Route path="/patients" element={<Patients />} />
-            <Route path="/patients/new" element={<AddPatient />} />
-            <Route path="/patients/:id" element={<PatientDetail />} />
-            <Route path="/patients/:id/compare" element={<CompareReports />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/account" element={<AccountSettings />} />
-            <Route path="/settings/clinic" element={isAdmin ? <ClinicSettings /> : <Navigate to="/dashboard" replace />} />
-            <Route path="/settings/templates" element={isAdmin ? <TemplateEditor /> : <Navigate to="/dashboard" replace />} />
-            <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
-            <Route path="/documentation" element={<Documentation />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes location={displayLocation}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/install" element={<Install />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/reports/new" element={<CreateReport />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/reports/:id" element={<ReportView />} />
+              <Route path="/reports/:id/edit" element={<EditReport />} />
+              <Route path="/patients" element={<Patients />} />
+              <Route path="/patients/new" element={<AddPatient />} />
+              <Route path="/patients/:id" element={<PatientDetail />} />
+              <Route path="/patients/:id/compare" element={<CompareReports />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/settings/account" element={<AccountSettings />} />
+              <Route path="/settings/clinic" element={isAdmin ? <ClinicSettings /> : <Navigate to="/dashboard" replace />} />
+              <Route path="/settings/templates" element={isAdmin ? <TemplateEditor /> : <Navigate to="/dashboard" replace />} />
+              <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
+              <Route path="/documentation" element={<Documentation />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </div>
       </div>
 
