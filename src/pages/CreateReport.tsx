@@ -31,6 +31,7 @@ import { Check, Save, Layers, Eye, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { enqueueAction } from '@/lib/offlineQueue';
 import { generateReportNumber, generatePatientId } from '@/lib/id-generators';
+import { sanitizeTextInput, sanitizeClinicalNotes, sanitizeName } from '@/lib/sanitize';
 
 export default function CreateReport() {
   const navigate = useNavigate();
@@ -377,8 +378,8 @@ export default function CreateReport() {
         report_type: reportType,
         report_data: finalReportData as any,
         included_tests: includedTests,
-        referring_doctor: reportDetails.referring_doctor || null,
-        clinical_notes: reportDetails.clinical_notes || null,
+        referring_doctor: sanitizeName(reportDetails.referring_doctor) || null,
+        clinical_notes: sanitizeClinicalNotes(reportDetails.clinical_notes) || null,
         test_date: reportDetails.test_date,
         status,
       };

@@ -22,6 +22,21 @@ export const reportTemplates: Record<ReportType, ReportTemplate> = {
     name: 'Blood Group Typing (Legacy)',
     categories: [],
   },
+  hormone_immunology: {
+    type: 'hormone_immunology',
+    name: 'Hormone & Immunology',
+    categories: [],
+  },
+  microbiology: {
+    type: 'microbiology',
+    name: 'Microbiology',
+    categories: [],
+  },
+  ultrasound: {
+    type: 'ultrasound',
+    name: 'Ultrasound',
+    categories: [],
+  },
 
   // VALUE BASED TESTS
   cbc: {
@@ -328,6 +343,9 @@ export const activeReportTypes: ReportType[] = [
 export const reportTypeLabels: Record<ReportType, string> = {
   blood_test: 'Blood Test',
   urine_analysis: 'Urine Analysis',
+  hormone_immunology: 'Hormone & Immunology',
+  microbiology: 'Microbiology',
+  ultrasound: 'Ultrasound',
   screening_tests: 'Screening Tests',
   blood_group_typing: 'Blood Group Typing',
   cbc: 'CBC',
