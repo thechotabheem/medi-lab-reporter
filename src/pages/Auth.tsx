@@ -46,14 +46,17 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <FlaskConical className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access the lab reporter</CardDescription>
-        </CardHeader>
+      <div className="w-full max-w-md space-y-6">
+        <Card>
+          <CardHeader className="text-center space-y-3 pb-2">
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+              <FlaskConical className="h-7 w-7 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-bold">Lab Reporter</CardTitle>
+              <CardDescription className="text-sm">Sign in to continue to your dashboard</CardDescription>
+            </div>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -106,6 +109,10 @@ export default function Auth() {
           </form>
         </CardContent>
       </Card>
+      <p className="text-center text-xs text-muted-foreground/50">
+        Lab Reporter v1.0 • Secure Access Only
+      </p>
+      </div>
     </div>
   );
 }
