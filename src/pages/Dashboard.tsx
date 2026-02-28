@@ -62,7 +62,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-4 sm:mb-5 animate-fade-in text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-            {getGreeting()}! <span className="text-gradient-primary">Welcome Back</span>
+            {getGreeting()}! <span className="text-gradient-primary">You're Welcomed</span>
           </h2>
           <p className="text-muted-foreground mt-2 text-base sm:text-lg">
             Here's an overview of your lab activity at <span className="text-gradient-primary font-semibold">{clinicName}</span>
@@ -132,7 +132,7 @@ export default function Dashboard() {
       {/* Footer */}
       <footer className="relative z-10 py-3 text-center border-t border-border/30 animate-fade-in animation-delay-700">
         <p className="text-xs sm:text-sm text-muted-foreground/60">
-          Lab Reporter v1.0 — Developed by <span className="font-semibold text-primary/80 hover:text-primary transition-colors duration-300 cursor-default">WIJDAN-UL-BASEER</span>
+          Solely Developed by <span className="font-semibold text-primary/80 hover:text-primary transition-colors duration-300 cursor-default relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">WIJDAN-UL-BASEER</span>
         </p>
       </footer>
 

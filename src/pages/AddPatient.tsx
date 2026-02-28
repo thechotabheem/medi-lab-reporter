@@ -204,9 +204,8 @@ export default function AddPatient() {
                       id="patient_id_number"
                       value={formData.patient_id_number}
                       onChange={(e) => handleChange('patient_id_number', e.target.value)}
-                      placeholder={`Auto-generated (e.g., PT-${new Date().getFullYear().toString().slice(-2)}-0001)`}
+                      placeholder="Optional unique identifier"
                     />
-                    <p className="text-xs text-muted-foreground">Leave empty to auto-generate</p>
                   </div>
 
                   {/* Contact Info */}

@@ -23,13 +23,7 @@ export const PatientInfoBox: React.FC<PatientInfoBoxProps> = ({
   report,
   showPatientId = true,
 }) => {
-  const fmt = (d: string) => {
-    const dt = new Date(d);
-    const day = dt.getDate().toString().padStart(2, '0');
-    const month = (dt.getMonth() + 1).toString().padStart(2, '0');
-    const year = String(dt.getFullYear()).slice(-2);
-    return `${day}/${month}/${year}`;
-  };
+  const fmt = (d: string) => { const dt = new Date(d); return `${dt.getDate()}/${dt.getMonth()+1}/${String(dt.getFullYear()).slice(-2)}`; };
 
   return (
     <View style={{

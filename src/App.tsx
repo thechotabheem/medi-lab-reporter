@@ -14,7 +14,6 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
 import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate";
 import { OfflineSyncStatus } from "@/components/OfflineSyncStatus";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,37 +81,35 @@ const App = () => {
   };
 
   return (
-    <ErrorBoundary>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-          persister,
-          maxAge: 1000 * 60 * 60 * 24, // 24 hours
-          buster: '', // Cache buster string
-        }}
-      >
-        <ThemeProvider defaultTheme="dark">
-          <AuthProvider>
-            <ClinicProvider>
-              <TooltipProvider>
-                {showSplash && isFirstLoad && (
-                  <SplashScreen onComplete={handleSplashComplete} />
-                )}
-                <OfflineBanner />
-                <ServiceWorkerUpdate />
-                <OfflineSyncStatus />
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <KeyboardShortcuts />
-                  <AnimatedRoutes />
-                </BrowserRouter>
-              </TooltipProvider>
-            </ClinicProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </PersistQueryClientProvider>
-    </ErrorBoundary>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        buster: '', // Cache buster string
+      }}
+    >
+      <ThemeProvider defaultTheme="dark">
+        <AuthProvider>
+          <ClinicProvider>
+            <TooltipProvider>
+              {showSplash && isFirstLoad && (
+                <SplashScreen onComplete={handleSplashComplete} />
+              )}
+              <OfflineBanner />
+              <ServiceWorkerUpdate />
+              <OfflineSyncStatus />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <KeyboardShortcuts />
+                <AnimatedRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </ClinicProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </PersistQueryClientProvider>
   );
 };
 

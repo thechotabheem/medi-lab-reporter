@@ -2,9 +2,6 @@ export type Gender = 'male' | 'female' | 'other';
 export type ReportType = 
   | 'blood_test' 
   | 'urine_analysis' 
-  | 'hormone_immunology'
-  | 'microbiology'
-  | 'ultrasound'
   | 'screening_tests' 
   | 'blood_group_typing'
   | 'cbc'

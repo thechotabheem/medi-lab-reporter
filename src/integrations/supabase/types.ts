@@ -455,11 +455,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_patient_id: { Args: { _clinic_id: string }; Returns: string }
-      generate_report_number: {
-        Args: { _clinic_id: string; _type_code: string }
-        Returns: string
-      }
       get_user_clinic_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
