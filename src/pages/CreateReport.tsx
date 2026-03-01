@@ -96,16 +96,40 @@ export default function CreateReport() {
   const handleResumeDraft = useCallback(() => {
     if (!draft) return;
     
-    // Restore draft state
+    // Restore draft state - try cache first, then network
     if (draft.patient) {
-      supabase
-        .from('patients')
-        .select('*')
-        .eq('id', draft.patient.id)
-        .single()
-        .then(({ data }) => {
-          if (data) setSelectedPatient(data);
+      // Try to get from React Query cache first (works offline)
+      const cachedPatients = queryClient.getQueryData<Patient[]>(['patients', clinicId]);
+      const cachedPatient = cachedPatients?.find(p => p.id === draft.patient!.id);
+      
+      if (cachedPatient) {
+        setSelectedPatient(cachedPatient);
+      } else if (navigator.onLine) {
+        // Fallback to network only if online
+        supabase
+          .from('patients')
+          .select('*')
+          .eq('id', draft.patient.id)
+          .single()
+          .then(({ data }) => {
+            if (data) setSelectedPatient(data);
+          });
+      } else {
+        // Offline with no cache - create minimal patient object from draft
+        setSelectedPatient({
+          id: draft.patient.id,
+          clinic_id: clinicId || '',
+          full_name: draft.patient.full_name,
+          date_of_birth: '',
+          gender: 'other',
+          phone: null,
+          email: null,
+          patient_id_number: null,
+          address: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
+      }
     }
     if (draft.newPatientData) {
       setNewPatientData(draft.newPatientData);
@@ -237,6 +261,9 @@ export default function CreateReport() {
     return true;
   };
 
+  // Get clinic data from context (cached in localStorage, works offline)
+  const { clinic: clinicData } = useClinic();
+
   const handlePreviewPDF = async () => {
     if (!previewReport) {
       toast.error('Please select a patient and test type first');
@@ -246,13 +273,6 @@ export default function CreateReport() {
     setIsGeneratingPreview(true);
     try {
       const { report, patient } = previewReport;
-      
-      // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
 
       const pdfBlob = await generateReportPDF({
         report,
@@ -279,13 +299,6 @@ export default function CreateReport() {
     setIsExporting(true);
     try {
       const { report, patient } = previewReport;
-      
-      // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
 
       const pdfBlob = await generateReportPDF({
         report,

@@ -9,6 +9,7 @@ import {
   getPendingCount,
   type OfflineAction,
 } from '@/lib/offlineQueue';
+import { generatePatientId, generateReportNumber } from '@/lib/id-generators';
 import { playSyncSound, triggerVibration, type SyncResult } from '@/lib/syncNotifications';
 
 const MAX_RETRIES = 3;
@@ -59,13 +60,22 @@ export function useOfflineQueue() {
           await updateActionStatus(action.id, 'syncing');
 
           if (action.type === 'create-patient') {
+            const payload = { ...action.payload } as any;
+            // Regenerate proper sequential ID if it was an offline placeholder
+            if (!payload.patient_id_number || payload.patient_id_number.includes('-OFF-')) {
+              payload.patient_id_number = await generatePatientId(payload.clinic_id);
+            }
             const { error } = await supabase
               .from('patients')
-              .insert(action.payload as any);
+              .insert(payload);
             if (error) throw error;
           } else if (action.type === 'create-report') {
-            const payload = action.payload as any;
+            const payload = { ...action.payload } as any;
             if (payload._newPatient) {
+              // Regenerate patient ID if offline placeholder
+              if (!payload._newPatient.patient_id_number || payload._newPatient.patient_id_number?.includes('-OFF-')) {
+                payload._newPatient.patient_id_number = await generatePatientId(payload._newPatient.clinic_id || payload.clinic_id);
+              }
               const { data: newPatient, error: patientError } = await supabase
                 .from('patients')
                 .insert(payload._newPatient)
@@ -74,6 +84,13 @@ export function useOfflineQueue() {
               if (patientError) throw patientError;
               payload.patient_id = newPatient.id;
               delete payload._newPatient;
+            }
+            // Regenerate proper sequential report number if it was an offline placeholder
+            if (payload.report_number?.includes('-OFF-')) {
+              payload.report_number = await generateReportNumber(
+                payload.report_type || 'combined',
+                payload.clinic_id
+              );
             }
             const { error } = await supabase
               .from('reports')
