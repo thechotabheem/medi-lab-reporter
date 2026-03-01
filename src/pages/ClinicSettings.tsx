@@ -47,7 +47,7 @@ export default function ClinicSettings() {
           .from('clinics')
           .select('*')
           .eq('id', clinicId)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
