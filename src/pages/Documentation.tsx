@@ -45,14 +45,14 @@ const Documentation = () => {
 
   const sections = [
     { title: 'Executive Summary', desc: 'Application overview, target users, and value propositions' },
-    { title: 'Technology Stack', desc: 'React 18, Vite, TailwindCSS, Lovable Cloud, jsPDF' },
+    { title: 'Technology Stack', desc: 'React 18, Vite, TailwindCSS, Lovable Cloud, @react-pdf/renderer' },
     { title: 'Core Modules', desc: 'Dashboard, Patient Management, Reports, Templates, Settings' },
     { title: 'Test Types (17)', desc: 'CBC, LFT, RFT, Lipid Profile, ESR, BSR, BSF, and more' },
-    { title: 'Database Schema', desc: 'Table structures for clinics, patients, reports, templates' },
+    { title: 'Sequential ID System', desc: 'Patient IDs (PT-YY-NNNN) and Report Numbers (TYPE-MM-NNN)' },
     { title: 'Auto-Calculations', desc: 'BUN, Indirect Bilirubin, Globulin, LDL, VLDL formulas' },
-    { title: 'UI/UX Specs', desc: 'Color scheme, typography, responsive design, animations' },
-    { title: 'PDF Layout', desc: 'Letterhead, patient info, results table, signatures' },
-    { title: 'Security Model', desc: 'Open-access design, RLS policies, admin reset protection' },
+    { title: 'Offline & PWA', desc: 'Offline-first operations, background sync, installable PWA' },
+    { title: 'PDF Generation', desc: 'Branded reports with @react-pdf/renderer, professional layout' },
+    { title: 'Security Model', desc: '5 managed accounts, RLS policies, admin reset protection' },
   ];
 
   return (
