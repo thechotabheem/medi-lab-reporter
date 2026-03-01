@@ -16,6 +16,7 @@ import { TestSelectionSummary } from '@/components/reports/TestSelectionSummary'
 import { ReportPreviewThumbnail } from '@/components/reports/ReportPreviewThumbnail';
 import type { QuickCustomTestData } from '@/components/reports/QuickCustomTestDialog';
 import { DraftBanner } from '@/components/reports/DraftBanner';
+import { OfflineFormBanner } from '@/components/OfflineFormBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { SuccessAnimation } from '@/components/ui/success-animation';
 import { useDraftReport } from '@/hooks/useDraftReport';
@@ -549,6 +550,9 @@ export default function CreateReport() {
         <HeaderDivider />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 space-y-6">
+        {/* Offline Banner */}
+        <OfflineFormBanner />
+
         {/* Draft Banner */}
         {showDraftBanner && (
           <DraftBanner
