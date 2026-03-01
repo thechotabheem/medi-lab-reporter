@@ -83,7 +83,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
     ['Language', 'TypeScript', 'Strict mode enabled'],
     ['Backend', 'Lovable Cloud', 'Supabase-powered'],
     ['Database', 'PostgreSQL', 'Via Lovable Cloud'],
-    ['PDF Generation', '@react-pdf/renderer', 'JSX-based PDF rendering'],
+    ['PDF Generation', '@react-pdf/renderer', '4.x JSX-based PDF rendering'],
     ['PWA Support', 'vite-plugin-pwa', '1.x'],
     ['UI Components', 'shadcn/ui', 'Radix primitives'],
     ['State Management', 'TanStack Query', '5.x'],
@@ -93,10 +93,10 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
 
   const modules = [
     { name: 'Dashboard', features: ['Real-time statistics', 'Quick action cards', 'Recent reports widget', 'Weather integration'] },
-    { name: 'Patient Management', features: ['CRUD operations', 'Inline registration', 'Patient search with filters', 'Patient history view'] },
-    { name: 'Report Management', features: ['17 test templates', 'Draft auto-save', 'Status workflow', 'PDF export and WhatsApp sharing'] },
+    { name: 'Patient Management', features: ['CRUD operations', 'Sequential IDs (PT-YY-NNNN)', 'Patient search with filters', 'Patient history view'] },
+    { name: 'Report Management', features: ['17 test templates', 'Sequential numbers (TYPE-MM-NNN)', 'Draft auto-save', 'PDF export and WhatsApp sharing'] },
     { name: 'Template Editor', features: ['Customize field labels', 'Drag-and-drop reorder', 'Add/remove custom fields', 'Clone templates'] },
-    { name: 'Settings', features: ['Clinic branding', 'Notification preferences', 'Data reset', 'PWA installation controls'] },
+    { name: 'Settings', features: ['Basic clinic info (name, doctor, contact)', 'Notification preferences', 'Data reset', 'PWA installation controls'] },
   ];
 
   const testTypeOverview = activeReportTypes.map(type => {
@@ -236,8 +236,24 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           colWidths={['15%', '25%', '30%', '30%']}
         />
 
-        <SectionHeader title="Security Model" sectionNum={9} />
+        <SectionHeader title="Sequential ID System" sectionNum={7} />
+        <SimpleTable
+          head={['Entity', 'Format', 'Example', 'Description']}
+          body={[
+            ['Patient ID', 'PT-YY-NNNN', 'PT-26-0001', 'Year-based sequential patient numbering'],
+            ['Report Number', 'TYPE-MM-NNN', 'CBC-02-001', 'Type + month-based sequential report numbering'],
+          ]}
+          colWidths={['20%', '25%', '25%', '30%']}
+        />
         <BulletList items={[
+          'Generated via database functions (generate_patient_id, generate_report_number)',
+          'Automatically increments within clinic scope',
+          'Year/month resets ensure organized record-keeping',
+        ]} />
+
+        <SectionHeader title="Security Model" sectionNum={8} />
+        <BulletList items={[
+          'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
           'Row Level Security (RLS) enabled on all tables',
           'HTTPS-only API communication',
           'Data reset requires secret ADMIN_RESET_CODE',
