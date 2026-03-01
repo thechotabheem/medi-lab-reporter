@@ -75,16 +75,6 @@ const App = () => {
     }
   }, []);
 
-  // Global unhandled rejection handler to prevent silent crashes
-  useEffect(() => {
-    const handler = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled rejection:', event.reason);
-      event.preventDefault();
-    };
-    window.addEventListener('unhandledrejection', handler);
-    return () => window.removeEventListener('unhandledrejection', handler);
-  }, []);
-
   const handleSplashComplete = () => {
     setShowSplash(false);
     sessionStorage.setItem('splashShown', 'true');

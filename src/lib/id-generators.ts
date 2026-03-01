@@ -38,87 +38,50 @@ export function getReportTypeCode(reportType: string): string {
 }
 
 /**
- * Generate a temporary offline ID using timestamp to avoid collisions.
- * These get replaced with proper sequential IDs during sync.
- */
-function generateOfflinePatientId(): string {
-  const year = new Date().getFullYear().toString().slice(-2);
-  const ts = Date.now().toString(36).toUpperCase();
-  return `PT-${year}-OFF-${ts}`;
-}
-
-function generateOfflineReportNumber(reportType: string): string {
-  const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
-  const code = getReportTypeCode(reportType);
-  const ts = Date.now().toString(36).toUpperCase();
-  return `${code}-${month}-OFF-${ts}`;
-}
-
-/**
  * Generate sequential patient ID: PT-YY-0001
- * Falls back to offline ID when network is unavailable.
  */
 export async function generatePatientId(clinicId: string): Promise<string> {
-  if (!navigator.onLine) {
-    return generateOfflinePatientId();
+  const year = new Date().getFullYear().toString().slice(-2); // "26"
+  const prefix = `PT-${year}-`;
+
+  const { data } = await supabase
+    .from('patients')
+    .select('patient_id_number')
+    .eq('clinic_id', clinicId)
+    .like('patient_id_number', `${prefix}%`)
+    .order('patient_id_number', { ascending: false })
+    .limit(1);
+
+  let nextNum = 1;
+  if (data && data.length > 0 && data[0].patient_id_number) {
+    const lastNum = parseInt(data[0].patient_id_number.replace(prefix, ''), 10);
+    if (!isNaN(lastNum)) nextNum = lastNum + 1;
   }
 
-  try {
-    const year = new Date().getFullYear().toString().slice(-2);
-    const prefix = `PT-${year}-`;
-
-    const { data } = await supabase
-      .from('patients')
-      .select('patient_id_number')
-      .eq('clinic_id', clinicId)
-      .like('patient_id_number', `${prefix}%`)
-      .order('patient_id_number', { ascending: false })
-      .limit(1);
-
-    let nextNum = 1;
-    if (data && data.length > 0 && data[0].patient_id_number) {
-      const lastNum = parseInt(data[0].patient_id_number.replace(prefix, ''), 10);
-      if (!isNaN(lastNum)) nextNum = lastNum + 1;
-    }
-
-    return `${prefix}${nextNum.toString().padStart(4, '0')}`;
-  } catch {
-    // Network error - use offline fallback
-    return generateOfflinePatientId();
-  }
+  return `${prefix}${nextNum.toString().padStart(4, '0')}`;
 }
 
 /**
  * Generate sequential report number: CBC-MM-001
- * Falls back to offline number when network is unavailable.
  */
 export async function generateReportNumber(reportType: string, clinicId: string): Promise<string> {
-  if (!navigator.onLine) {
-    return generateOfflineReportNumber(reportType);
+  const month = (new Date().getMonth() + 1).toString().padStart(2, '0'); // "02"
+  const code = getReportTypeCode(reportType);
+  const prefix = `${code}-${month}-`;
+
+  const { data } = await supabase
+    .from('reports')
+    .select('report_number')
+    .eq('clinic_id', clinicId)
+    .like('report_number', `${prefix}%`)
+    .order('report_number', { ascending: false })
+    .limit(1);
+
+  let nextNum = 1;
+  if (data && data.length > 0) {
+    const lastNum = parseInt(data[0].report_number.replace(prefix, ''), 10);
+    if (!isNaN(lastNum)) nextNum = lastNum + 1;
   }
 
-  try {
-    const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
-    const code = getReportTypeCode(reportType);
-    const prefix = `${code}-${month}-`;
-
-    const { data } = await supabase
-      .from('reports')
-      .select('report_number')
-      .eq('clinic_id', clinicId)
-      .like('report_number', `${prefix}%`)
-      .order('report_number', { ascending: false })
-      .limit(1);
-
-    let nextNum = 1;
-    if (data && data.length > 0) {
-      const lastNum = parseInt(data[0].report_number.replace(prefix, ''), 10);
-      if (!isNaN(lastNum)) nextNum = lastNum + 1;
-    }
-
-    return `${prefix}${nextNum.toString().padStart(3, '0')}`;
-  } catch {
-    // Network error - use offline fallback
-    return generateOfflineReportNumber(reportType);
-  }
+  return `${prefix}${nextNum.toString().padStart(3, '0')}`;
 }

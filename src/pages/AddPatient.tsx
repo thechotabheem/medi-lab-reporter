@@ -24,7 +24,6 @@ import { ageToDateOfBirth } from '@/lib/utils';
 import { patientSchema } from '@/lib/validation-schemas';
 import { enqueueAction } from '@/lib/offlineQueue';
 import { generatePatientId } from '@/lib/id-generators';
-import { OfflineFormBanner } from '@/components/OfflineFormBanner';
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -151,7 +150,7 @@ export default function AddPatient() {
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                  <OfflineFormBanner />
+                  {/* Full Name */}
                   <div className="space-y-2">
                     <Label htmlFor="full_name" className="text-sm">Full Name *</Label>
                     <Input

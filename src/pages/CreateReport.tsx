@@ -16,7 +16,6 @@ import { TestSelectionSummary } from '@/components/reports/TestSelectionSummary'
 import { ReportPreviewThumbnail } from '@/components/reports/ReportPreviewThumbnail';
 import type { QuickCustomTestData } from '@/components/reports/QuickCustomTestDialog';
 import { DraftBanner } from '@/components/reports/DraftBanner';
-import { OfflineFormBanner } from '@/components/OfflineFormBanner';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { SuccessAnimation } from '@/components/ui/success-animation';
 import { useDraftReport } from '@/hooks/useDraftReport';
@@ -97,40 +96,16 @@ export default function CreateReport() {
   const handleResumeDraft = useCallback(() => {
     if (!draft) return;
     
-    // Restore draft state - try cache first, then network
+    // Restore draft state
     if (draft.patient) {
-      // Try to get from React Query cache first (works offline)
-      const cachedPatients = queryClient.getQueryData<Patient[]>(['patients', clinicId]);
-      const cachedPatient = cachedPatients?.find(p => p.id === draft.patient!.id);
-      
-      if (cachedPatient) {
-        setSelectedPatient(cachedPatient);
-      } else if (navigator.onLine) {
-        // Fallback to network only if online
-        supabase
-          .from('patients')
-          .select('*')
-          .eq('id', draft.patient.id)
-          .single()
-          .then(({ data }) => {
-            if (data) setSelectedPatient(data);
-          });
-      } else {
-        // Offline with no cache - create minimal patient object from draft
-        setSelectedPatient({
-          id: draft.patient.id,
-          clinic_id: clinicId || '',
-          full_name: draft.patient.full_name,
-          date_of_birth: '',
-          gender: 'other',
-          phone: null,
-          email: null,
-          patient_id_number: null,
-          address: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+      supabase
+        .from('patients')
+        .select('*')
+        .eq('id', draft.patient.id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedPatient(data);
         });
-      }
     }
     if (draft.newPatientData) {
       setNewPatientData(draft.newPatientData);
@@ -262,9 +237,6 @@ export default function CreateReport() {
     return true;
   };
 
-  // Get clinic data from context (cached in localStorage, works offline)
-  const { clinic: clinicData } = useClinic();
-
   const handlePreviewPDF = async () => {
     if (!previewReport) {
       toast.error('Please select a patient and test type first');
@@ -274,6 +246,13 @@ export default function CreateReport() {
     setIsGeneratingPreview(true);
     try {
       const { report, patient } = previewReport;
+      
+      // Fetch clinic branding
+      const { data: clinicData } = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('id', clinicId)
+        .single();
 
       const pdfBlob = await generateReportPDF({
         report,
@@ -300,6 +279,13 @@ export default function CreateReport() {
     setIsExporting(true);
     try {
       const { report, patient } = previewReport;
+      
+      // Fetch clinic branding
+      const { data: clinicData } = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('id', clinicId)
+        .single();
 
       const pdfBlob = await generateReportPDF({
         report,
@@ -550,9 +536,6 @@ export default function CreateReport() {
         <HeaderDivider />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 space-y-6">
-        {/* Offline Banner */}
-        <OfflineFormBanner />
-
         {/* Draft Banner */}
         {showDraftBanner && (
           <DraftBanner

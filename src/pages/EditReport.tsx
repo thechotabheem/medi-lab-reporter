@@ -90,6 +90,8 @@ export default function EditReport() {
     setIsSaving(true);
 
     try {
+      // Determine if this should be a combined report
+      const shouldBeCombined = selectedTests.length > 1 || isCombinedReport;
       const reportType: ReportType = shouldBeCombined ? 'combined' : selectedTests[0];
       const finalReportData = shouldBeCombined 
         ? combinedReportData 
