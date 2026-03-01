@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useClinic } from '@/contexts/ClinicContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useWeather } from '@/hooks/useWeather';
+import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { StatCard } from '@/components/ui/stat-card';
 import { ActionCard } from '@/components/ui/action-card';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { DataSourceBadge } from '@/components/DataSourceBadge';
 import { useDataFreshness } from '@/hooks/useDataFreshness';
-import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList } from 'lucide-react';
+import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList, CloudOff } from 'lucide-react';
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const {
     weather
   } = useWeather();
+  const { pendingCount } = useOfflineQueue();
   const { dataSource, lastFetchedAt } = useDataFreshness('dashboard');
   const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
@@ -106,7 +108,11 @@ export default function Dashboard() {
               <StatCard title="This Month" value={statsLoading ? '-' : stats?.monthlyReports || 0} subtitle="Reports created" icon={Activity} onClick={() => navigate('/reports')} loading={statsLoading} glowEffect />
             </div>
             <div className="animate-fade-in-up animation-delay-400 sm:h-full">
-              <StatCard title="Pending" value={statsLoading ? '-' : stats?.draftReports || 0} subtitle="Draft reports" icon={FileText} onClick={() => navigate('/reports?status=draft')} loading={statsLoading} glowEffect />
+              {pendingCount > 0 ? (
+                <StatCard title="Pending Sync" value={pendingCount} subtitle="Offline items queued" icon={CloudOff} onClick={() => {}} loading={false} glowEffect />
+              ) : (
+                <StatCard title="Pending" value={statsLoading ? '-' : stats?.draftReports || 0} subtitle="Draft reports" icon={FileText} onClick={() => navigate('/reports?status=draft')} loading={statsLoading} glowEffect />
+              )}
             </div>
           </div>
 
