@@ -53,12 +53,12 @@ export default function ClinicSettings() {
 
         if (data) {
           setFormData({
-            doctor_name: (data as any).doctor_name || '',
+            doctor_name: data.doctor_name || '',
             name: data.name || '',
             phone: data.phone || '',
             email: data.email || '',
             address: data.address || '',
-            website: (data as any).website || '',
+            website: data.website || '',
           });
         }
       } catch (error: any) {
@@ -95,7 +95,7 @@ export default function ClinicSettings() {
           email: formData.email || null,
           address: formData.address || null,
           website: formData.website || null,
-        } as any)
+        })
         .eq('id', clinicId);
 
       if (error) throw error;
