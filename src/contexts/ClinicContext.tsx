@@ -1,12 +1,15 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Clinic = Tables<'clinics'>;
 
-// Default clinic ID - this is the static UUID for the single default clinic
+// Fallback clinic ID when user session/profile is unavailable
 export const DEFAULT_CLINIC_ID = '00000000-0000-0000-0000-000000000001';
-const CLINIC_CACHE_KEY = 'lab-reporter-clinic-cache';
+const LEGACY_CLINIC_CACHE_KEY = 'lab-reporter-clinic-cache';
+const CLINIC_CACHE_KEY_PREFIX = 'lab-reporter-clinic-cache:';
+
+const getClinicCacheKey = (id: string) => `${CLINIC_CACHE_KEY_PREFIX}${id}`;
 
 interface ClinicContextType {
   clinic: Clinic | null;
@@ -32,10 +35,13 @@ export const useClinic = () => {
 };
 
 export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [clinicId, setClinicId] = useState<string>(DEFAULT_CLINIC_ID);
   const [clinic, setClinic] = useState<Clinic | null>(() => {
-    // Restore from localStorage for offline access
     try {
-      const cached = localStorage.getItem(CLINIC_CACHE_KEY);
+      // Backward compatibility: old single-cache key + new per-clinic cache key
+      const cached =
+        localStorage.getItem(getClinicCacheKey(DEFAULT_CLINIC_ID)) ||
+        localStorage.getItem(LEGACY_CLINIC_CACHE_KEY);
       return cached ? JSON.parse(cached) : null;
     } catch {
       return null;
@@ -43,12 +49,51 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchClinic = async () => {
+  const resolveClinicId = useCallback(async (): Promise<string> => {
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user) return DEFAULT_CLINIC_ID;
+
+      const { data: resolvedClinicId, error } = await supabase.rpc('get_user_clinic_id', {
+        _user_id: session.user.id,
+      });
+
+      if (error || !resolvedClinicId) {
+        if (error) console.error('Error resolving clinic id:', error);
+        return DEFAULT_CLINIC_ID;
+      }
+
+      return resolvedClinicId;
+    } catch (error) {
+      console.error('Error resolving clinic id:', error);
+      return DEFAULT_CLINIC_ID;
+    }
+  }, []);
+
+  const fetchClinic = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const resolvedClinicId = await resolveClinicId();
+      setClinicId(resolvedClinicId);
+
+      // Restore cache for resolved clinic first (useful when offline)
+      try {
+        const cached = localStorage.getItem(getClinicCacheKey(resolvedClinicId));
+        if (cached) {
+          setClinic(JSON.parse(cached));
+        }
+      } catch {
+        // ignore cache parse errors
+      }
+
       const { data, error } = await supabase
         .from('clinics')
         .select('*')
-        .eq('id', DEFAULT_CLINIC_ID)
+        .eq('id', resolvedClinicId)
         .maybeSingle();
 
       if (error) {
@@ -57,7 +102,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setClinic(data);
         // Cache for offline use
         try {
-          localStorage.setItem(CLINIC_CACHE_KEY, JSON.stringify(data));
+          localStorage.setItem(getClinicCacheKey(resolvedClinicId), JSON.stringify(data));
+          localStorage.setItem(LEGACY_CLINIC_CACHE_KEY, JSON.stringify(data));
         } catch {
           // Storage full
         }
@@ -68,11 +114,19 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [resolveClinicId]);
 
   useEffect(() => {
-    fetchClinic();
-  }, []);
+    void fetchClinic();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void fetchClinic();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchClinic]);
 
   const refreshClinic = async () => {
     await fetchClinic();
@@ -80,7 +134,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const value = {
     clinic,
-    clinicId: DEFAULT_CLINIC_ID,
+    clinicId,
     isLoading,
     refreshClinic,
   };
