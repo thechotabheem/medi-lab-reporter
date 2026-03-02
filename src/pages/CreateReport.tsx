@@ -439,9 +439,11 @@ export default function CreateReport() {
       });
       setShowSuccess(true);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Report save error:', error);
+      const message = error instanceof Error ? error.message : (typeof error === 'object' && error !== null && 'message' in error) ? String((error as any).message) : JSON.stringify(error);
       // Network error fallback - enqueue offline
-      if (!navigator.onLine || (error instanceof Error && error.message.includes('fetch'))) {
+      const errorMsg = typeof message === 'string' ? message : 'Unknown error';
+      if (!navigator.onLine || errorMsg.includes('fetch')) {
         const reportPayload = {
           clinic_id: clinicId,
           report_number: `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase(), // fallback for offline
@@ -459,7 +461,7 @@ export default function CreateReport() {
         navigate('/dashboard');
         return;
       }
-      toast.error('Failed to save: ' + message);
+      toast.error('Failed to save: ' + errorMsg);
     } finally {
       setIsSaving(false);
     }
