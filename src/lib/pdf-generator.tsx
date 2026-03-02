@@ -61,9 +61,8 @@ export const generateReportPDF = async ({ report, patient, clinic, customTemplat
     ? flattenCombinedReportData(rawReportData, report.included_tests)
     : rawReportData;
 
-  // Load logo
-  const logoSource = clinic?.logo_url || '/images/report-logo.png';
-  const logoBase64 = await loadImageAsBase64(logoSource);
+  // Load logo from clinic settings only
+  const logoBase64 = clinic?.logo_url ? await loadImageAsBase64(clinic.logo_url) : null;
 
   const doc = React.createElement(ReportDocument, {
     report,
