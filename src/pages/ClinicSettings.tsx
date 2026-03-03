@@ -32,44 +32,26 @@ const defaultFormData: ClinicData = {
 
 export default function ClinicSettings() {
   const navigate = useNavigate();
-  const { clinicId, refreshClinic } = useClinic();
+  const { clinic, clinicId, isLoading: clinicLoading, refreshClinic } = useClinic();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<ClinicData>(defaultFormData);
+  const [formInitialized, setFormInitialized] = useState(false);
 
+  // Populate form from the already-resolved clinic context
   useEffect(() => {
-    const fetchClinicData = async () => {
-      if (!clinicId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('clinics')
-          .select('*')
-          .eq('id', clinicId)
-          .single();
-
-        if (error) throw error;
-
-        if (data) {
-          setFormData({
-            doctor_name: (data as any).doctor_name || '',
-            name: data.name || '',
-            phone: data.phone || '',
-            email: data.email || '',
-            address: data.address || '',
-            website: (data as any).website || '',
-          });
-        }
-      } catch (error: any) {
-        toast({ title: 'Error', description: 'Failed to load clinic data.', variant: 'destructive' });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchClinicData();
-  }, [clinicId, toast]);
+    if (!clinicLoading && clinic) {
+      setFormData({
+        doctor_name: (clinic as any).doctor_name || '',
+        name: clinic.name || '',
+        phone: clinic.phone || '',
+        email: clinic.email || '',
+        address: clinic.address || '',
+        website: (clinic as any).website || '',
+      });
+      setFormInitialized(true);
+    }
+  }, [clinic, clinicLoading]);
 
   const handleChange = (field: keyof ClinicData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -123,7 +105,7 @@ export default function ClinicSettings() {
 
       <PageTransition>
         <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl">
-          {isLoading ? (
+          {(clinicLoading || !formInitialized) ? (
             <Card className="animate-pulse-glow">
               <CardHeader className="p-4 sm:p-6">
                 <div className="h-6 w-40 skeleton rounded" />
