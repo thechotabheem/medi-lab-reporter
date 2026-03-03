@@ -4,20 +4,14 @@ import { FONTS } from '../fonts';
 import { format } from 'date-fns';
 
 interface ReportFooterProps {
-  pageNumber: number;
-  totalPages: number;
   clinicAddress?: string | null;
   accentColorDark?: string;
   signatureTitleLeft?: string;
   signatureTitleRight?: string;
-  isLastPage?: boolean;
 }
 
 export const ReportFooter: React.FC<ReportFooterProps> = ({
-  pageNumber,
-  totalPages,
   clinicAddress,
-  isLastPage = false,
 }) => {
   const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
 
@@ -33,18 +27,20 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
           paddingVertical: 4,
           alignItems: 'center',
         }}>
-          <Text style={{ fontSize: 13, color: '#FFFFFF', fontFamily: FONTS.spaceGrotesk, fontWeight: 700 }}>
-            Page # {pageNumber}/{totalPages}
-          </Text>
+          <Text style={{ fontSize: 13, color: '#FFFFFF', fontFamily: FONTS.spaceGrotesk, fontWeight: 700 }}
+            render={({ pageNumber, totalPages }) => `Page # ${pageNumber}/${totalPages}`}
+          />
         </View>
 
-        {/* Right: Authorized Signature */}
-        {isLastPage && (
-          <View style={{ alignItems: 'center' }}>
-            <View style={{ width: 160, borderBottomWidth: 2, borderBottomColor: '#000000', marginBottom: 3 }} />
-            <Text style={{ fontSize: 13, color: '#000000', fontFamily: FONTS.beVietnam }}>Authorized Signature</Text>
-          </View>
-        )}
+        {/* Right: Authorized Signature - only on last page */}
+        <Text
+          render={({ pageNumber, totalPages }) => null}
+          style={{ position: 'absolute', width: 0, height: 0 }}
+        />
+        <View style={{ alignItems: 'center' }}>
+          <View style={{ width: 160, borderBottomWidth: 2, borderBottomColor: '#000000', marginBottom: 3 }} />
+          <Text style={{ fontSize: 13, color: '#000000', fontFamily: FONTS.beVietnam }}>Authorized Signature</Text>
+        </View>
       </View>
 
       {/* Full-width Dark Azure footer banner */}
