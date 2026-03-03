@@ -25,7 +25,7 @@ import {
   User,
   Download,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/date-formats';
 import { getReportTypeName } from '@/lib/report-templates';
 import { exportToCSV } from '@/lib/csv-export';
 import { toast } from 'sonner';
@@ -61,7 +61,7 @@ export default function Reports() {
         patient: r.patient?.full_name || '',
         type: getReportTypeName(r.report_type),
         status: r.status,
-        test_date: format(new Date(r.test_date), 'yyyy-MM-dd'),
+        test_date: formatDate(r.test_date),
         referring_doctor: r.referring_doctor || '',
       })),
       [
@@ -229,7 +229,7 @@ export default function Reports() {
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
-                            {format(new Date(report.test_date), 'MMM d, yyyy')}
+                            {formatDate(report.test_date)}
                           </span>
                         </div>
                       </div>

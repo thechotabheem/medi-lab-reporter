@@ -18,7 +18,7 @@ import {
   Star,
   Trash2,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/date-formats';
 import type { MultiComparisonResult, TrendType } from '@/hooks/useMultiReportComparison';
 
 interface MultiReportComparisonTableProps {
@@ -129,7 +129,7 @@ const ComparisonCard = ({
           {item.values.map((value, idx) => (
             <div key={idx} className="space-y-1">
               <p className="text-xs text-muted-foreground">
-                {format(new Date(reportDates[idx]), 'MMM d, yy')}
+                {formatDate(reportDates[idx])}
               </p>
               <ValueCell value={value} status={item.statuses[idx]} />
             </div>
@@ -227,7 +227,7 @@ export function MultiReportComparisonTable({
                           <Badge variant="outline" className="text-2xs">
                             {idx + 1}
                           </Badge>
-                          <span className="text-xs">{format(new Date(date), 'MMM d, yy')}</span>
+                          <span className="text-xs">{formatDate(date)}</span>
                         </div>
                       </TableHead>
                     ))}

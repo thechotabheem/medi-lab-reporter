@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RefreshCw, Trash2, CloudOff, X, CheckCircle, Cloud } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/date-formats';
 
 export function OfflineSyncStatus() {
   const {
@@ -115,7 +115,7 @@ export function OfflineSyncStatus() {
                         {action.type.replace(/-/g, ' ')}
                       </p>
                       <p className="text-muted-foreground">
-                        {format(new Date(action.createdAt), 'MMM d, HH:mm')}
+                        {formatDate(action.createdAt)}
                       </p>
                       {action.retryCount >= 3 && (
                         <Badge variant="destructive" className="text-[10px] mt-1">

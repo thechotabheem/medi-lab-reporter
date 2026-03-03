@@ -53,7 +53,7 @@ import {
   Pencil,
   GitCompare,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate, formatDateTime } from '@/lib/date-formats';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from '@/lib/report-templates';
 import { calculateAgeFromDOB } from '@/lib/utils';
@@ -458,7 +458,7 @@ export default function ReportView() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Test Date</p>
-                        <p className="text-sm font-medium">{format(new Date(report.test_date), 'dd MMM yyyy')}</p>
+                        <p className="text-sm font-medium">{formatDate(report.test_date)}</p>
                       </div>
                       {report.referring_doctor && (
                         <div className="col-span-2">
@@ -645,7 +645,7 @@ export default function ReportView() {
                       <p className="text-xs text-muted-foreground italic mb-2">{clinic.footer_text}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Report generated on {format(new Date(), 'dd MMM yyyy, hh:mm a')}
+                      Report generated on {formatDateTime(new Date())}
                     </p>
                   </div>
                 </CardContent>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Page, View, Text } from '@react-pdf/renderer';
 import { pdf } from '@react-pdf/renderer';
-import { format } from 'date-fns';
+import { formatDate, formatDateFull, formatDateForFile } from '@/lib/date-formats';
 import { tw } from './pdf/tw-config';
 import { loadImageAsBase64, darkenColor, calculateAge } from './pdf/utils';
 import type { Report, Patient } from '@/types/database';
@@ -123,11 +123,11 @@ const ComparisonDocument: React.FC<ComparisonDocumentProps> = ({
           <View style={tw('flex-row mb-1')}>
             <Text style={{ fontSize: 8, color: '#646464', width: '33%' }}>Patient: <Text style={tw('font-bold')}>{patient.full_name}</Text></Text>
             <Text style={{ fontSize: 8, color: '#646464', width: '33%' }}>Age/Gender: <Text style={tw('font-bold')}>{calculateAge(patient.date_of_birth)} yrs / {patient.gender}</Text></Text>
-            <Text style={{ fontSize: 8, color: '#646464', width: '33%' }}>Generated: <Text style={tw('font-bold')}>{format(new Date(), 'dd MMM yyyy')}</Text></Text>
+            <Text style={{ fontSize: 8, color: '#646464', width: '33%' }}>Generated: <Text style={tw('font-bold')}>{formatDateFull(new Date())}</Text></Text>
           </View>
           <View style={tw('flex-row')}>
-            <Text style={{ fontSize: 8, color: '#646464', width: '50%' }}>Baseline (A): <Text style={tw('font-bold')}>{format(new Date(reportA.test_date), 'dd MMM yyyy')} (#{reportA.report_number})</Text></Text>
-            <Text style={{ fontSize: 8, color: '#646464', width: '50%' }}>Current (B): <Text style={tw('font-bold')}>{format(new Date(reportB.test_date), 'dd MMM yyyy')} (#{reportB.report_number})</Text></Text>
+            <Text style={{ fontSize: 8, color: '#646464', width: '50%' }}>Baseline (A): <Text style={tw('font-bold')}>{formatDateFull(reportA.test_date)} (#{reportA.report_number})</Text></Text>
+            <Text style={{ fontSize: 8, color: '#646464', width: '50%' }}>Current (B): <Text style={tw('font-bold')}>{formatDateFull(reportB.test_date)} (#{reportB.report_number})</Text></Text>
           </View>
         </View>
 
@@ -235,7 +235,7 @@ export const generateComparisonPDF = async (options: GenerateComparisonPDFOption
 
 export const downloadComparisonPDF = async (options: GenerateComparisonPDFOptions): Promise<void> => {
   const blob = await generateComparisonPDF(options);
-  const fileName = `comparison_${options.patient.full_name.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.pdf`;
+  const fileName = `comparison_${options.patient.full_name.replace(/\s+/g, '_')}_${formatDateForFile(new Date())}.pdf`;
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -245,7 +245,7 @@ export const downloadComparisonPDF = async (options: GenerateComparisonPDFOption
 };
 
 export const shareComparisonPDFViaWhatsApp = async (options: GenerateComparisonPDFOptions): Promise<void> => {
-  const message = encodeURIComponent(`Lab report comparison for ${options.patient.full_name} is ready. Comparing reports from ${format(new Date(options.reportA.test_date), 'dd MMM yyyy')} and ${format(new Date(options.reportB.test_date), 'dd MMM yyyy')}.`);
+  const message = encodeURIComponent(`Lab report comparison for ${options.patient.full_name} is ready. Comparing reports from ${formatDateFull(options.reportA.test_date)} and ${formatDateFull(options.reportB.test_date)}.`);
   const phone = options.patient.phone?.replace(/\D/g, '') || '';
   window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
 };
