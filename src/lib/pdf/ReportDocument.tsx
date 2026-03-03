@@ -127,10 +127,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
 
         {/* Footer */}
         <ReportFooter
-          pageNumber={1}
-          totalPages={1}
           clinicAddress={clinic?.address}
-          isLastPage={true}
         />
       </Page>
     </Document>
