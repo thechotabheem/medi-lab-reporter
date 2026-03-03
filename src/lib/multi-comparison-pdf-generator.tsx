@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Page, View, Text } from '@react-pdf/renderer';
 import { pdf } from '@react-pdf/renderer';
-import { format } from 'date-fns';
+import { formatDate, formatDateFull, formatDateShort, formatDateForFile } from '@/lib/date-formats';
 import { tw } from './pdf/tw-config';
 import { loadImageAsBase64, darkenColor, calculateAge } from './pdf/utils';
 import type { Report, Patient } from '@/types/database';
@@ -120,13 +120,13 @@ const MultiComparisonDocument: React.FC<MultiComparisonDocumentProps> = ({
           <View style={tw('flex-row mb-1')}>
             <Text style={{ fontSize: 8, color: '#646464' }}>Patient: <Text style={tw('font-bold')}>{patient.full_name}</Text></Text>
             <Text style={{ fontSize: 8, color: '#646464', marginLeft: 20 }}>Age/Gender: <Text style={tw('font-bold')}>{calculateAge(patient.date_of_birth)} / {patient.gender}</Text></Text>
-            <Text style={{ fontSize: 8, color: '#646464', marginLeft: 'auto' }}>Generated: <Text style={tw('font-bold')}>{format(new Date(), 'dd MMM yyyy')}</Text></Text>
+            <Text style={{ fontSize: 8, color: '#646464', marginLeft: 'auto' }}>Generated: <Text style={tw('font-bold')}>{formatDateFull(new Date())}</Text></Text>
           </View>
           <Text style={{ fontSize: 8, color: '#646464' }}>
-            Date Range: <Text style={tw('font-bold')}>{format(new Date(reportDates[0]), 'dd MMM yyyy')} → {format(new Date(reportDates[reportDates.length - 1]), 'dd MMM yyyy')}</Text>
+            Date Range: <Text style={tw('font-bold')}>{formatDateFull(reportDates[0])} → {formatDateFull(reportDates[reportDates.length - 1])}</Text>
           </Text>
           <Text style={{ fontSize: 7, color: '#646464', marginTop: 2 }}>
-            Reports: {reportDates.map((date, i) => `#${i + 1}: ${format(new Date(date), 'MMM d, yy')}`).join('  •  ')}
+            Reports: {reportDates.map((date, i) => `#${i + 1}: ${formatDate(date)}`).join('  •  ')}
           </Text>
         </View>
 
@@ -143,7 +143,7 @@ const MultiComparisonDocument: React.FC<MultiComparisonDocumentProps> = ({
           </View>
           {reportDates.map((date, idx) => (
             <View key={idx} style={[BORDER, { width: valueWidth, padding: 2 }]}>
-              <Text style={[tw('text-center font-bold text-white'), { fontSize: 7 }]}>#{idx + 1}{'\n'}{format(new Date(date), 'MMM d')}</Text>
+              <Text style={[tw('text-center font-bold text-white'), { fontSize: 7 }]}>#{idx + 1}{'\n'}{formatDateShort(date)}</Text>
             </View>
           ))}
           <View style={[BORDER, { width: trendWidth, padding: 2 }]}>
@@ -224,7 +224,7 @@ export const generateMultiComparisonPDF = async (options: GenerateMultiCompariso
 
 export const downloadMultiComparisonPDF = async (options: GenerateMultiComparisonPDFOptions): Promise<void> => {
   const blob = await generateMultiComparisonPDF(options);
-  const fileName = `comparison_${options.patient.full_name.replace(/\s+/g, '_')}_${options.reports.length}reports_${format(new Date(), 'yyyyMMdd')}.pdf`;
+  const fileName = `comparison_${options.patient.full_name.replace(/\s+/g, '_')}_${options.reports.length}reports_${formatDateForFile(new Date())}.pdf`;
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -234,7 +234,7 @@ export const downloadMultiComparisonPDF = async (options: GenerateMultiCompariso
 };
 
 export const shareMultiComparisonPDFViaWhatsApp = async (options: GenerateMultiComparisonPDFOptions): Promise<void> => {
-  const dateRange = `${format(new Date(options.reportDates[0]), 'dd MMM yyyy')} to ${format(new Date(options.reportDates[options.reportDates.length - 1]), 'dd MMM yyyy')}`;
+  const dateRange = `${formatDateFull(options.reportDates[0])} to ${formatDateFull(options.reportDates[options.reportDates.length - 1])}`;
   const message = encodeURIComponent(`Lab report comparison for ${options.patient.full_name} is ready. Comparing ${options.reports.length} reports from ${dateRange}.`);
   const phone = options.patient.phone?.replace(/\D/g, '') || '';
   window.open(`https://wa.me/${phone}?text=${message}`, '_blank');

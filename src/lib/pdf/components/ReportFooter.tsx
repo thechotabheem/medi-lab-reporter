@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from '@react-pdf/renderer';
 import { FONTS } from '../fonts';
-import { format } from 'date-fns';
+import { formatDateTime } from '@/lib/date-formats';
 
 interface ReportFooterProps {
   clinicAddress?: string | null;
@@ -13,7 +13,7 @@ interface ReportFooterProps {
 export const ReportFooter: React.FC<ReportFooterProps> = ({
   clinicAddress,
 }) => {
-  const genDate = format(new Date(), 'd/MM/yy hh:mm:ss a');
+  const genDate = formatDateTime(new Date());
 
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} fixed>

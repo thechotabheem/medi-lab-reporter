@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Page, View, Text, Image } from '@react-pdf/renderer';
 import { pdf } from '@react-pdf/renderer';
-import { format } from 'date-fns';
+import { formatDateFull } from '@/lib/date-formats';
 import { tw } from './pdf/tw-config';
 import { loadImageAsBase64 } from './pdf/utils';
 import { reportTemplates, activeReportTypes } from './report-templates';
@@ -116,7 +116,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 4 }}>& Technical Specification Blueprint</Text>
           <View style={{ width: 200, height: 2, backgroundColor: COLORS.primary, marginVertical: 20 }} />
           <Text style={{ fontSize: 11, color: COLORS.textMuted }}>Version 1.0</Text>
-          <Text style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>Generated: {format(new Date(), 'MMMM dd, yyyy')}</Text>
+          <Text style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>Generated: {formatDateFull(new Date())}</Text>
           {clinic?.name && <Text style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>Clinic: {clinic.name}</Text>}
         </View>
         <Text style={[tw('text-center'), { fontSize: 9, color: COLORS.textMuted, position: 'absolute', bottom: 30, left: 0, right: 0 }]}>
@@ -263,7 +263,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
 
         {/* Footer */}
         <Text style={[tw('text-center'), { fontSize: 8, color: COLORS.textMuted, position: 'absolute', bottom: 15, left: 0, right: 0 }]} fixed>
-          MedLab Reporter - Product Requirements Document | Generated: {format(new Date(), 'dd MMM yyyy')}
+          MedLab Reporter - Product Requirements Document | Generated: {formatDateFull(new Date())}
         </Text>
       </Page>
     </Document>

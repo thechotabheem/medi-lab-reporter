@@ -23,7 +23,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Bookmark, Trash2, Clock, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/date-formats';
 import type { SavedComparison } from '@/hooks/useSavedComparisons';
 
 interface SavedComparisonsListProps {
@@ -101,7 +101,7 @@ export function SavedComparisonsList({
                         </div>
                         <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          <span>{format(new Date(comparison.created_at), 'MMM d, yyyy')}</span>
+                          <span>{formatDate(comparison.created_at)}</span>
                         </div>
                       </div>
                       <AlertDialog>

@@ -1,6 +1,6 @@
 import { pdf } from '@react-pdf/renderer';
 import React from 'react';
-import { format } from 'date-fns';
+
 import type { Report, Patient, ReportTemplate, ReportType } from '@/types/database';
 import { reportTemplates, buildCombinedTemplate, flattenCombinedReportData } from './report-templates';
 import { loadImageAsBase64 } from './pdf/utils';

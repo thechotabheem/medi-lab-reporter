@@ -39,7 +39,7 @@ import {
   Plus,
   X,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate, formatDateFull } from '@/lib/date-formats';
 import { toast } from 'sonner';
 import type { Report, Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
@@ -330,12 +330,12 @@ export default function CompareReports() {
   // Report labels for dual mode
   const reportALabel = useMemo(() => {
     if (!reportA) return 'Baseline';
-    return `${format(new Date(reportA.test_date), 'MMM d, yyyy')}`;
+    return `${formatDate(reportA.test_date)}`;
   }, [reportA]);
 
   const reportBLabel = useMemo(() => {
     if (!reportB) return 'Current';
-    return `${format(new Date(reportB.test_date), 'MMM d, yyyy')}`;
+    return `${formatDate(reportB.test_date)}`;
   }, [reportB]);
 
   const isLoading = patientLoading || reportsLoading;
@@ -494,7 +494,7 @@ export default function CompareReports() {
                                 <FileText className="h-3 w-3" />
                                 <span>{getReportTypeName(r.report_type)}</span>
                                 <span className="text-muted-foreground text-xs">
-                                  {format(new Date(r.test_date), 'MMM d, yyyy')}
+                                  {formatDate(r.test_date)}
                                 </span>
                               </div>
                             </SelectItem>
@@ -504,7 +504,7 @@ export default function CompareReports() {
                       {reportA && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>{format(new Date(reportA.test_date), 'MMMM d, yyyy')}</span>
+                          <span>{formatDateFull(reportA.test_date)}</span>
                         </div>
                       )}
                     </CardContent>
@@ -553,7 +553,7 @@ export default function CompareReports() {
                                 <FileText className="h-3 w-3" />
                                 <span>{getReportTypeName(r.report_type)}</span>
                                 <span className="text-muted-foreground text-xs">
-                                  {format(new Date(r.test_date), 'MMM d, yyyy')}
+                                  {formatDate(r.test_date)}
                                 </span>
                               </div>
                             </SelectItem>
@@ -563,7 +563,7 @@ export default function CompareReports() {
                       {reportB && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>{format(new Date(reportB.test_date), 'MMMM d, yyyy')}</span>
+                          <span>{formatDateFull(reportB.test_date)}</span>
                         </div>
                       )}
                     </CardContent>
@@ -603,7 +603,7 @@ export default function CompareReports() {
                             </div>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
-                              <span>{format(new Date(report.test_date), 'MMM d, yyyy')}</span>
+                              <span>{formatDate(report.test_date)}</span>
                             </div>
                           </CardContent>
                         </Card>
@@ -628,7 +628,7 @@ export default function CompareReports() {
                                     <FileText className="h-3 w-3" />
                                     <span>{getReportTypeName(r.report_type)}</span>
                                     <span className="text-muted-foreground text-xs">
-                                      {format(new Date(r.test_date), 'MMM d, yyyy')}
+                                      {formatDate(r.test_date)}
                                     </span>
                                   </div>
                                 </SelectItem>

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { FileText, Clock, ArrowRight, User } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDateShort } from '@/lib/date-formats';
 import { getReportTypeName } from '@/lib/report-templates';
 import type { Report, Patient, ReportType } from '@/types/database';
 
@@ -105,7 +105,7 @@ export const RecentReportsWidget = () => {
                     {report.patient?.full_name || 'Unknown'}
                   </span>
                   <span className="shrink-0">
-                    {format(new Date(report.test_date), 'MMM d')}
+                    {formatDateShort(report.test_date)}
                   </span>
                 </div>
               </div>

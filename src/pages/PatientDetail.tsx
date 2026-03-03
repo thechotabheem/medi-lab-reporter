@@ -49,7 +49,7 @@ import {
   Plus,
   Loader2,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate, formatDateFull } from '@/lib/date-formats';
 import type { Patient, Gender } from '@/types/database';
 import { getReportTypeName } from '@/lib/report-templates';
 import { calculateAgeFromDOB, ageToDateOfBirth } from '@/lib/utils';
@@ -282,7 +282,7 @@ export default function PatientDetail() {
                           <Calendar className="h-4 w-4 text-muted-foreground shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                           <div className="min-w-0">
                             <p className="text-xs text-muted-foreground">Date of Birth</p>
-                            <p className="text-sm font-medium">{format(new Date(patient.date_of_birth), 'MMMM d, yyyy')}</p>
+                            <p className="text-sm font-medium">{formatDateFull(patient.date_of_birth)}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -381,7 +381,7 @@ export default function PatientDetail() {
                                   {getReportTypeName(report.report_type)}
                                 </p>
                                 <p className="text-xs text-muted-foreground truncate">
-                                  {report.report_number} • {format(new Date(report.test_date), 'MMM d, yyyy')}
+                                  {report.report_number} • {formatDate(report.test_date)}
                                 </p>
                               </div>
                             </div>

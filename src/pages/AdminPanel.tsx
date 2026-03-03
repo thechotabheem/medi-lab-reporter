@@ -24,7 +24,8 @@ import {
 import { ShieldCheck, UserPlus, KeyRound, Trash2, Users, Eye, EyeOff, Pencil, Clock, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { useActivityLogs } from '@/hooks/useActivityLog';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { formatDateTime } from '@/lib/date-formats';
 
 interface StaffUser {
   id: string;
@@ -372,7 +373,7 @@ export default function AdminPanel() {
                                 )}
                               </p>
                               <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}
+                                {formatDateTime(log.created_at)}
                               </p>
                             </div>
                           </div>
