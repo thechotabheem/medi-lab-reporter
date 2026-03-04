@@ -32,12 +32,12 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
 
   const headerCellStyle = (width: string) => [
     BORDER,
-    { width, paddingVertical: 5, paddingHorizontal: 5, backgroundColor: '#FFFFFF' },
+    { width, padding: 3, backgroundColor: '#FFFFFF' },
   ];
 
   const dataCellStyle = (width: string) => [
     BORDER,
-    { width, paddingVertical: 5, paddingHorizontal: 5 },
+    { width, padding: 3 },
   ];
 
   const headerText = (label: string) => ({
