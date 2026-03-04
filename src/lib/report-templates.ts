@@ -207,7 +207,7 @@ export const reportTemplates: Record<ReportType, ReportTemplate> = {
       {
         name: 'HCV Test',
         fields: [
-          { name: 'anti_hcv', label: 'Anti-HCV', type: 'select', options: ['Non-Reactive', 'Reactive'] },
+          { name: 'anti_hcv', label: 'Anti-HCV', type: 'select', options: ['Negative', 'Positive'] },
         ],
       },
     ],
@@ -220,7 +220,7 @@ export const reportTemplates: Record<ReportType, ReportTemplate> = {
       {
         name: 'HBsAg Test',
         fields: [
-          { name: 'hbsag', label: 'HBsAg', type: 'select', options: ['Non-Reactive', 'Reactive'] },
+          { name: 'hbsag', label: 'HBsAg', type: 'select', options: ['Negative', 'Positive'] },
         ],
       },
     ],
@@ -233,7 +233,7 @@ export const reportTemplates: Record<ReportType, ReportTemplate> = {
       {
         name: 'HIV Test',
         fields: [
-          { name: 'hiv', label: 'HIV I & II', type: 'select', options: ['Non-Reactive', 'Reactive'] },
+          { name: 'hiv', label: 'HIV I & II', type: 'select', options: ['Negative', 'Positive'] },
         ],
       },
     ],
@@ -246,7 +246,7 @@ export const reportTemplates: Record<ReportType, ReportTemplate> = {
       {
         name: 'VDRL Test',
         fields: [
-          { name: 'vdrl', label: 'VDRL', type: 'select', options: ['Non-Reactive', 'Reactive'] },
+          { name: 'vdrl', label: 'VDRL', type: 'select', options: ['Negative', 'Positive'] },
         ],
       },
     ],
