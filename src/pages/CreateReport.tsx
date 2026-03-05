@@ -141,6 +141,7 @@ export default function CreateReport() {
     }
     
     setDraftApplied(true);
+    setAutoSaveEnabled(true);
     toast.success('Draft restored');
   }, [draft]);
 
