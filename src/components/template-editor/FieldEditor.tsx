@@ -47,11 +47,6 @@ export const FieldEditor = ({
             disabled={isHidden}
             placeholder="Field label"
           />
-          {field.calculated && (
-            <Badge variant="secondary" className="text-xs shrink-0">
-              Auto
-            </Badge>
-          )}
           {isCustomField && (
             <Badge variant="outline" className="text-xs shrink-0 text-primary border-primary">
               Custom
