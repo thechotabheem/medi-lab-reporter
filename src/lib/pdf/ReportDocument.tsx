@@ -102,7 +102,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({
             if (categoryFields.length === 0) return null;
 
             return (
-              <View key={category.name} wrap={false}>
+              <View key={category.name}>
                 <CategoryHeader
                   name={category.name}
                   fontSizeMultiplier={fontSizeMultiplier}
