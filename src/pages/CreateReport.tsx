@@ -148,6 +148,7 @@ export default function CreateReport() {
   const handleDiscardDraft = useCallback(() => {
     clearDraft();
     setDraftApplied(true);
+    setAutoSaveEnabled(true);
     toast.info('Draft discarded');
   }, [clearDraft]);
 
