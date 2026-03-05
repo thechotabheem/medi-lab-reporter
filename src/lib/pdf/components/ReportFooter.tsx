@@ -33,20 +33,16 @@ export const ReportFooter: React.FC<ReportFooterProps> = ({
         </View>
 
         {/* Right: Authorized Signature - only on last page */}
-        <View style={{ alignItems: 'center', width: 160 }}>
-          <Text
-            render={({ pageNumber, totalPages }) =>
-              pageNumber === totalPages ? '________________________' : ''
-            }
-            style={{ fontSize: 13, color: '#000000', fontFamily: FONTS.beVietnam, marginBottom: 3 }}
-          />
-          <Text
-            render={({ pageNumber, totalPages }) =>
-              pageNumber === totalPages ? 'Authorized Signature' : ''
-            }
-            style={{ fontSize: 13, color: '#000000', fontFamily: FONTS.beVietnam }}
-          />
-        </View>
+        <View style={{ alignItems: 'center', width: 160 }}
+          render={({ pageNumber, totalPages }) => pageNumber === totalPages ? (
+            <>
+              <View style={{ width: 160, borderBottomWidth: 1, borderBottomColor: '#000000', borderBottomStyle: 'solid', marginBottom: 4 }} />
+              <Text style={{ fontSize: 13, color: '#000000', fontFamily: FONTS.beVietnam }}>
+                Authorized Signature
+              </Text>
+            </>
+          ) : null}
+        />
       </View>
 
       {/* Full-width Dark Azure footer banner */}
