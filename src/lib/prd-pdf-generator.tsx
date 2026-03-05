@@ -179,10 +179,10 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
                       else if (max !== undefined) normalRange = `< ${max}`;
                     }
                   }
-                  return [field.label, field.unit || '-', normalRange, field.calculated ? `Yes: ${field.formula}` : '-'];
+                  return [field.label, field.unit || '-', normalRange];
                 });
                 return (
-                  <SimpleTable key={category.name} head={['Field', 'Unit', 'Normal Range', 'Calculated']} body={fieldData} colWidths={['30%', '15%', '30%', '25%']} />
+                  <SimpleTable key={category.name} head={['Field', 'Unit', 'Normal Range']} body={fieldData} colWidths={['35%', '20%', '45%']} />
                 );
               })}
             </View>
@@ -212,10 +212,10 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
                       else if (max !== undefined) normalRange = `< ${max}`;
                     }
                   }
-                  return [field.label, field.unit || '-', normalRange, field.calculated ? `Yes: ${field.formula}` : '-'];
+                  return [field.label, field.unit || '-', normalRange];
                 });
                 return (
-                  <SimpleTable key={category.name} head={['Field', 'Unit', 'Normal Range', 'Calculated']} body={fieldData} colWidths={['30%', '15%', '30%', '25%']} />
+                  <SimpleTable key={category.name} head={['Field', 'Unit', 'Normal Range']} body={fieldData} colWidths={['35%', '20%', '45%']} />
                 );
               })}
             </View>

@@ -108,8 +108,6 @@ export interface TestField {
   };
   type: 'number' | 'text' | 'select' | 'textarea';
   options?: string[];
-  calculated?: boolean;
-  formula?: string;
 }
 
 export interface TestCategory {
