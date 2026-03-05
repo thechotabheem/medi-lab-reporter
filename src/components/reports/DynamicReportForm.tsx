@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { usePatientHistory, getHistoricalComparison, getTrendIcon } from '@/hooks/usePatientHistory';
 import type { ReportType, Patient, TestField, TestCategory } from '@/types/database';
-import { Calculator, AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
 import { MEDICAL_HARD_LIMITS } from '@/lib/validation-schemas';
 
 interface DynamicReportFormProps {
@@ -34,10 +34,9 @@ export const DynamicReportForm = ({
   const formRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const isCalculatingRef = useRef(false);
   const prevSerializedRef = useRef<string>('');
 
-  const { control, watch, setValue, getValues } = useForm({
+  const { control, watch } = useForm({
     defaultValues: initialData,
   });
 
@@ -183,12 +182,6 @@ export const DynamicReportForm = ({
         <div className="md:col-span-4">
           <Label className="flex items-center gap-2 text-sm font-medium">
             {field.label}
-            {field.calculated && (
-              <Badge variant="secondary" className="text-xs">
-                <Calculator className="h-3 w-3 mr-1" />
-                Auto
-              </Badge>
-            )}
             {hasTrend && TrendIcon && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -251,7 +244,7 @@ export const DynamicReportForm = ({
                       }
                     }}
                     placeholder={field.type === 'number' ? '' : `Enter ${field.label.toLowerCase()}`}
-                    disabled={field.calculated}
+                    disabled={false}
                     className={cn(
                       status === 'abnormal' && 'border-destructive',
                       exceedsHardLimit && 'border-warning bg-warning/5'
