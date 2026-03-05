@@ -67,23 +67,33 @@ export default function CreateReport() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', subtitle: '' });
   const [draftApplied, setDraftApplied] = useState(false);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
 
-  // Auto-save on changes (after initial load)
+  // Enable auto-save once the user interacts (resume/discard/fresh start)
   useEffect(() => {
-    if (draftApplied || !hasDraft && (selectedPatient || newPatientData || selectedTemplate || selectedTests.length > 0)) {
+    // If there's no existing draft to prompt about, enable auto-save immediately
+    if (!hasDraft && !draftApplied) {
+      setAutoSaveEnabled(true);
+    }
+  }, [hasDraft, draftApplied]);
+
+  // Auto-save on changes
+  useEffect(() => {
+    if (!autoSaveEnabled) return;
+    const hasData = selectedPatient || newPatientData || selectedTemplate || selectedTests.length > 0;
+    if (hasData) {
       saveDraft({
         patient: selectedPatient ? { id: selectedPatient.id, full_name: selectedPatient.full_name } : null,
         newPatientData: newPatientData || null,
         selectedTemplate,
         reportDetails,
         reportData,
-        // Extended draft for combined mode
         isCombinedMode,
         selectedTests,
         combinedReportData,
       });
     }
-  }, [selectedPatient, newPatientData, selectedTemplate, reportDetails, reportData, draftApplied, isCombinedMode, selectedTests, combinedReportData]);
+  }, [autoSaveEnabled, selectedPatient, newPatientData, selectedTemplate, reportDetails, reportData, isCombinedMode, selectedTests, combinedReportData]);
 
   const handleReportDataChange = useCallback((data: Record<string, string | number | boolean | null>) => {
     setReportData(data);
@@ -131,12 +141,14 @@ export default function CreateReport() {
     }
     
     setDraftApplied(true);
+    setAutoSaveEnabled(true);
     toast.success('Draft restored');
   }, [draft]);
 
   const handleDiscardDraft = useCallback(() => {
     clearDraft();
     setDraftApplied(true);
+    setAutoSaveEnabled(true);
     toast.info('Draft discarded');
   }, [clearDraft]);
 
