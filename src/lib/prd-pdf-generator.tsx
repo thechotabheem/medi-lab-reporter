@@ -222,21 +222,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           );
         })}
 
-        <SectionHeader title="Auto-Calculation Formulas" sectionNum={6} />
-        <SimpleTable
-          head={['Test', 'Field', 'Formula', 'Description']}
-          body={[
-            ['RFT', 'BUN', 'urea × 0.467', 'Blood Urea Nitrogen from Urea'],
-            ['LFT', 'Indirect Bilirubin', 'Total - Direct', 'Unconjugated bilirubin'],
-            ['LFT', 'Globulin', 'Total Protein - Albumin', 'Serum globulin level'],
-            ['LFT', 'A/G Ratio', 'Albumin ÷ Globulin', 'Ratio'],
-            ['Lipid', 'VLDL', 'TG ÷ 5', 'Friedewald formula'],
-            ['Lipid', 'LDL', 'TC - HDL - (TG÷5)', 'Friedewald formula'],
-          ]}
-          colWidths={['15%', '25%', '30%', '30%']}
-        />
-
-        <SectionHeader title="Sequential ID System" sectionNum={7} />
+        <SectionHeader title="Sequential ID System" sectionNum={6} />
         <SimpleTable
           head={['Entity', 'Format', 'Example', 'Description']}
           body={[
