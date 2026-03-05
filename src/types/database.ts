@@ -109,7 +109,6 @@ export interface TestField {
   type: 'number' | 'text' | 'select' | 'textarea';
   options?: string[];
 }
-}
 
 export interface TestCategory {
   name: string;
