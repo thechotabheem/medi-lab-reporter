@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -30,20 +30,22 @@ export const DynamicReportForm = ({
   onChange,
   initialData = {},
 }: DynamicReportFormProps) => {
-  // Use customized template that merges defaults with clinic customizations
   const { template, isLoading } = useCustomizedTemplate(reportType);
   const formRef = useRef<HTMLDivElement>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const isCalculatingRef = useRef(false);
+  const prevSerializedRef = useRef<string>('');
+
   const { control, watch, setValue, getValues } = useForm({
     defaultValues: initialData,
   });
 
-  // Keyboard navigation setup
   useKeyboardNavigation({
     containerRef: formRef,
     enabled: true,
   });
 
-  // Fetch patient history for trend comparison
   const { data: patientHistory } = usePatientHistory({
     patientId: patient.id,
     reportType,
@@ -52,90 +54,115 @@ export const DynamicReportForm = ({
 
   const formValues = watch();
 
-  // Historical comparison data
   const historicalComparison = patientHistory?.length 
     ? getHistoricalComparison(formValues, patientHistory)
     : {};
 
-  // Auto-calculations - extended with more formulas
-  const calculateField = useCallback((field: TestField, values: Record<string, unknown>) => {
+  // Safely parse a value to number
+  const toNum = useCallback((val: unknown): number | null => {
+    if (val === undefined || val === null || val === '') return null;
+    const n = Number(val);
+    return isNaN(n) ? null : n;
+  }, []);
+
+  // Auto-calculations
+  const calculateField = useCallback((field: TestField, values: Record<string, unknown>): number | null => {
     if (!field.calculated || !field.formula) return null;
 
     try {
-      // VLDL = Triglycerides / 5
-      if (field.name === 'vldl' && values.triglycerides) {
-        return Number(values.triglycerides) / 5;
+      if (field.name === 'vldl') {
+        const tg = toNum(values.triglycerides);
+        return tg !== null ? tg / 5 : null;
       }
-      // Indirect Bilirubin = Total - Direct
-      if (field.name === 'indirect_bilirubin' && values.total_bilirubin && values.direct_bilirubin) {
-        return Number(values.total_bilirubin) - Number(values.direct_bilirubin);
+      if (field.name === 'indirect_bilirubin') {
+        const total = toNum(values.total_bilirubin);
+        const direct = toNum(values.direct_bilirubin);
+        return total !== null && direct !== null ? total - direct : null;
       }
-      // Globulin = Total Protein - Albumin
-      if (field.name === 'globulin' && values.total_protein && values.albumin) {
-        return Number(values.total_protein) - Number(values.albumin);
+      if (field.name === 'globulin') {
+        const tp = toNum(values.total_protein);
+        const alb = toNum(values.albumin);
+        return tp !== null && alb !== null ? tp - alb : null;
       }
-      // HOMA-IR = (Insulin * Glucose) / 405
-      if (field.name === 'homa_ir' && values.insulin_fasting && values.fasting_glucose) {
-        return (Number(values.insulin_fasting) * Number(values.fasting_glucose)) / 405;
+      if (field.name === 'homa_ir') {
+        const ins = toNum(values.insulin_fasting);
+        const glu = toNum(values.fasting_glucose);
+        return ins !== null && glu !== null ? (ins * glu) / 405 : null;
       }
-      // A/G Ratio = Albumin / Globulin
-      if (field.name === 'ag_ratio' && values.albumin && values.globulin) {
-        const globulin = Number(values.globulin);
-        return globulin > 0 ? Number(values.albumin) / globulin : null;
+      if (field.name === 'ag_ratio') {
+        const alb = toNum(values.albumin);
+        const glob = toNum(values.globulin);
+        return alb !== null && glob !== null && glob > 0 ? alb / glob : null;
       }
-      // LDL (Friedewald) = TC - HDL - (TG/5)
-      if (field.name === 'ldl' && values.total_cholesterol && values.hdl && values.triglycerides) {
-        const tg = Number(values.triglycerides);
-        // Friedewald formula is not accurate if TG > 400
-        if (tg <= 400) {
-          return Number(values.total_cholesterol) - Number(values.hdl) - (tg / 5);
-        }
+      if (field.name === 'ldl') {
+        const tc = toNum(values.total_cholesterol);
+        const hdl = toNum(values.hdl);
+        const tg = toNum(values.triglycerides);
+        return tc !== null && hdl !== null && tg !== null && tg <= 400
+          ? tc - hdl - (tg / 5) : null;
       }
-      // TC/HDL Ratio
-      if (field.name === 'tc_hdl_ratio' && values.total_cholesterol && values.hdl) {
-        const hdl = Number(values.hdl);
-        return hdl > 0 ? Number(values.total_cholesterol) / hdl : null;
+      if (field.name === 'tc_hdl_ratio') {
+        const tc = toNum(values.total_cholesterol);
+        const hdl = toNum(values.hdl);
+        return tc !== null && hdl !== null && hdl > 0 ? tc / hdl : null;
       }
-      // LDL/HDL Ratio
-      if (field.name === 'ldl_hdl_ratio' && values.ldl && values.hdl) {
-        const hdl = Number(values.hdl);
-        return hdl > 0 ? Number(values.ldl) / hdl : null;
+      if (field.name === 'ldl_hdl_ratio') {
+        const ldl = toNum(values.ldl);
+        const hdl = toNum(values.hdl);
+        return ldl !== null && hdl !== null && hdl > 0 ? ldl / hdl : null;
       }
-      // BUN from Urea
-      if (field.name === 'bun' && values.urea) {
-        return Number(values.urea) * 0.467;
+      if (field.name === 'bun') {
+        const urea = toNum(values.urea);
+        return urea !== null ? urea * 0.467 : null;
       }
     } catch {
       return null;
     }
     return null;
-  }, []);
+  }, [toNum]);
 
-  // Run auto-calculations when form values change
+  // Run auto-calculations — guard against re-entry loops
   useEffect(() => {
-    if (!template) return;
+    if (!template || isCalculatingRef.current) return;
+    
+    isCalculatingRef.current = true;
+    let didUpdate = false;
+    const currentValues = getValues();
+
     template.categories.forEach((category) => {
       category.fields.forEach((field) => {
         if (field.calculated) {
-          const calculatedValue = calculateField(field, formValues);
+          const calculatedValue = calculateField(field, currentValues);
           if (calculatedValue !== null) {
-            const currentValue = getValues(field.name);
             const roundedValue = Math.round(calculatedValue * 100) / 100;
-            if (currentValue !== roundedValue) {
-              setValue(field.name, roundedValue);
+            const currentFieldValue = toNum(currentValues[field.name]);
+            if (currentFieldValue !== roundedValue) {
+              setValue(field.name, roundedValue, { shouldDirty: false });
+              didUpdate = true;
             }
           }
         }
       });
     });
-  }, [formValues, template, calculateField, setValue, getValues]);
 
-  // Notify parent of changes
+    isCalculatingRef.current = false;
+    
+    // If we updated calculated fields, the watch will trigger onChange below
+    if (!didUpdate) {
+      // No calc changes — still notify parent of manual changes
+    }
+  }, [formValues, template, calculateField, setValue, getValues, toNum]);
+
+  // Notify parent — debounced via serialization comparison to prevent infinite loops
   useEffect(() => {
-    onChange(formValues);
-  }, [formValues, onChange]);
+    const serialized = JSON.stringify(formValues);
+    if (serialized !== prevSerializedRef.current) {
+      prevSerializedRef.current = serialized;
+      onChangeRef.current(formValues);
+    }
+  }, [formValues]);
 
-  const getNormalRangeStatus = (field: TestField, value: unknown): 'normal' | 'abnormal' | 'unknown' => {
+  const getNormalRangeStatus = useCallback((field: TestField, value: unknown): 'normal' | 'abnormal' | 'unknown' => {
     if (!field.normalRange || value === undefined || value === '' || value === null) {
       return 'unknown';
     }
@@ -143,7 +170,6 @@ export const DynamicReportForm = ({
     const numValue = Number(value);
     if (isNaN(numValue)) return 'unknown';
 
-    // Check gender-specific ranges
     const range = field.normalRange.male || field.normalRange.female
       ? (patient.gender === 'male' ? field.normalRange.male : field.normalRange.female)
       : field.normalRange;
@@ -154,9 +180,9 @@ export const DynamicReportForm = ({
     const max = range.max ?? Infinity;
 
     return numValue >= min && numValue <= max ? 'normal' : 'abnormal';
-  };
+  }, [patient.gender]);
 
-  const formatNormalRange = (field: TestField): string => {
+  const formatNormalRange = useCallback((field: TestField): string => {
     if (!field.normalRange) return '';
 
     const range = field.normalRange.male || field.normalRange.female
@@ -175,24 +201,76 @@ export const DynamicReportForm = ({
       return `< ${range.max}`;
     }
     return '';
-  };
+  }, [patient.gender]);
+
+  // Check if field is qualitative (no numeric range/unit)
+  const isQualitativeField = useCallback((field: TestField): boolean => {
+    return field.type === 'select' || (field.type === 'text' && !field.unit && !field.normalRange);
+  }, []);
 
   const renderField = (field: TestField, category: TestCategory) => {
-    const status = getNormalRangeStatus(field, formValues[field.name]);
+    const qualitative = isQualitativeField(field);
+    const status = qualitative ? 'unknown' : getNormalRangeStatus(field, formValues[field.name]);
     const comparison = historicalComparison[field.name];
     const hasTrend = comparison && comparison.trend !== 'unknown';
 
-    // Check medical hard limits
     const hardLimit = MEDICAL_HARD_LIMITS[field.name];
     const currentValue = formValues[field.name];
     const numValue = currentValue !== undefined && currentValue !== '' ? Number(currentValue) : null;
     const exceedsHardLimit = hardLimit && numValue !== null && !isNaN(numValue) && (numValue < hardLimit.min || numValue > hardLimit.max);
 
-    // Get trend icon component
     const TrendIcon = comparison?.trend === 'up' ? TrendingUp 
       : comparison?.trend === 'down' ? TrendingDown 
       : comparison?.trend === 'stable' ? Minus 
       : null;
+
+    // Qualitative fields: simplified 2-column layout (Test Name | Status)
+    if (qualitative) {
+      return (
+        <div key={field.name} className="flex items-center justify-between gap-4 py-3 border-b last:border-0 md:grid md:grid-cols-2 md:gap-4 md:py-2">
+          <div>
+            <Label className="text-sm font-medium">{field.label}</Label>
+          </div>
+          <div>
+            <Controller
+              name={field.name}
+              control={control}
+              render={({ field: formField }) => {
+                if (field.type === 'select' && field.options) {
+                  return (
+                    <Select
+                      value={formField.value as string}
+                      onValueChange={formField.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {field.options.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                }
+                return (
+                  <Input
+                    {...formField}
+                    type="text"
+                    value={(formField.value as string) || ''}
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                  />
+                );
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Quantitative fields: full layout
     return (
       <div key={field.name} className="flex flex-col gap-2 py-3 border-b last:border-0 md:grid md:grid-cols-12 md:gap-4 md:items-center md:py-2">
         {/* Test Label */}
@@ -234,27 +312,6 @@ export const DynamicReportForm = ({
             name={field.name}
             control={control}
             render={({ field: formField }) => {
-              if (field.type === 'select' && field.options) {
-                return (
-                  <Select
-                    value={formField.value as string}
-                    onValueChange={formField.onChange}
-                    disabled={field.calculated}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {field.options.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                );
-              }
-
               if (field.type === 'textarea') {
                 return (
                   <Textarea
@@ -273,6 +330,20 @@ export const DynamicReportForm = ({
                     type={field.type === 'number' ? 'number' : 'text'}
                     step={field.type === 'number' ? '0.01' : undefined}
                     value={(formField.value as string | number) ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // For number fields, store as number when valid, empty string when blank
+                      if (field.type === 'number') {
+                        if (val === '' || val === '-') {
+                          formField.onChange(val);
+                        } else {
+                          const num = parseFloat(val);
+                          formField.onChange(isNaN(num) ? val : num);
+                        }
+                      } else {
+                        formField.onChange(val);
+                      }
+                    }}
                     placeholder={field.type === 'number' ? '' : `Enter ${field.label.toLowerCase()}`}
                     disabled={field.calculated}
                     className={cn(
@@ -297,7 +368,7 @@ export const DynamicReportForm = ({
           />
         </div>
 
-        {/* Normal Range & Status - stacked on mobile, inline on desktop */}
+        {/* Normal Range & Status */}
         <div className="flex items-center justify-between gap-2 md:col-span-4 md:contents">
           <span className="text-xs text-muted-foreground md:col-span-3 md:text-sm">
             {formatNormalRange(field)}
@@ -317,7 +388,6 @@ export const DynamicReportForm = ({
     );
   };
 
-  // Loading state
   if (isLoading || !template) {
     return (
       <div className="space-y-4">
@@ -337,34 +407,40 @@ export const DynamicReportForm = ({
   return (
     <div ref={formRef} className="space-y-4">
       <Accordion type="multiple" defaultValue={template.categories.map((c) => c.name)} className="space-y-4">
-        {template.categories.map((category) => (
-          <AccordionItem key={category.name} value={category.name} className="border rounded-lg px-4">
-            <AccordionTrigger className="hover:no-underline">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{category.name}</span>
-                <Badge variant="outline" className="text-xs">
-                  {category.fields.length} fields
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Card className="border-0 shadow-none">
-                {/* Table header - hidden on mobile */}
-                <CardHeader className="hidden md:block px-0 py-2">
-                  <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground">
-                    <div className="col-span-4">Test</div>
-                    <div className="col-span-4">Result</div>
-                    <div className="col-span-3">Normal Range</div>
-                    <div className="col-span-1 text-center">Status</div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-0">
-                  {category.fields.map((field) => renderField(field, category))}
-                </CardContent>
-              </Card>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
+        {template.categories.map((category) => {
+          const hasQuantitative = category.fields.some(f => !isQualitativeField(f));
+          
+          return (
+            <AccordionItem key={category.name} value={category.name} className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{category.name}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {category.fields.length} fields
+                  </Badge>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card className="border-0 shadow-none">
+                  {/* Table header - only for quantitative fields */}
+                  {hasQuantitative && (
+                    <CardHeader className="hidden md:block px-0 py-2">
+                      <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground">
+                        <div className="col-span-4">Test</div>
+                        <div className="col-span-4">Result</div>
+                        <div className="col-span-3">Normal Range</div>
+                        <div className="col-span-1 text-center">Status</div>
+                      </div>
+                    </CardHeader>
+                  )}
+                  <CardContent className="px-0">
+                    {category.fields.map((field) => renderField(field, category))}
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
       </Accordion>
     </div>
   );
