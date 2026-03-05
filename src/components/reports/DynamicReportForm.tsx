@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { usePatientHistory, getHistoricalComparison, getTrendIcon } from '@/hooks/usePatientHistory';
 import type { ReportType, Patient, TestField, TestCategory } from '@/types/database';
-import { Calculator, AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
 import { MEDICAL_HARD_LIMITS } from '@/lib/validation-schemas';
 
 interface DynamicReportFormProps {
@@ -34,10 +34,9 @@ export const DynamicReportForm = ({
   const formRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const isCalculatingRef = useRef(false);
   const prevSerializedRef = useRef<string>('');
 
-  const { control, watch, setValue, getValues } = useForm({
+  const { control, watch } = useForm({
     defaultValues: initialData,
   });
 
@@ -58,100 +57,6 @@ export const DynamicReportForm = ({
     ? getHistoricalComparison(formValues, patientHistory)
     : {};
 
-  // Safely parse a value to number
-  const toNum = useCallback((val: unknown): number | null => {
-    if (val === undefined || val === null || val === '') return null;
-    const n = Number(val);
-    return isNaN(n) ? null : n;
-  }, []);
-
-  // Auto-calculations
-  const calculateField = useCallback((field: TestField, values: Record<string, unknown>): number | null => {
-    if (!field.calculated || !field.formula) return null;
-
-    try {
-      if (field.name === 'vldl') {
-        const tg = toNum(values.triglycerides);
-        return tg !== null ? tg / 5 : null;
-      }
-      if (field.name === 'indirect_bilirubin') {
-        const total = toNum(values.total_bilirubin);
-        const direct = toNum(values.direct_bilirubin);
-        return total !== null && direct !== null ? total - direct : null;
-      }
-      if (field.name === 'globulin') {
-        const tp = toNum(values.total_protein);
-        const alb = toNum(values.albumin);
-        return tp !== null && alb !== null ? tp - alb : null;
-      }
-      if (field.name === 'homa_ir') {
-        const ins = toNum(values.insulin_fasting);
-        const glu = toNum(values.fasting_glucose);
-        return ins !== null && glu !== null ? (ins * glu) / 405 : null;
-      }
-      if (field.name === 'ag_ratio') {
-        const alb = toNum(values.albumin);
-        const glob = toNum(values.globulin);
-        return alb !== null && glob !== null && glob > 0 ? alb / glob : null;
-      }
-      if (field.name === 'ldl') {
-        const tc = toNum(values.total_cholesterol);
-        const hdl = toNum(values.hdl);
-        const tg = toNum(values.triglycerides);
-        return tc !== null && hdl !== null && tg !== null && tg <= 400
-          ? tc - hdl - (tg / 5) : null;
-      }
-      if (field.name === 'tc_hdl_ratio') {
-        const tc = toNum(values.total_cholesterol);
-        const hdl = toNum(values.hdl);
-        return tc !== null && hdl !== null && hdl > 0 ? tc / hdl : null;
-      }
-      if (field.name === 'ldl_hdl_ratio') {
-        const ldl = toNum(values.ldl);
-        const hdl = toNum(values.hdl);
-        return ldl !== null && hdl !== null && hdl > 0 ? ldl / hdl : null;
-      }
-      if (field.name === 'bun') {
-        const urea = toNum(values.urea);
-        return urea !== null ? urea * 0.467 : null;
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  }, [toNum]);
-
-  // Run auto-calculations — guard against re-entry loops
-  useEffect(() => {
-    if (!template || isCalculatingRef.current) return;
-    
-    isCalculatingRef.current = true;
-    let didUpdate = false;
-    const currentValues = getValues();
-
-    template.categories.forEach((category) => {
-      category.fields.forEach((field) => {
-        if (field.calculated) {
-          const calculatedValue = calculateField(field, currentValues);
-          if (calculatedValue !== null) {
-            const roundedValue = Math.round(calculatedValue * 100) / 100;
-            const currentFieldValue = toNum(currentValues[field.name]);
-            if (currentFieldValue !== roundedValue) {
-              setValue(field.name, roundedValue, { shouldDirty: false });
-              didUpdate = true;
-            }
-          }
-        }
-      });
-    });
-
-    isCalculatingRef.current = false;
-    
-    // If we updated calculated fields, the watch will trigger onChange below
-    if (!didUpdate) {
-      // No calc changes — still notify parent of manual changes
-    }
-  }, [formValues, template, calculateField, setValue, getValues, toNum]);
 
   // Notify parent — debounced via serialization comparison to prevent infinite loops
   useEffect(() => {
@@ -277,12 +182,6 @@ export const DynamicReportForm = ({
         <div className="md:col-span-4">
           <Label className="flex items-center gap-2 text-sm font-medium">
             {field.label}
-            {field.calculated && (
-              <Badge variant="secondary" className="text-xs">
-                <Calculator className="h-3 w-3 mr-1" />
-                Auto
-              </Badge>
-            )}
             {hasTrend && TrendIcon && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -345,7 +244,7 @@ export const DynamicReportForm = ({
                       }
                     }}
                     placeholder={field.type === 'number' ? '' : `Enter ${field.label.toLowerCase()}`}
-                    disabled={field.calculated}
+                    disabled={false}
                     className={cn(
                       status === 'abnormal' && 'border-destructive',
                       exceedsHardLimit && 'border-warning bg-warning/5'
