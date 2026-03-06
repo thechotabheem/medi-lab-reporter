@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => ({
         cleanupOutdatedCaches: true,
         // Enable navigation fallback for SPA routing
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api/, /^\/rest/],
+        navigateFallbackDenylist: [/^\/api/, /^\/rest/, /^\/~oauth/],
         runtimeCaching: [
           {
             // Cache API calls with NetworkFirst strategy
