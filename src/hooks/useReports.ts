@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useClinic } from '@/contexts/ClinicContext';
 import { getPendingActions, type OfflineAction } from '@/lib/offlineQueue';
+import { enqueueAction } from '@/lib/offlineQueue';
 import type { Report, ReportType, ReportStatus } from '@/types/database';
 import { toast } from 'sonner';
 
@@ -92,20 +93,29 @@ export const useCreateReport = () => {
 
       const reportNumber = `RPT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
 
+      const insertPayload = {
+        clinic_id: clinicId,
+        created_by: null,
+        report_number: reportNumber,
+        patient_id: reportData.patient_id,
+        report_type: reportData.report_type,
+        report_data: reportData.report_data,
+        referring_doctor: reportData.referring_doctor,
+        clinical_notes: reportData.clinical_notes,
+        test_date: reportData.test_date,
+        status: reportData.status,
+      };
+
+      // Offline fallback
+      if (!navigator.onLine) {
+        await enqueueAction('create-report', insertPayload as any);
+        toast.success('Report saved offline — will sync when connected');
+        return { ...insertPayload, id: `offline-${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as any;
+      }
+
       const { data, error } = await supabase
         .from('reports')
-        .insert([{
-          clinic_id: clinicId,
-          created_by: null,
-          report_number: reportNumber,
-          patient_id: reportData.patient_id,
-          report_type: reportData.report_type,
-          report_data: reportData.report_data,
-          referring_doctor: reportData.referring_doctor,
-          clinical_notes: reportData.clinical_notes,
-          test_date: reportData.test_date,
-          status: reportData.status,
-        }])
+        .insert([insertPayload])
         .select()
         .single();
 
@@ -114,9 +124,23 @@ export const useCreateReport = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
-      toast.success('Report created successfully');
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      if (navigator.onLine) {
+        toast.success('Report created successfully');
+      }
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      // Network error fallback
+      if (!navigator.onLine || error.message?.includes('fetch') || error.message?.includes('Failed')) {
+        const reportNumber = `RPT-OFF-${Date.now().toString(36)}`.toUpperCase();
+        await enqueueAction('create-report', {
+          clinic_id: clinicId,
+          report_number: reportNumber,
+          ...variables,
+        } as any);
+        toast.success('Report saved offline — will sync when connected');
+        return;
+      }
       toast.error('Failed to create report: ' + error.message);
     },
   });
