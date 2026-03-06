@@ -62,10 +62,9 @@ export function BackupCard() {
             <div className="space-y-1.5">
               <Progress value={progress} className="h-2" />
               <p className="text-xs text-muted-foreground text-center">
-                {progress < 30 ? 'Fetching patients...' :
-                 progress < 50 ? 'Fetching reports...' :
-                 progress < 70 ? 'Fetching settings...' :
-                 progress < 90 ? 'Packaging data...' :
+                {progress < 25 ? 'Fetching data...' :
+                 progress < 35 ? 'Generating patients PDF...' :
+                 progress < 90 ? 'Generating report PDFs...' :
                  'Creating ZIP file...'}
               </p>
             </div>
@@ -82,7 +81,7 @@ export function BackupCard() {
           </Button>
 
           <p className="text-[11px] text-muted-foreground text-center">
-            Includes patients, reports, clinic settings, and templates
+            Includes patients list PDF and all lab report PDFs
           </p>
         </CardContent>
       </Card>
