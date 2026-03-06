@@ -81,7 +81,7 @@ export function BackupCard() {
           </Button>
 
           <p className="text-[11px] text-muted-foreground text-center">
-            Includes patients, reports, clinic settings, and templates
+            Includes patients list PDF and all lab report PDFs
           </p>
         </CardContent>
       </Card>
