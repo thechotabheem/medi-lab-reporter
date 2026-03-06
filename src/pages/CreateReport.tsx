@@ -34,7 +34,7 @@ import { generateReportNumber, generatePatientId } from '@/lib/id-generators';
 
 export default function CreateReport() {
   const navigate = useNavigate();
-  const { clinicId } = useClinic();
+  const { clinicId, clinic } = useClinic();
   const queryClient = useQueryClient();
   const logActivity = useLogActivity();
   const { draft, hasDraft, saveDraft, clearDraft } = useDraftReport();
@@ -106,16 +106,25 @@ export default function CreateReport() {
   const handleResumeDraft = useCallback(() => {
     if (!draft) return;
     
-    // Restore draft state
+    // Restore draft state - use cached patient data first, fetch from network if online
     if (draft.patient) {
-      supabase
-        .from('patients')
-        .select('*')
-        .eq('id', draft.patient.id)
-        .single()
-        .then(({ data }) => {
-          if (data) setSelectedPatient(data);
-        });
+      // Use draft's cached patient data immediately
+      setSelectedPatient(draft.patient as Patient);
+      // Try to refresh from server if online
+      if (navigator.onLine) {
+        try {
+          supabase
+            .from('patients')
+            .select('*')
+            .eq('id', draft.patient.id)
+            .single()
+            .then(({ data }) => {
+              if (data) setSelectedPatient(data);
+            });
+        } catch {
+          // Keep cached version
+        }
+      }
     }
     if (draft.newPatientData) {
       setNewPatientData(draft.newPatientData);
@@ -259,12 +268,16 @@ export default function CreateReport() {
     try {
       const { report, patient } = previewReport;
       
-      // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
+      // Use clinic from context (cached for offline), fallback to network
+      let clinicData = clinic;
+      if (!clinicData && navigator.onLine) {
+        const { data } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', clinicId)
+          .single();
+        clinicData = data;
+      }
 
       const pdfBlob = await generateReportPDF({
         report,
@@ -292,12 +305,16 @@ export default function CreateReport() {
     try {
       const { report, patient } = previewReport;
       
-      // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
+      // Use clinic from context (cached for offline), fallback to network
+      let clinicData = clinic;
+      if (!clinicData && navigator.onLine) {
+        const { data } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', clinicId)
+          .single();
+        clinicData = data;
+      }
 
       const pdfBlob = await generateReportPDF({
         report,
@@ -328,6 +345,71 @@ export default function CreateReport() {
     try {
       let patientId: string;
 
+      // Determine report type first so we can generate the number
+      const effectiveType = isCombinedMode ? 'combined' : (selectedTemplate || 'combined');
+
+      // --- OFFLINE PATH: queue everything and return early ---
+      if (!navigator.onLine) {
+        // Build report type and data
+        let reportType: ReportType;
+        let finalReportData: Record<string, unknown>;
+        let includedTests: string[] | null = null;
+
+        if (isCombinedMode && selectedTests.length > 0) {
+          reportType = 'combined';
+          finalReportData = combinedReportData;
+          includedTests = selectedTests;
+        } else if (selectedTemplate) {
+          const saveParams = getReportSaveParams(selectedTemplate, reportData);
+          reportType = saveParams.reportType;
+          finalReportData = saveParams.finalReportData;
+          includedTests = saveParams.includedTests;
+        } else {
+          throw new Error('No test type selected');
+        }
+
+        const offlineReportNumber = `${String(effectiveType).toUpperCase()}-OFF-${Date.now().toString(36)}`.toUpperCase();
+
+        const reportPayload: Record<string, unknown> = {
+          clinic_id: clinicId,
+          created_by: null,
+          report_number: offlineReportNumber,
+          patient_id: selectedPatient?.id || `offline-patient-${Date.now()}`,
+          report_type: reportType,
+          report_data: finalReportData,
+          included_tests: includedTests,
+          referring_doctor: reportDetails.referring_doctor || null,
+          clinical_notes: reportDetails.clinical_notes || null,
+          test_date: reportDetails.test_date,
+          status,
+        };
+
+        // Attach new patient data for sync later
+        if (newPatientData && !selectedPatient) {
+          const patientIdNumber = newPatientData.patient_id_number || `PT-OFF-${Date.now().toString(36)}`.toUpperCase();
+          reportPayload._newPatient = {
+            clinic_id: clinicId,
+            full_name: newPatientData.full_name,
+            date_of_birth: ageToDateOfBirth(newPatientData.age),
+            gender: newPatientData.gender,
+            phone: newPatientData.phone || null,
+            patient_id_number: patientIdNumber,
+          };
+        }
+
+        await enqueueAction('create-report', reportPayload);
+        clearDraft();
+        const testCount = isCombinedMode ? selectedTests.length : 1;
+        setSuccessMessage({
+          title: 'Saved Offline!',
+          subtitle: `Your ${testCount > 1 ? 'combined ' : ''}report will sync when connected`,
+        });
+        setShowSuccess(true);
+        setIsSaving(false);
+        return;
+      }
+
+      // --- ONLINE PATH ---
       // If new patient, create them first
       if (newPatientData && !selectedPatient) {
         // Auto-generate patient ID if not provided
@@ -355,9 +437,6 @@ export default function CreateReport() {
       } else {
         throw new Error('No patient selected');
       }
-
-      // Determine report type first so we can generate the number
-      const effectiveType = isCombinedMode ? 'combined' : (selectedTemplate || 'combined');
 
       // Generate report number based on type
       const reportNumber = await generateReportNumber(effectiveType, clinicId);
@@ -394,29 +473,6 @@ export default function CreateReport() {
         test_date: reportDetails.test_date,
         status,
       };
-
-      if (!navigator.onLine) {
-        // If new patient was just created inline, attach to payload for later sync
-        if (newPatientData && !selectedPatient) {
-          (reportPayload as any)._newPatient = {
-            clinic_id: clinicId,
-            full_name: newPatientData.full_name,
-            date_of_birth: ageToDateOfBirth(newPatientData.age),
-            gender: newPatientData.gender,
-            phone: newPatientData.phone || null,
-            patient_id_number: newPatientData.patient_id_number || null,
-          };
-        }
-        await enqueueAction('create-report', reportPayload as any);
-        clearDraft();
-        const testCount = isCombinedMode ? selectedTests.length : 1;
-        setSuccessMessage({
-          title: 'Saved Offline!',
-          subtitle: `Your ${testCount > 1 ? 'combined ' : ''}report will sync when connected`,
-        });
-        setShowSuccess(true);
-        return;
-      }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: reportError } = await supabase

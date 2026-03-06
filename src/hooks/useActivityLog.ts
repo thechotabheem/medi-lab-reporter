@@ -14,7 +14,8 @@ export const useLogActivity = () => {
     entity_name?: string;
     details?: Record<string, unknown>;
   }) => {
-    if (!clinicId || !user) return;
+    // Skip logging when offline or missing context — activity logs are non-critical
+    if (!clinicId || !user || !navigator.onLine) return;
 
     const userName = user.user_metadata?.full_name || user.email || 'Unknown';
 
@@ -30,7 +31,8 @@ export const useLogActivity = () => {
         details: (params.details || {}) as any,
       }]);
     } catch (e) {
-      console.error('Failed to log activity:', e);
+      // Silently fail — activity logs should never block user workflow
+      console.warn('Failed to log activity:', e);
     }
   };
 
