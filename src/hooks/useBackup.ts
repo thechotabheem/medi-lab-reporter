@@ -74,7 +74,7 @@ export function useBackup() {
         .maybeSingle();
       if (cErr) throw cErr;
 
-      const clinicName = clinic?.name || clinicDetails?.name || 'Clinic';
+      const clinicName = clinic?.name || 'Clinic';
 
       // 4. Generate Patients List PDF
       setProgress(25);
@@ -141,7 +141,7 @@ export function useBackup() {
       setIsExporting(false);
       setProgress(0);
     }
-  }, [clinicId, clinicDetails]);
+  }, [clinicId, clinic]);
 
   const dismissReminder = useCallback(() => {
     setIsReminderDue(false);
