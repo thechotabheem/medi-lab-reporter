@@ -473,23 +473,6 @@ export default function CreateReport() {
         test_date: reportDetails.test_date,
         status,
       };
-            full_name: newPatientData.full_name,
-            date_of_birth: ageToDateOfBirth(newPatientData.age),
-            gender: newPatientData.gender,
-            phone: newPatientData.phone || null,
-            patient_id_number: newPatientData.patient_id_number || null,
-          };
-        }
-        await enqueueAction('create-report', reportPayload as any);
-        clearDraft();
-        const testCount = isCombinedMode ? selectedTests.length : 1;
-        setSuccessMessage({
-          title: 'Saved Offline!',
-          subtitle: `Your ${testCount > 1 ? 'combined ' : ''}report will sync when connected`,
-        });
-        setShowSuccess(true);
-        return;
-      }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: reportError } = await supabase
