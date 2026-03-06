@@ -34,7 +34,7 @@ import { generateReportNumber, generatePatientId } from '@/lib/id-generators';
 
 export default function CreateReport() {
   const navigate = useNavigate();
-  const { clinicId } = useClinic();
+  const { clinicId, clinic } = useClinic();
   const queryClient = useQueryClient();
   const logActivity = useLogActivity();
   const { draft, hasDraft, saveDraft, clearDraft } = useDraftReport();
