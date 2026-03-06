@@ -1,3 +1,7 @@
+// Initialize Sentry error monitoring early
+import { initSentry } from "@/lib/sentry";
+initSentry();
+
 // Initialize PWA install store early to capture beforeinstallprompt
 import "@/lib/pwaInstall";
 
