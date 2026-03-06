@@ -106,16 +106,24 @@ export default function CreateReport() {
   const handleResumeDraft = useCallback(() => {
     if (!draft) return;
     
-    // Restore draft state
+    // Restore draft state - use cached patient data first, fetch from network if online
     if (draft.patient) {
-      supabase
-        .from('patients')
-        .select('*')
-        .eq('id', draft.patient.id)
-        .single()
-        .then(({ data }) => {
-          if (data) setSelectedPatient(data);
-        });
+      // Use draft's cached patient data immediately
+      setSelectedPatient(draft.patient as Patient);
+      // Try to refresh from server if online
+      if (navigator.onLine) {
+        supabase
+          .from('patients')
+          .select('*')
+          .eq('id', draft.patient.id)
+          .single()
+          .then(({ data }) => {
+            if (data) setSelectedPatient(data);
+          })
+          .catch(() => {
+            // Keep cached version
+          });
+      }
     }
     if (draft.newPatientData) {
       setNewPatientData(draft.newPatientData);
@@ -259,12 +267,16 @@ export default function CreateReport() {
     try {
       const { report, patient } = previewReport;
       
-      // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
+      // Use clinic from context (cached for offline), fallback to network
+      let clinicData = clinic;
+      if (!clinicData && navigator.onLine) {
+        const { data } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', clinicId)
+          .single();
+        clinicData = data;
+      }
 
       const pdfBlob = await generateReportPDF({
         report,
@@ -292,12 +304,16 @@ export default function CreateReport() {
     try {
       const { report, patient } = previewReport;
       
-      // Fetch clinic branding
-      const { data: clinicData } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', clinicId)
-        .single();
+      // Use clinic from context (cached for offline), fallback to network
+      let clinicData = clinic;
+      if (!clinicData && navigator.onLine) {
+        const { data } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', clinicId)
+          .single();
+        clinicData = data;
+      }
 
       const pdfBlob = await generateReportPDF({
         report,
