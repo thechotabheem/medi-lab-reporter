@@ -8,6 +8,7 @@ type Clinic = Tables<'clinics'>;
 export const DEFAULT_CLINIC_ID = '00000000-0000-0000-0000-000000000001';
 const LEGACY_CLINIC_CACHE_KEY = 'lab-reporter-clinic-cache';
 const CLINIC_CACHE_KEY_PREFIX = 'lab-reporter-clinic-cache:';
+const CLINIC_ID_CACHE_KEY = 'lab-reporter-clinic-id';
 
 const getClinicCacheKey = (id: string) => `${CLINIC_CACHE_KEY_PREFIX}${id}`;
 
@@ -35,11 +36,20 @@ export const useClinic = () => {
 };
 
 export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [clinicId, setClinicId] = useState<string>(DEFAULT_CLINIC_ID);
+  const [clinicId, setClinicId] = useState<string>(() => {
+    // Restore cached clinic ID for offline resilience
+    try {
+      return localStorage.getItem(CLINIC_ID_CACHE_KEY) || DEFAULT_CLINIC_ID;
+    } catch {
+      return DEFAULT_CLINIC_ID;
+    }
+  });
   const [clinic, setClinic] = useState<Clinic | null>(() => {
     try {
-      // Backward compatibility: old single-cache key + new per-clinic cache key
+      // Try cached clinic for the stored ID first, then legacy key
+      const cachedId = localStorage.getItem(CLINIC_ID_CACHE_KEY);
       const cached =
+        (cachedId && localStorage.getItem(getClinicCacheKey(cachedId))) ||
         localStorage.getItem(getClinicCacheKey(DEFAULT_CLINIC_ID)) ||
         localStorage.getItem(LEGACY_CLINIC_CACHE_KEY);
       return cached ? JSON.parse(cached) : null;
@@ -55,7 +65,23 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session?.user) return DEFAULT_CLINIC_ID;
+      if (!session?.user) {
+        // No session — return cached ID if available
+        try {
+          return localStorage.getItem(CLINIC_ID_CACHE_KEY) || DEFAULT_CLINIC_ID;
+        } catch {
+          return DEFAULT_CLINIC_ID;
+        }
+      }
+
+      if (!navigator.onLine) {
+        // Offline — return cached ID
+        try {
+          return localStorage.getItem(CLINIC_ID_CACHE_KEY) || DEFAULT_CLINIC_ID;
+        } catch {
+          return DEFAULT_CLINIC_ID;
+        }
+      }
 
       const { data: resolvedClinicId, error } = await supabase.rpc('get_user_clinic_id', {
         _user_id: session.user.id,
@@ -63,13 +89,28 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (error || !resolvedClinicId) {
         if (error) console.error('Error resolving clinic id:', error);
-        return DEFAULT_CLINIC_ID;
+        // Fall back to cached
+        try {
+          return localStorage.getItem(CLINIC_ID_CACHE_KEY) || DEFAULT_CLINIC_ID;
+        } catch {
+          return DEFAULT_CLINIC_ID;
+        }
       }
+
+      // Cache the resolved ID
+      try {
+        localStorage.setItem(CLINIC_ID_CACHE_KEY, resolvedClinicId);
+      } catch {}
 
       return resolvedClinicId;
     } catch (error) {
       console.error('Error resolving clinic id:', error);
-      return DEFAULT_CLINIC_ID;
+      // Offline/network error — use cached
+      try {
+        return localStorage.getItem(CLINIC_ID_CACHE_KEY) || DEFAULT_CLINIC_ID;
+      } catch {
+        return DEFAULT_CLINIC_ID;
+      }
     }
   }, []);
 
@@ -88,6 +129,12 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       } catch {
         // ignore cache parse errors
+      }
+
+      if (!navigator.onLine) {
+        // Already loaded from cache above, skip network fetch
+        setIsLoading(false);
+        return;
       }
 
       const { data, error } = await supabase
