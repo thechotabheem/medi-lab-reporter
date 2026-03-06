@@ -40,9 +40,12 @@ export const DynamicReportForm = ({
     defaultValues: initialData,
   });
 
-  useKeyboardNavigation({
+  const { focusNext, focusPrevious } = useKeyboardNavigation({
     containerRef: formRef,
     enabled: true,
+    onEnter: () => {
+      // Enter moves to next field for fast data entry
+    },
   });
 
   const { data: patientHistory } = usePatientHistory({
@@ -231,7 +234,6 @@ export const DynamicReportForm = ({
                     value={(formField.value as string | number) ?? ''}
                     onChange={(e) => {
                       const val = e.target.value;
-                      // For number fields, store as number when valid, empty string when blank
                       if (field.type === 'number') {
                         if (val === '' || val === '-') {
                           formField.onChange(val);
@@ -246,6 +248,7 @@ export const DynamicReportForm = ({
                     placeholder={field.type === 'number' ? '' : `Enter ${field.label.toLowerCase()}`}
                     disabled={false}
                     className={cn(
+                      'transition-all duration-150 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:scale-[1.01]',
                       status === 'abnormal' && 'border-destructive',
                       exceedsHardLimit && 'border-warning bg-warning/5'
                     )}
