@@ -14,7 +14,7 @@ import { useCustomizedTemplate } from '@/hooks/useCustomTemplates';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { usePatientHistory, getHistoricalComparison, getTrendIcon } from '@/hooks/usePatientHistory';
 import type { ReportType, Patient, TestField, TestCategory } from '@/types/database';
-import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, AlertTriangle, Keyboard } from 'lucide-react';
 import { MEDICAL_HARD_LIMITS } from '@/lib/validation-schemas';
 
 interface DynamicReportFormProps {
@@ -308,6 +308,14 @@ export const DynamicReportForm = ({
 
   return (
     <div ref={formRef} className="space-y-4">
+      {/* Keyboard shortcut hints */}
+      <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2">
+        <Keyboard className="h-3.5 w-3.5" />
+        <span><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border text-[10px] font-mono">Enter</kbd> Next field</span>
+        <span><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border text-[10px] font-mono">Tab</kbd> Navigate</span>
+        <span><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border text-[10px] font-mono">Alt+↓↑</kbd> Move between fields</span>
+        <span><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border text-[10px] font-mono">Ctrl+Home/End</kbd> First/Last field</span>
+      </div>
       <Accordion type="multiple" defaultValue={template.categories.map((c) => c.name)} className="space-y-4">
         {template.categories.map((category) => {
           const hasQuantitative = category.fields.some(f => !isQualitativeField(f));
