@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { PageTransition, FadeIn } from '@/components/ui/page-transition';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
+import { BackupCard } from '@/components/settings/BackupCard';
 import {
   Settings as SettingsIcon,
   Building2,
@@ -152,6 +153,11 @@ export default function Settings() {
                   </Button>
                 </CardContent>
               </Card>
+            </FadeIn>
+
+            {/* Data Backup */}
+            <FadeIn delay={200}>
+              <BackupCard />
             </FadeIn>
 
             <FadeIn delay={225}>
