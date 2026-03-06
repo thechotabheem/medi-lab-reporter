@@ -15,7 +15,7 @@ const LAST_BACKUP_KEY = 'lab-reporter-last-backup';
 const BACKUP_INTERVAL_DAYS = 30;
 
 export function useBackup() {
-  const { clinicId, clinicDetails } = useClinic();
+  const { clinicId, clinic } = useClinic();
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [lastBackupDate, setLastBackupDate] = useState<Date | null>(null);
