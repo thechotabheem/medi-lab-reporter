@@ -112,17 +112,18 @@ export default function CreateReport() {
       setSelectedPatient(draft.patient as Patient);
       // Try to refresh from server if online
       if (navigator.onLine) {
-        supabase
-          .from('patients')
-          .select('*')
-          .eq('id', draft.patient.id)
-          .single()
-          .then(({ data }) => {
-            if (data) setSelectedPatient(data);
-          })
-          .catch(() => {
-            // Keep cached version
-          });
+        try {
+          supabase
+            .from('patients')
+            .select('*')
+            .eq('id', draft.patient.id)
+            .single()
+            .then(({ data }) => {
+              if (data) setSelectedPatient(data);
+            });
+        } catch {
+          // Keep cached version
+        }
       }
     }
     if (draft.newPatientData) {
