@@ -269,7 +269,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'App works fully offline after initial load',
         ]} />
 
-        <SectionHeader title="Backup & Data Export" sectionNum={9} />
+        <SectionHeader title="Backup & Data Export" sectionNum={8} />
         <BulletList items={[
           'Manual ZIP archive download from Settings',
           'Archive includes master patient list as PDF',
