@@ -53,7 +53,7 @@ import {
   Pencil,
   GitCompare,
 } from 'lucide-react';
-import { formatDate, formatDateTime } from '@/lib/date-formats';
+import { formatDate, formatDateTime, formatDateForFile } from '@/lib/date-formats';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from '@/lib/report-templates';
 import { calculateAgeFromDOB } from '@/lib/utils';
