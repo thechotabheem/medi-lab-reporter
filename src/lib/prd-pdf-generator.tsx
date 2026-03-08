@@ -279,7 +279,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Filename includes date/time stamp for versioning',
         ]} />
 
-        <SectionHeader title="Design System" sectionNum={10} />
+        <SectionHeader title="Design System" sectionNum={9} />
         <BulletList items={[
           'High-contrast medical light theme (primary: deep teal hsl(168 84% 26%))',
           'Semantic HSL design tokens for all colors (no direct color usage)',
