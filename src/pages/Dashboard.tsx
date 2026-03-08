@@ -24,7 +24,7 @@ export default function Dashboard() {
     weather
   } = useWeather();
   const { dataSource, lastFetchedAt } = useDataFreshness('dashboard');
-  const { isReminderDue, dismissReminder, downloadBackup, isExporting } = useBackup();
+  
   const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
