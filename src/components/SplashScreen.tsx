@@ -71,7 +71,7 @@ if (typeof document !== 'undefined' && !document.getElementById(styleId)) {
   // Actually, let's do it properly with real DOM elements
   style.textContent = `
     :root {
-      --pl-color: 162 84% 42%;
+      --pl-color: 168 84% 26%;
       --pl-dot: 16px;
       --pl-gap: 8px;
     }

@@ -45,14 +45,18 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <FlaskConical className="h-6 w-6 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4 relative overflow-hidden">
+      {/* Subtle background accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <Card className="w-full max-w-md relative z-10 shadow-lg border-border/60">
+        <CardHeader className="text-center space-y-3 pb-2">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shadow-sm">
+            <FlaskConical className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access the lab reporter</CardDescription>
+          <div>
+            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardDescription className="mt-1">Sign in to access the lab reporter</CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
