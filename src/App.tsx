@@ -108,7 +108,7 @@ const App = () => {
           buster: '',
         }}
       >
-        <ThemeProvider defaultTheme="dark">
+        <ThemeProvider defaultTheme="light">
           <AuthProvider>
             <ClinicProvider>
               <TooltipProvider>
