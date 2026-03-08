@@ -23,10 +23,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 6%;
 
-    /* Primary - Deeper teal for better contrast on white */
-    --primary: 162 84% 30%;
+    /* Primary - Deep teal for strong contrast on white */
+    --primary: 168 84% 26%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 162 84% 38%;
+    --primary-glow: 162 84% 34%;
 
     /* Secondary - Light neutral surface */
     --secondary: 220 14% 92%;
