@@ -258,7 +258,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Multi-report comparison table with sortable columns',
         ]} />
 
-        <SectionHeader title="Offline & PWA Capabilities" sectionNum={8} />
+        <SectionHeader title="Offline & PWA Capabilities" sectionNum={7} />
         <BulletList items={[
           'Service Worker caching for offline access to all pages',
           'TanStack Query offline persistence for cached data',
