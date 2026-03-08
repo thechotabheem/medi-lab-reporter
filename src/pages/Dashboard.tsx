@@ -9,10 +9,7 @@ import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { DataSourceBadge } from '@/components/DataSourceBadge';
 import { useDataFreshness } from '@/hooks/useDataFreshness';
-import { useBackup } from '@/hooks/useBackup';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList, AlertTriangle, Download, X } from 'lucide-react';
+import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList } from 'lucide-react';
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
