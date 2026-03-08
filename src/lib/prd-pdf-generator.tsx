@@ -136,7 +136,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
         </Text>
         <BulletList items={[
           'Instant PDF generation with professional clinic branding and watermarks',
-          '17 pre-configured test templates with auto-calculations',
+          '17 pre-configured test templates with manual value entry',
           'Offline-capable PWA with background sync and queued operations',
           'Gender-aware normal ranges with abnormal value flagging',
           'Customizable templates with drag-and-drop field management',
@@ -244,23 +244,11 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Year/month resets ensure organized record-keeping',
         ]} />
 
-        <SectionHeader title="Auto-Calculation Formulas" sectionNum={6} />
-        <SimpleTable
-          head={['Calculation', 'Formula', 'Template']}
-          body={[
-            ['BUN (Blood Urea Nitrogen)', 'Urea × 0.467', 'RFT'],
-            ['Indirect Bilirubin', 'Total Bilirubin − Direct Bilirubin', 'LFT'],
-            ['Globulin', 'Total Protein − Albumin', 'LFT'],
-            ['LDL Cholesterol', 'Total Cholesterol − HDL − (Triglycerides ÷ 5)', 'Lipid Profile'],
-            ['VLDL Cholesterol', 'Triglycerides ÷ 5', 'Lipid Profile'],
-          ]}
-          colWidths={['30%', '45%', '25%']}
-        />
       </Page>
 
-      {/* Section 7-10: Comparison, Offline, Backup, Design, Security, Monitoring */}
+      {/* Section 6-11: Comparison, Offline, Backup, Design, Security, Monitoring */}
       <Page size="A4" style={tw('p-4')}>
-        <SectionHeader title="Report Comparison System" sectionNum={7} />
+        <SectionHeader title="Report Comparison System" sectionNum={6} />
         <BulletList items={[
           'Compare 2–5 reports side-by-side for the same patient',
           'Visual trend indicators (↑ increase, ↓ decrease, → stable)',
@@ -270,7 +258,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Multi-report comparison table with sortable columns',
         ]} />
 
-        <SectionHeader title="Offline & PWA Capabilities" sectionNum={8} />
+        <SectionHeader title="Offline & PWA Capabilities" sectionNum={7} />
         <BulletList items={[
           'Service Worker caching for offline access to all pages',
           'TanStack Query offline persistence for cached data',
@@ -281,7 +269,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'App works fully offline after initial load',
         ]} />
 
-        <SectionHeader title="Backup & Data Export" sectionNum={9} />
+        <SectionHeader title="Backup & Data Export" sectionNum={8} />
         <BulletList items={[
           'Manual ZIP archive download from Settings',
           'Archive includes master patient list as PDF',
@@ -291,7 +279,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Filename includes date/time stamp for versioning',
         ]} />
 
-        <SectionHeader title="Design System" sectionNum={10} />
+        <SectionHeader title="Design System" sectionNum={9} />
         <BulletList items={[
           'High-contrast medical light theme (primary: deep teal hsl(168 84% 26%))',
           'Semantic HSL design tokens for all colors (no direct color usage)',
@@ -302,7 +290,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Global search with keyboard shortcuts (Ctrl+K / ⌘K)',
         ]} />
 
-        <SectionHeader title="Security Model" sectionNum={11} />
+        <SectionHeader title="Security Model" sectionNum={10} />
         <BulletList items={[
           'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
           'Role-based access: admin, lab_technician, receptionist',
@@ -315,7 +303,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Draft reports cleared on successful submission',
         ]} />
 
-        <SectionHeader title="Monitoring & Activity Logging" sectionNum={12} />
+        <SectionHeader title="Monitoring & Activity Logging" sectionNum={11} />
         <BulletList items={[
           'Sentry error tracking integrated with HIPAA-safe data masking',
           'Activity logs for all CRUD operations (create, update, delete)',
