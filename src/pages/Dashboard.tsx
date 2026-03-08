@@ -9,10 +9,7 @@ import { IconWrapper } from '@/components/ui/icon-wrapper';
 import { EnhancedPageLayout, HeaderDivider } from '@/components/ui/enhanced-page-layout';
 import { DataSourceBadge } from '@/components/DataSourceBadge';
 import { useDataFreshness } from '@/hooks/useDataFreshness';
-import { useBackup } from '@/hooks/useBackup';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList, AlertTriangle, Download, X } from 'lucide-react';
+import { FlaskConical, Users, FileText, Settings, Plus, Activity, ClipboardList } from 'lucide-react';
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
@@ -27,7 +24,7 @@ export default function Dashboard() {
     weather
   } = useWeather();
   const { dataSource, lastFetchedAt } = useDataFreshness('dashboard');
-  const { isReminderDue, dismissReminder, downloadBackup, isExporting } = useBackup();
+  
   const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
