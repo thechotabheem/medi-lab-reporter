@@ -324,7 +324,7 @@ export default function CreateReport() {
       });
 
       const safeName = patient.full_name.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-      const testDate = report.test_date ? format(new Date(report.test_date), 'yyyyMMdd') : '';
+      const testDate = report.test_date ? formatDateForFile(report.test_date) : '';
       downloadPDF(pdfBlob, `${safeName}_${report.report_number}_${testDate}.pdf`);
       toast.success('PDF exported successfully');
     } catch (error) {
