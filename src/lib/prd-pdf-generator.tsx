@@ -303,7 +303,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Draft reports cleared on successful submission',
         ]} />
 
-        <SectionHeader title="Monitoring & Activity Logging" sectionNum={12} />
+        <SectionHeader title="Monitoring & Activity Logging" sectionNum={11} />
         <BulletList items={[
           'Sentry error tracking integrated with HIPAA-safe data masking',
           'Activity logs for all CRUD operations (create, update, delete)',
