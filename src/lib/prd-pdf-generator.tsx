@@ -136,7 +136,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
         </Text>
         <BulletList items={[
           'Instant PDF generation with professional clinic branding and watermarks',
-          '17 pre-configured test templates with auto-calculations',
+          '17 pre-configured test templates with manual value entry',
           'Offline-capable PWA with background sync and queued operations',
           'Gender-aware normal ranges with abnormal value flagging',
           'Customizable templates with drag-and-drop field management',
