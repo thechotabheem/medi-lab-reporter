@@ -246,9 +246,9 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
 
       </Page>
 
-      {/* Section 7-10: Comparison, Offline, Backup, Design, Security, Monitoring */}
+      {/* Section 6-11: Comparison, Offline, Backup, Design, Security, Monitoring */}
       <Page size="A4" style={tw('p-4')}>
-        <SectionHeader title="Report Comparison System" sectionNum={7} />
+        <SectionHeader title="Report Comparison System" sectionNum={6} />
         <BulletList items={[
           'Compare 2–5 reports side-by-side for the same patient',
           'Visual trend indicators (↑ increase, ↓ decrease, → stable)',

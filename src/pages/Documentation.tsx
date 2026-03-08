@@ -49,7 +49,7 @@ const Documentation = () => {
     { title: 'Core Modules', desc: 'Dashboard, Patient Management, Reports, Templates, Comparison, Settings' },
     { title: 'Test Types (17)', desc: 'CBC, LFT, RFT, Lipid Profile, ESR, BSR, BSF, and more' },
     { title: 'Sequential ID System', desc: 'Patient IDs (PT-YY-NNNN) and Report Numbers (TYPE-MM-NNN)' },
-    { title: 'Auto-Calculations', desc: 'BUN, Indirect Bilirubin, Globulin, LDL, VLDL formulas' },
+    
     { title: 'Report Comparison', desc: 'Side-by-side comparison of 2–5 reports with trend tracking' },
     { title: 'Offline & PWA', desc: 'Offline-first operations, background sync, installable PWA' },
     { title: 'PDF Generation', desc: 'Branded reports with @react-pdf/renderer, professional layout' },
