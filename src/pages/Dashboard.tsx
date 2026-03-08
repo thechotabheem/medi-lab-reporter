@@ -63,24 +63,6 @@ export default function Dashboard() {
 
       {/* Main Content - Fills remaining height */}
       <main className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[2%] relative z-10">
-        {/* Backup Reminder */}
-        {isReminderDue && (
-          <Alert className="mb-4 border-warning/50 bg-warning/5">
-            <AlertTriangle className="h-4 w-4 text-warning" />
-            <AlertDescription className="flex items-center justify-between">
-              <span className="text-sm">It's been over 30 days since your last backup. Download one now to keep your data safe.</span>
-              <div className="flex items-center gap-2 ml-4 shrink-0">
-                <Button size="sm" variant="outline" onClick={downloadBackup} disabled={isExporting}>
-                  <Download className="h-3.5 w-3.5 mr-1" />
-                  {isExporting ? 'Exporting...' : 'Backup Now'}
-                </Button>
-                <button onClick={dismissReminder} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Welcome Section */}
         <div className="mb-4 sm:mb-5 animate-fade-in text-center">
