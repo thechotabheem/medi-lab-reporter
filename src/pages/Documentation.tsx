@@ -46,13 +46,17 @@ const Documentation = () => {
   const sections = [
     { title: 'Executive Summary', desc: 'Application overview, target users, and value propositions' },
     { title: 'Technology Stack', desc: 'React 18, Vite, TailwindCSS, Lovable Cloud, @react-pdf/renderer' },
-    { title: 'Core Modules', desc: 'Dashboard, Patient Management, Reports, Templates, Settings' },
+    { title: 'Core Modules', desc: 'Dashboard, Patient Management, Reports, Templates, Comparison, Settings' },
     { title: 'Test Types (17)', desc: 'CBC, LFT, RFT, Lipid Profile, ESR, BSR, BSF, and more' },
     { title: 'Sequential ID System', desc: 'Patient IDs (PT-YY-NNNN) and Report Numbers (TYPE-MM-NNN)' },
     { title: 'Auto-Calculations', desc: 'BUN, Indirect Bilirubin, Globulin, LDL, VLDL formulas' },
+    { title: 'Report Comparison', desc: 'Side-by-side comparison of 2–5 reports with trend tracking' },
     { title: 'Offline & PWA', desc: 'Offline-first operations, background sync, installable PWA' },
     { title: 'PDF Generation', desc: 'Branded reports with @react-pdf/renderer, professional layout' },
+    { title: 'Backup & Export', desc: 'Manual ZIP archive with patient list and individual report PDFs' },
+    { title: 'Design System', desc: 'High-contrast medical light theme with semantic design tokens' },
     { title: 'Security Model', desc: '5 managed accounts, RLS policies, admin reset protection' },
+    { title: 'Monitoring & Logging', desc: 'Sentry error tracking with HIPAA-safe masking, activity logs' },
   ];
 
   return (
