@@ -244,18 +244,6 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Year/month resets ensure organized record-keeping',
         ]} />
 
-        <SectionHeader title="Auto-Calculation Formulas" sectionNum={6} />
-        <SimpleTable
-          head={['Calculation', 'Formula', 'Template']}
-          body={[
-            ['BUN (Blood Urea Nitrogen)', 'Urea × 0.467', 'RFT'],
-            ['Indirect Bilirubin', 'Total Bilirubin − Direct Bilirubin', 'LFT'],
-            ['Globulin', 'Total Protein − Albumin', 'LFT'],
-            ['LDL Cholesterol', 'Total Cholesterol − HDL − (Triglycerides ÷ 5)', 'Lipid Profile'],
-            ['VLDL Cholesterol', 'Triglycerides ÷ 5', 'Lipid Profile'],
-          ]}
-          colWidths={['30%', '45%', '25%']}
-        />
       </Page>
 
       {/* Section 7-10: Comparison, Offline, Backup, Design, Security, Monitoring */}
