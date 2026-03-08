@@ -53,7 +53,7 @@ import {
   Pencil,
   GitCompare,
 } from 'lucide-react';
-import { formatDate, formatDateTime } from '@/lib/date-formats';
+import { formatDate, formatDateTime, formatDateForFile } from '@/lib/date-formats';
 import type { Report, Patient, Clinic, Gender } from '@/types/database';
 import { getReportTypeName, buildCombinedTemplate, flattenCombinedReportData } from '@/lib/report-templates';
 import { calculateAgeFromDOB } from '@/lib/utils';
@@ -128,7 +128,8 @@ export default function ReportView() {
         customTemplate: template,
       });
       const safeName = report.patient.full_name.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-      downloadPDF(blob, `${safeName}_${report.report_number}.pdf`);
+      const testDate = report.test_date ? formatDateForFile(report.test_date) : '';
+      downloadPDF(blob, `${safeName}_${report.report_number}_${testDate}.pdf`);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     } finally {
