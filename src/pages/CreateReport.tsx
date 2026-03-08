@@ -25,6 +25,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getReportTypeName } from '@/lib/report-templates';
 import { isCustomTemplateCode, getReportSaveParams } from '@/lib/template-utils';
 import { generateReportPDF, downloadPDF } from '@/lib/pdf-generator.tsx';
+import { formatDateForFile } from '@/lib/date-formats';
 import { ageToDateOfBirth } from '@/lib/utils';
 import type { Patient, Report, ReportType } from '@/types/database';
 import { Check, Save, Layers, Eye, Download } from 'lucide-react';
