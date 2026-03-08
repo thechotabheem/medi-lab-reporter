@@ -127,7 +127,8 @@ export default function ReportView() {
         clinic,
         customTemplate: template,
       });
-      downloadPDF(blob, `${report.report_number}.pdf`);
+      const safeName = report.patient.full_name.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+      downloadPDF(blob, `${safeName}_${report.report_number}.pdf`);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     } finally {
