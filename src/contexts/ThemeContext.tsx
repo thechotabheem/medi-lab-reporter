@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 
 interface ThemeContextType {
-  theme: 'dark';
-  resolvedTheme: 'dark';
+  theme: 'light';
+  resolvedTheme: 'light';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -17,19 +17,19 @@ export function useTheme() {
 
 interface ThemeProviderProps {
   children: ReactNode;
-  defaultTheme?: 'dark';
+  defaultTheme?: 'light';
   storageKey?: string;
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('light');
-    root.classList.add('dark');
+    root.classList.remove('dark');
+    root.classList.add('light');
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme: 'dark', resolvedTheme: 'dark' }}>
+    <ThemeContext.Provider value={{ theme: 'light', resolvedTheme: 'light' }}>
       {children}
     </ThemeContext.Provider>
   );
