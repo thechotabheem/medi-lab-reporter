@@ -79,24 +79,28 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
   const techStack = [
     ['Frontend Framework', 'React', '18.3.x'],
     ['Build Tool', 'Vite', '5.x'],
-    ['Styling', 'TailwindCSS', '3.x with custom design system'],
+    ['Styling', 'TailwindCSS', '3.x with high-contrast medical light theme'],
     ['Language', 'TypeScript', 'Strict mode enabled'],
     ['Backend', 'Lovable Cloud', 'Supabase-powered'],
-    ['Database', 'PostgreSQL', 'Via Lovable Cloud'],
+    ['Database', 'PostgreSQL', 'Via Lovable Cloud with RLS'],
     ['PDF Generation', '@react-pdf/renderer', '4.x JSX-based PDF rendering'],
-    ['PWA Support', 'vite-plugin-pwa', '1.x'],
-    ['UI Components', 'shadcn/ui', 'Radix primitives'],
-    ['State Management', 'TanStack Query', '5.x'],
-    ['Routing', 'React Router', '6.x'],
+    ['PWA Support', 'vite-plugin-pwa', '1.x with offline-first strategy'],
+    ['UI Components', 'shadcn/ui', 'Radix primitives with custom variants'],
+    ['State Management', 'TanStack Query', '5.x with offline persistence'],
+    ['Routing', 'React Router', '6.x with animated transitions'],
     ['Date Handling', 'date-fns', '3.x'],
+    ['Error Monitoring', 'Sentry', '10.x with HIPAA-safe masking'],
+    ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
   ];
 
   const modules = [
-    { name: 'Dashboard', features: ['Real-time statistics', 'Quick action cards', 'Recent reports widget', 'Weather integration'] },
-    { name: 'Patient Management', features: ['CRUD operations', 'Sequential IDs (PT-YY-NNNN)', 'Patient search with filters', 'Patient history view'] },
-    { name: 'Report Management', features: ['17 test templates', 'Sequential numbers (TYPE-MM-NNN)', 'Draft auto-save', 'PDF export and WhatsApp sharing'] },
-    { name: 'Template Editor', features: ['Customize field labels', 'Drag-and-drop reorder', 'Add/remove custom fields', 'Clone templates'] },
-    { name: 'Settings', features: ['Basic clinic info (name, doctor, contact)', 'Notification preferences', 'Data reset', 'PWA installation controls'] },
+    { name: 'Dashboard', features: ['Real-time statistics (reports, patients, monthly, drafts)', 'Quick action cards with glow effects', 'Weather integration', 'Date & time display', 'Clean medical-grade UI'] },
+    { name: 'Patient Management', features: ['CRUD operations with form validation', 'Sequential IDs (PT-YY-NNNN)', 'Patient search with debounced filtering', 'Patient history with report timeline', 'CSV export of patient list'] },
+    { name: 'Report Management', features: ['17 pre-configured test templates', 'Combined multi-test reports', 'Sequential numbers (TYPE-MM-NNN)', 'Draft auto-save with recovery', 'PDF export and WhatsApp sharing', 'Report status tracking (draft/final)'] },
+    { name: 'Report Comparison', features: ['Side-by-side comparison of 2–5 reports', 'Trend tracking with visual indicators', 'Saved comparisons for future reference', 'Comparison PDF export'] },
+    { name: 'Template Editor', features: ['Customize field labels and units', 'Drag-and-drop reorder with @dnd-kit', 'Add/remove custom fields', 'Clone and edit templates', 'Template preview dialog'] },
+    { name: 'Clinic Settings', features: ['Basic info (name, doctor, contact)', 'PDF branding (logo, colors, watermark)', 'Signature configuration', 'Visual styling options (border, font size)', 'Live PDF preview thumbnail'] },
+    { name: 'Admin Panel', features: ['Staff account management (4 slots)', 'Activity log monitoring', 'Data reset with ADMIN_RESET_CODE', 'Role-based access control'] },
   ];
 
   const testTypeOverview = activeReportTypes.map(type => {
@@ -115,7 +119,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           <Text style={{ fontSize: 18, color: COLORS.text, marginTop: 8 }}>Product Requirements Document</Text>
           <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 4 }}>& Technical Specification Blueprint</Text>
           <View style={{ width: 200, height: 2, backgroundColor: COLORS.primary, marginVertical: 20 }} />
-          <Text style={{ fontSize: 11, color: COLORS.textMuted }}>Version 1.0</Text>
+          <Text style={{ fontSize: 11, color: COLORS.textMuted }}>Version 2.0</Text>
           <Text style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>Generated: {formatDateFull(new Date())}</Text>
           {clinic?.name && <Text style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>Clinic: {clinic.name}</Text>}
         </View>
@@ -124,23 +128,27 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
         </Text>
       </Page>
 
-      {/* Content */}
+      {/* Section 1-3: Executive Summary, Tech Stack, Core Modules */}
       <Page size="A4" style={tw('p-4')}>
         <SectionHeader title="Executive Summary" sectionNum={1} />
         <Text style={{ fontSize: 10, color: COLORS.text, marginBottom: 8, lineHeight: 1.4 }}>
-          MedLab Reporter is a Progressive Web Application (PWA) designed for medical laboratories to streamline the creation, management, and distribution of diagnostic test reports.
+          MedLab Reporter is a Progressive Web Application (PWA) designed for medical laboratories to streamline the creation, management, and distribution of diagnostic test reports. It features a high-contrast medical light theme, offline-first architecture, and professional branded PDF generation.
         </Text>
         <BulletList items={[
-          'Instant PDF generation with professional clinic branding',
+          'Instant PDF generation with professional clinic branding and watermarks',
           '17 pre-configured test templates with auto-calculations',
-          'Offline-capable PWA for reliable access',
+          'Offline-capable PWA with background sync and queued operations',
           'Gender-aware normal ranges with abnormal value flagging',
-          'Customizable templates per clinic requirements',
-          'WhatsApp sharing integration for quick report delivery',
+          'Customizable templates with drag-and-drop field management',
+          'Report comparison system for tracking 2–5 reports over time',
+          'Manual backup/export as ZIP archive with all patient and report PDFs',
+          'High-contrast medical light theme with semantic design tokens',
+          'Sentry error monitoring with HIPAA-safe data masking',
+          'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
         ]} />
 
         <SectionHeader title="Technology Stack" sectionNum={2} />
-        <SimpleTable head={['Category', 'Technology', 'Version']} body={techStack} colWidths={['25%', '35%', '40%']} />
+        <SimpleTable head={['Category', 'Technology', 'Details']} body={techStack} colWidths={['22%', '30%', '48%']} />
 
         <SectionHeader title="Core Modules" sectionNum={3} />
         {modules.map((mod) => (
@@ -151,12 +159,11 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
         ))}
       </Page>
 
-      {/* Test Types */}
+      {/* Section 4: Test Types */}
       <Page size="A4" style={tw('p-4')}>
         <SectionHeader title="Supported Test Types (17 Types)" sectionNum={4} />
         <SimpleTable head={['Code', 'Full Name', 'Category']} body={testTypeOverview} colWidths={['25%', '45%', '30%']} />
 
-        {/* Detailed specs */}
         {activeReportTypes.slice(0, 8).map((testType) => {
           const template = reportTemplates[testType];
           if (!template || template.categories.length === 0) return null;
@@ -190,7 +197,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
         })}
       </Page>
 
-      {/* Remaining test types + more sections */}
+      {/* Remaining test types + Sequential IDs + more sections */}
       <Page size="A4" style={tw('p-4')}>
         {activeReportTypes.slice(8).map((testType) => {
           const template = reportTemplates[testType];
@@ -222,7 +229,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           );
         })}
 
-        <SectionHeader title="Sequential ID System" sectionNum={6} />
+        <SectionHeader title="Sequential ID System" sectionNum={5} />
         <SimpleTable
           head={['Entity', 'Format', 'Example', 'Description']}
           body={[
@@ -237,19 +244,89 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Year/month resets ensure organized record-keeping',
         ]} />
 
-        <SectionHeader title="Security Model" sectionNum={8} />
+        <SectionHeader title="Auto-Calculation Formulas" sectionNum={6} />
+        <SimpleTable
+          head={['Calculation', 'Formula', 'Template']}
+          body={[
+            ['BUN (Blood Urea Nitrogen)', 'Urea × 0.467', 'RFT'],
+            ['Indirect Bilirubin', 'Total Bilirubin − Direct Bilirubin', 'LFT'],
+            ['Globulin', 'Total Protein − Albumin', 'LFT'],
+            ['LDL Cholesterol', 'Total Cholesterol − HDL − (Triglycerides ÷ 5)', 'Lipid Profile'],
+            ['VLDL Cholesterol', 'Triglycerides ÷ 5', 'Lipid Profile'],
+          ]}
+          colWidths={['30%', '45%', '25%']}
+        />
+      </Page>
+
+      {/* Section 7-10: Comparison, Offline, Backup, Design, Security, Monitoring */}
+      <Page size="A4" style={tw('p-4')}>
+        <SectionHeader title="Report Comparison System" sectionNum={7} />
+        <BulletList items={[
+          'Compare 2–5 reports side-by-side for the same patient',
+          'Visual trend indicators (↑ increase, ↓ decrease, → stable)',
+          'Abnormal value highlighting across all compared reports',
+          'Save comparisons for future reference with custom names',
+          'Export comparison as branded PDF document',
+          'Multi-report comparison table with sortable columns',
+        ]} />
+
+        <SectionHeader title="Offline & PWA Capabilities" sectionNum={8} />
+        <BulletList items={[
+          'Service Worker caching for offline access to all pages',
+          'TanStack Query offline persistence for cached data',
+          'Offline queue for mutations (create/update/delete) with automatic sync',
+          'Offline status banner with visual indicator',
+          'PWA installation prompt for desktop and mobile',
+          'Background sync when connection is restored',
+          'App works fully offline after initial load',
+        ]} />
+
+        <SectionHeader title="Backup & Data Export" sectionNum={9} />
+        <BulletList items={[
+          'Manual ZIP archive download from Settings',
+          'Archive includes master patient list as PDF',
+          'Each report exported as individual branded PDF',
+          'Progress indicator during backup generation',
+          'Compressed DEFLATE format for smaller file sizes',
+          'Filename includes date/time stamp for versioning',
+        ]} />
+
+        <SectionHeader title="Design System" sectionNum={10} />
+        <BulletList items={[
+          'High-contrast medical light theme (primary: deep teal hsl(168 84% 26%))',
+          'Semantic HSL design tokens for all colors (no direct color usage)',
+          'Custom shadcn/ui component variants (stat-card, action-card, icon-wrapper)',
+          'Responsive layouts for mobile (375px+), tablet, and desktop',
+          'Animated page transitions and micro-interactions',
+          'Mobile bottom navigation with active state indicators',
+          'Global search with keyboard shortcuts (Ctrl+K / ⌘K)',
+        ]} />
+
+        <SectionHeader title="Security Model" sectionNum={11} />
         <BulletList items={[
           'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
-          'Row Level Security (RLS) enabled on all tables',
-          'HTTPS-only API communication',
-          'Data reset requires secret ADMIN_RESET_CODE',
+          'Role-based access: admin, lab_technician, receptionist',
+          'Row Level Security (RLS) enabled on all database tables',
+          'Roles stored in separate user_roles table (not on profiles)',
+          'Security-definer has_role() function prevents RLS recursion',
+          'HTTPS-only API communication via Lovable Cloud',
+          'Data reset requires secret ADMIN_RESET_CODE via edge function',
           'No sensitive data in localStorage except draft reports',
           'Draft reports cleared on successful submission',
         ]} />
 
+        <SectionHeader title="Monitoring & Activity Logging" sectionNum={12} />
+        <BulletList items={[
+          'Sentry error tracking integrated with HIPAA-safe data masking',
+          'Activity logs for all CRUD operations (create, update, delete)',
+          'Logs include entity type, action, user, and timestamp',
+          'Admin can view activity logs in the Admin Panel',
+          'No PII/PHI sent to external monitoring services',
+        ]} />
+
         {/* Footer */}
         <Text style={[tw('text-center'), { fontSize: 8, color: COLORS.textMuted, position: 'absolute', bottom: 15, left: 0, right: 0 }]} fixed>
-          MedLab Reporter - Product Requirements Document | Generated: {formatDateFull(new Date())}
+          MedLab Reporter v2.0 - Product Requirements Document | Generated: {formatDateFull(new Date())}
         </Text>
       </Page>
     </Document>
