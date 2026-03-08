@@ -62,20 +62,20 @@
 
     /* Sidebar - Light harmonious */
     --sidebar-background: 210 20% 97%;
-    --sidebar-foreground: 220 15% 15%;
-    --sidebar-primary: 162 84% 36%;
+    --sidebar-foreground: 220 20% 8%;
+    --sidebar-primary: 162 84% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 162 40% 94%;
-    --sidebar-accent-foreground: 162 84% 28%;
-    --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 162 84% 36%;
+    --sidebar-accent: 162 40% 93%;
+    --sidebar-accent-foreground: 162 84% 22%;
+    --sidebar-border: 220 13% 85%;
+    --sidebar-ring: 162 84% 30%;
 
-    /* Chart colors - Perceptually balanced */
-    --chart-1: 162 75% 38%;
-    --chart-2: 142 69% 42%;
-    --chart-3: 182 70% 38%;
-    --chart-4: 96 70% 40%;
-    --chart-5: 220 10% 55%;
+    /* Chart colors - Perceptually balanced, darker for contrast */
+    --chart-1: 162 75% 32%;
+    --chart-2: 142 69% 36%;
+    --chart-3: 182 70% 32%;
+    --chart-4: 96 70% 34%;
+    --chart-5: 220 10% 45%;
 
     /* Typography */
     --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
