@@ -290,7 +290,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Global search with keyboard shortcuts (Ctrl+K / ⌘K)',
         ]} />
 
-        <SectionHeader title="Security Model" sectionNum={11} />
+        <SectionHeader title="Security Model" sectionNum={10} />
         <BulletList items={[
           'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
           'Role-based access: admin, lab_technician, receptionist',
