@@ -34,7 +34,7 @@
 
     /* Muted - For disabled/placeholder states */
     --muted: 220 14% 90%;
-    --muted-foreground: 220 12% 40%;
+    --muted-foreground: 220 12% 30%;
 
     /* Accent - Teal tinted light surfaces */
     --accent: 162 40% 93%;
