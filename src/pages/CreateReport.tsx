@@ -322,7 +322,9 @@ export default function CreateReport() {
         clinic: clinicData,
       });
 
-      downloadPDF(pdfBlob, `${patient.full_name}_Report_${report.report_number}.pdf`);
+      const safeName = patient.full_name.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+      const testDate = report.test_date ? format(new Date(report.test_date), 'yyyyMMdd') : '';
+      downloadPDF(pdfBlob, `${safeName}_${report.report_number}_${testDate}.pdf`);
       toast.success('PDF exported successfully');
     } catch (error) {
       console.error('Export error:', error);

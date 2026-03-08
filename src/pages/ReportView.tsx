@@ -128,7 +128,8 @@ export default function ReportView() {
         customTemplate: template,
       });
       const safeName = report.patient.full_name.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-      downloadPDF(blob, `${safeName}_${report.report_number}.pdf`);
+      const testDate = report.test_date ? format(new Date(report.test_date), 'yyyyMMdd') : '';
+      downloadPDF(blob, `${safeName}_${report.report_number}_${testDate}.pdf`);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     } finally {
