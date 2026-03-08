@@ -13,69 +13,69 @@
   :root {
     /* Core Background - Clean white with subtle cool undertone */
     --background: 210 20% 98%;
-    --foreground: 220 15% 10%;
+    --foreground: 220 20% 6%;
 
     /* Card surfaces - Pure white with elevation via shadows */
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 220 20% 6%;
 
     /* Popover - White elevated */
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
+    --popover-foreground: 220 20% 6%;
 
-    /* Primary - Vibrant teal (unchanged brand color) */
-    --primary: 162 84% 36%;
+    /* Primary - Deeper teal for better contrast on white */
+    --primary: 162 84% 30%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 162 84% 42%;
+    --primary-glow: 162 84% 38%;
 
     /* Secondary - Light neutral surface */
-    --secondary: 220 14% 94%;
-    --secondary-foreground: 220 15% 20%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 20% 14%;
 
     /* Muted - For disabled/placeholder states */
-    --muted: 220 14% 92%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 12% 40%;
 
     /* Accent - Teal tinted light surfaces */
-    --accent: 162 40% 94%;
-    --accent-foreground: 162 84% 28%;
+    --accent: 162 40% 93%;
+    --accent-foreground: 162 84% 22%;
 
     /* Destructive - Warm red for errors */
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 46%;
     --destructive-foreground: 0 0% 100%;
 
     /* Success - For positive states */
-    --success: 142 70% 38%;
+    --success: 142 70% 32%;
     --success-foreground: 0 0% 100%;
 
     /* Warning - Amber for caution */
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 15% 10%;
+    --warning: 38 92% 44%;
+    --warning-foreground: 220 20% 6%;
 
-    /* Border & Input - Subtle cool gray */
-    --border: 220 13% 88%;
-    --input: 220 13% 88%;
-    --ring: 162 84% 36%;
+    /* Border & Input - Stronger definition */
+    --border: 220 13% 82%;
+    --input: 220 13% 82%;
+    --ring: 162 84% 30%;
 
     /* Radius - Softer corners */
     --radius: 0.75rem;
 
     /* Sidebar - Light harmonious */
     --sidebar-background: 210 20% 97%;
-    --sidebar-foreground: 220 15% 15%;
-    --sidebar-primary: 162 84% 36%;
+    --sidebar-foreground: 220 20% 8%;
+    --sidebar-primary: 162 84% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 162 40% 94%;
-    --sidebar-accent-foreground: 162 84% 28%;
-    --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 162 84% 36%;
+    --sidebar-accent: 162 40% 93%;
+    --sidebar-accent-foreground: 162 84% 22%;
+    --sidebar-border: 220 13% 85%;
+    --sidebar-ring: 162 84% 30%;
 
-    /* Chart colors - Perceptually balanced */
-    --chart-1: 162 75% 38%;
-    --chart-2: 142 69% 42%;
-    --chart-3: 182 70% 38%;
-    --chart-4: 96 70% 40%;
-    --chart-5: 220 10% 55%;
+    /* Chart colors - Perceptually balanced, darker for contrast */
+    --chart-1: 162 75% 32%;
+    --chart-2: 142 69% 36%;
+    --chart-3: 182 70% 32%;
+    --chart-4: 96 70% 34%;
+    --chart-5: 220 10% 45%;
 
     /* Typography */
     --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
