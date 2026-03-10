@@ -143,7 +143,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Report comparison system for tracking 2–5 reports over time',
           'Manual backup/export as ZIP archive with all patient and report PDFs',
           'High-contrast medical light theme with semantic design tokens',
-          'Sentry error monitoring with HIPAA-safe data masking',
+          'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
           'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
         ]} />
 
