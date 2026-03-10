@@ -143,7 +143,6 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Manual backup/export as ZIP archive with all patient and report PDFs',
           'High-contrast medical light theme with semantic design tokens',
           'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
-          'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
         ]} />
 
         <SectionHeader title="Technology Stack" sectionNum={2} />
