@@ -90,7 +90,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
     ['Routing', 'React Router', '6.x with animated transitions'],
     ['Date Handling', 'date-fns', '3.x'],
     ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
-    ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
+  ];
   ];
 
   const modules = [
