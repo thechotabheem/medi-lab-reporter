@@ -14,7 +14,6 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
 import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate";
 import { OfflineSyncStatus } from "@/components/OfflineSyncStatus";
-import { Sentry } from "@/lib/sentry";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,9 +63,29 @@ function KeyboardShortcuts() {
   return null;
 }
 
+function ErrorFallback({ error, onReset }: { error: Error; onReset: () => void }) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-8">
+      <div className="text-center space-y-4 max-w-md">
+        <h1 className="text-2xl font-bold">Something went wrong</h1>
+        <p className="text-muted-foreground">
+          An unexpected error occurred. Please try again.
+        </p>
+        <button
+          onClick={onReset}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const hasShownSplash = sessionStorage.getItem('splashShown');
@@ -81,55 +100,40 @@ const App = () => {
     sessionStorage.setItem('splashShown', 'true');
   };
 
+  if (error) {
+    return <ErrorFallback error={error} onReset={() => setError(null)} />;
+  }
+
   return (
-    <Sentry.ErrorBoundary
-      fallback={({ error, resetError }) => (
-        <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-8">
-          <div className="text-center space-y-4 max-w-md">
-            <h1 className="text-2xl font-bold">Something went wrong</h1>
-            <p className="text-muted-foreground">
-              An unexpected error occurred. Our team has been notified.
-            </p>
-            <button
-              onClick={resetError}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      )}
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 1000 * 60 * 60 * 24,
+        buster: '',
+      }}
     >
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-          persister,
-          maxAge: 1000 * 60 * 60 * 24,
-          buster: '',
-        }}
-      >
-        <ThemeProvider defaultTheme="light">
-          <AuthProvider>
-            <ClinicProvider>
-              <TooltipProvider>
-                {showSplash && isFirstLoad && (
-                  <SplashScreen onComplete={handleSplashComplete} />
-                )}
-                <OfflineBanner />
-                <ServiceWorkerUpdate />
-                <OfflineSyncStatus />
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <KeyboardShortcuts />
-                  <AnimatedRoutes />
-                </BrowserRouter>
-              </TooltipProvider>
-            </ClinicProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </PersistQueryClientProvider>
-    </Sentry.ErrorBoundary>
+      <ThemeProvider defaultTheme="light">
+        <AuthProvider>
+          <ClinicProvider>
+            <TooltipProvider>
+              {showSplash && isFirstLoad && (
+                <SplashScreen onComplete={handleSplashComplete} />
+              )}
+              <OfflineBanner />
+              <ServiceWorkerUpdate />
+              <OfflineSyncStatus />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <KeyboardShortcuts />
+                <AnimatedRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </ClinicProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </PersistQueryClientProvider>
   );
 };
 
