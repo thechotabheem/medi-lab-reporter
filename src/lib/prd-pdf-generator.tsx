@@ -91,7 +91,6 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
     ['Date Handling', 'date-fns', '3.x'],
     ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
   ];
-  ];
 
   const modules = [
     { name: 'Dashboard', features: ['Real-time statistics (reports, patients, monthly, drafts)', 'Quick action cards with glow effects', 'Weather integration', 'Date & time display', 'Clean medical-grade UI'] },
