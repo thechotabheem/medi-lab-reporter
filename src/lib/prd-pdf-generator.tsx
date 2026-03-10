@@ -89,7 +89,7 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
     ['State Management', 'TanStack Query', '5.x with offline persistence'],
     ['Routing', 'React Router', '6.x with animated transitions'],
     ['Date Handling', 'date-fns', '3.x'],
-    ['Error Monitoring', 'Sentry', '10.x with HIPAA-safe masking'],
+    ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
     ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
   ];
 
