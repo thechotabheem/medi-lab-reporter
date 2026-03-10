@@ -56,7 +56,7 @@ const Documentation = () => {
     { title: 'Backup & Export', desc: 'Manual ZIP archive with patient list and individual report PDFs' },
     { title: 'Design System', desc: 'High-contrast medical light theme with semantic design tokens' },
     { title: 'Security Model', desc: '5 managed accounts, RLS policies, admin reset protection' },
-    { title: 'Monitoring & Logging', desc: 'Sentry error tracking with HIPAA-safe masking, activity logs' },
+    { title: 'Activity Logging', desc: 'Activity logs for all CRUD operations with entity tracking' },
   ];
 
   return (

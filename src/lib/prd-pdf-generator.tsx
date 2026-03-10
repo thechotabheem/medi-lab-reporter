@@ -89,7 +89,6 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
     ['State Management', 'TanStack Query', '5.x with offline persistence'],
     ['Routing', 'React Router', '6.x with animated transitions'],
     ['Date Handling', 'date-fns', '3.x'],
-    ['Error Monitoring', 'Sentry', '10.x with HIPAA-safe masking'],
     ['Drag & Drop', '@dnd-kit', 'Template field reordering'],
   ];
 
@@ -143,7 +142,6 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Report comparison system for tracking 2–5 reports over time',
           'Manual backup/export as ZIP archive with all patient and report PDFs',
           'High-contrast medical light theme with semantic design tokens',
-          'Sentry error monitoring with HIPAA-safe data masking',
           'Restricted to 5 managed accounts (1 Admin + 4 Staff)',
         ]} />
 
@@ -303,13 +301,11 @@ export const generatePRDPDF = async ({ clinic }: GeneratePRDOptions = {}): Promi
           'Draft reports cleared on successful submission',
         ]} />
 
-        <SectionHeader title="Monitoring & Activity Logging" sectionNum={11} />
+        <SectionHeader title="Activity Logging" sectionNum={11} />
         <BulletList items={[
-          'Sentry error tracking integrated with HIPAA-safe data masking',
           'Activity logs for all CRUD operations (create, update, delete)',
           'Logs include entity type, action, user, and timestamp',
           'Admin can view activity logs in the Admin Panel',
-          'No PII/PHI sent to external monitoring services',
         ]} />
 
         {/* Footer */}
