@@ -324,76 +324,76 @@ ALTER TABLE public.saved_comparisons ENABLE ROW LEVEL SECURITY;
 
 -- ---- clinics ----
 CREATE POLICY "Users can view their clinic" ON public.clinics
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Admins can update their clinic" ON public.clinics
-  AS RESTRICTIVE FOR UPDATE TO authenticated
+  FOR UPDATE TO authenticated
   USING (id = get_user_clinic_id(auth.uid()) AND has_role(auth.uid(), 'admin'));
 
 -- ---- profiles ----
 CREATE POLICY "Users can view profiles in their clinic" ON public.profiles
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can insert their own profile" ON public.profiles
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update their own profile" ON public.profiles
-  AS RESTRICTIVE FOR UPDATE TO authenticated
+  FOR UPDATE TO authenticated
   USING (user_id = auth.uid());
 
 CREATE POLICY "Admin can delete profiles via edge function" ON public.profiles
-  AS RESTRICTIVE FOR DELETE TO authenticated
+  FOR DELETE TO authenticated
   USING (true);
 
 -- ---- user_roles ----
 CREATE POLICY "Users can view their own roles" ON public.user_roles
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert their own role during registration" ON public.user_roles
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid());
 
 -- ---- patients ----
 CREATE POLICY "Users can view patients in their clinic" ON public.patients
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can insert patients in their clinic" ON public.patients
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can update patients in their clinic" ON public.patients
-  AS RESTRICTIVE FOR UPDATE TO authenticated
+  FOR UPDATE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can delete patients in their clinic" ON public.patients
-  AS RESTRICTIVE FOR DELETE TO authenticated
+  FOR DELETE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 -- ---- reports ----
 CREATE POLICY "Users can view reports in their clinic" ON public.reports
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can insert reports in their clinic" ON public.reports
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can update reports in their clinic" ON public.reports
-  AS RESTRICTIVE FOR UPDATE TO authenticated
+  FOR UPDATE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can delete reports in their clinic" ON public.reports
-  AS RESTRICTIVE FOR DELETE TO authenticated
+  FOR DELETE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 -- ---- report_images ----
 CREATE POLICY "Users can view report images" ON public.report_images
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (EXISTS (
     SELECT 1 FROM reports r
     WHERE r.id = report_images.report_id
@@ -401,7 +401,7 @@ CREATE POLICY "Users can view report images" ON public.report_images
   ));
 
 CREATE POLICY "Users can insert report images" ON public.report_images
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (EXISTS (
     SELECT 1 FROM reports r
     WHERE r.id = report_images.report_id
@@ -409,7 +409,7 @@ CREATE POLICY "Users can insert report images" ON public.report_images
   ));
 
 CREATE POLICY "Users can delete report images" ON public.report_images
-  AS RESTRICTIVE FOR DELETE TO authenticated
+  FOR DELETE TO authenticated
   USING (EXISTS (
     SELECT 1 FROM reports r
     WHERE r.id = report_images.report_id
@@ -418,45 +418,45 @@ CREATE POLICY "Users can delete report images" ON public.report_images
 
 -- ---- custom_templates ----
 CREATE POLICY "Users can view templates in their clinic" ON public.custom_templates
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can insert templates in their clinic" ON public.custom_templates
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can update templates in their clinic" ON public.custom_templates
-  AS RESTRICTIVE FOR UPDATE TO authenticated
+  FOR UPDATE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can delete templates in their clinic" ON public.custom_templates
-  AS RESTRICTIVE FOR DELETE TO authenticated
+  FOR DELETE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 -- ---- activity_logs ----
 CREATE POLICY "Users can view activity logs in their clinic" ON public.activity_logs
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can insert activity logs in their clinic" ON public.activity_logs
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (clinic_id = get_user_clinic_id(auth.uid()));
 
 -- ---- saved_comparisons ----
 CREATE POLICY "Users can view comparisons in their clinic" ON public.saved_comparisons
-  AS RESTRICTIVE FOR SELECT TO authenticated
+  FOR SELECT TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can insert comparisons in their clinic" ON public.saved_comparisons
-  AS RESTRICTIVE FOR INSERT TO authenticated
+  FOR INSERT TO authenticated
   WITH CHECK (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can update comparisons in their clinic" ON public.saved_comparisons
-  AS RESTRICTIVE FOR UPDATE TO authenticated
+  FOR UPDATE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 CREATE POLICY "Users can delete comparisons in their clinic" ON public.saved_comparisons
-  AS RESTRICTIVE FOR DELETE TO authenticated
+  FOR DELETE TO authenticated
   USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 
